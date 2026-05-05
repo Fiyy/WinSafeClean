@@ -23,10 +23,13 @@ public sealed class CommandLineAppTests
 
         using var document = JsonDocument.Parse(stdout.ToString());
         var root = document.RootElement;
-        Assert.Equal("1.0", root.GetProperty("schemaVersion").GetString());
-        Assert.Equal(temp.Path, root.GetProperty("items")[0].GetProperty("path").GetString());
-        Assert.Equal("Unknown", root.GetProperty("items")[0].GetProperty("risk").GetProperty("level").GetString());
-        Assert.Equal("ReportOnly", root.GetProperty("items")[0].GetProperty("risk").GetProperty("suggestedAction").GetString());
+        Assert.Equal("1.1", root.GetProperty("schemaVersion").GetString());
+        var item = root.GetProperty("items")[0];
+        Assert.Equal(temp.Path, item.GetProperty("path").GetString());
+        Assert.Equal("File", item.GetProperty("itemKind").GetString());
+        Assert.NotEqual(JsonValueKind.Null, item.GetProperty("lastWriteTimeUtc").ValueKind);
+        Assert.Equal("Unknown", item.GetProperty("risk").GetProperty("level").GetString());
+        Assert.Equal("ReportOnly", item.GetProperty("risk").GetProperty("suggestedAction").GetString());
     }
 
     [Fact]
@@ -215,9 +218,13 @@ public sealed class CommandLineAppTests
         var items = document.RootElement.GetProperty("items");
         Assert.Equal(2, items.GetArrayLength());
         Assert.Equal(alpha, items[0].GetProperty("path").GetString());
+        Assert.Equal("File", items[0].GetProperty("itemKind").GetString());
         Assert.Equal(1, items[0].GetProperty("sizeBytes").GetInt64());
+        Assert.NotEqual(JsonValueKind.Null, items[0].GetProperty("lastWriteTimeUtc").ValueKind);
         Assert.Equal(beta, items[1].GetProperty("path").GetString());
+        Assert.Equal("File", items[1].GetProperty("itemKind").GetString());
         Assert.Equal(2, items[1].GetProperty("sizeBytes").GetInt64());
+        Assert.NotEqual(JsonValueKind.Null, items[1].GetProperty("lastWriteTimeUtc").ValueKind);
     }
 
     [Fact]
@@ -261,6 +268,7 @@ public sealed class CommandLineAppTests
         var items = document.RootElement.GetProperty("items");
         var item = Assert.Single(items.EnumerateArray());
         Assert.Equal(nestedDirectory, item.GetProperty("path").GetString());
+        Assert.Equal("Directory", item.GetProperty("itemKind").GetString());
     }
 
     [Theory]

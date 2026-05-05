@@ -32,4 +32,14 @@ internal sealed class SystemFileSystem : IFileSystem
     {
         return new FileInfo(path).Length;
     }
+
+    public DateTimeOffset GetFileLastWriteTimeUtc(string path)
+    {
+        return new DateTimeOffset(new FileInfo(path).LastWriteTimeUtc);
+    }
+
+    public DateTimeOffset GetDirectoryLastWriteTimeUtc(string path)
+    {
+        return new DateTimeOffset(new DirectoryInfo(path).LastWriteTimeUtc);
+    }
 }

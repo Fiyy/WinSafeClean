@@ -32,10 +32,10 @@ WinSafeClean
 负责扫描文件和目录：
 
 - 路径
+- 类型：文件、目录或未知
 - 大小
-- 创建时间
 - 修改时间
-- 访问时间
+- 后续可评估创建时间和访问时间，但 Phase 1 暂不进入报告 schema
 - 属性
 - 文件哈希
 - 硬链接和符号链接信息
@@ -119,7 +119,7 @@ ScanItem
   Path
   Kind
   SizeBytes
-  Timestamps
+  LastWriteTimeUtc
   Attributes
   Evidence[]
   RiskAssessment
@@ -149,4 +149,3 @@ CleanupPlan
 - 系统组件清理优先建议 DISM 或 Windows 设置中的存储清理。
 - Windows Installer cache 不做手动删除。
 - 读取注册表、服务、计划任务失败时必须降级为 Unknown 或 HighRisk，而不是 LowRisk。
-

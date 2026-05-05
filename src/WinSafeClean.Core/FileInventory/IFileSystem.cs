@@ -11,4 +11,8 @@ public interface IFileSystem
     IEnumerable<string> EnumerateFileSystemEntries(string path);
 
     long GetFileLength(string path);
+
+    DateTimeOffset GetFileLastWriteTimeUtc(string path);
+
+    DateTimeOffset GetDirectoryLastWriteTimeUtc(string path);
 }

@@ -24,12 +24,14 @@ Scan(path, options) -> IReadOnlyList<ScanReportItem>
 
 - 文件：返回单个 item，大小为文件长度。
 - 目录：只枚举直接子项，不递归。
-- 目录项：大小暂记为 `0 B`。
+- 文件项：`itemKind = File`，记录文件长度和可读取的 `lastWriteTimeUtc`。
+- 目录项：`itemKind = Directory`，大小暂记为 `0 B`，记录可读取的 `lastWriteTimeUtc`。
 - 缺失路径：返回单个 `Unknown / ReportOnly` item。
 - 缺失但受保护的 Windows 路径：保留 `Blocked` 风险。
 - `MaxItems`：限制实际枚举和返回项数量。
 - 非法路径语法：降级为单个 `Unknown / ReportOnly` item。
 - 目录枚举或文件元数据读取失败：降级为单个 `Unknown / ReportOnly` item。
+- 时间戳读取失败：只将 `lastWriteTimeUtc` 置为 `null`，不让扫描失败。
 - 结果路径：输出完整路径，便于报告稳定。
 
 CLI 接入：

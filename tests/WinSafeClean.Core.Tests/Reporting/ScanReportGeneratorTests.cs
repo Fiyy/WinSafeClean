@@ -13,17 +13,21 @@ public sealed class ScanReportGeneratorTests
         var filePath = sandbox.WriteFile("sample.txt", "hello");
         var createdAt = new DateTimeOffset(2026, 5, 5, 1, 2, 3, TimeSpan.Zero);
 
+        var expectedLastWriteTime = new DateTimeOffset(File.GetLastWriteTimeUtc(filePath));
+
         var report = ScanReportGenerator.Generate(
             filePath,
             new FileSystemScanOptions(MaxItems: 100),
             createdAt);
 
-        Assert.Equal("1.0", report.SchemaVersion);
+        Assert.Equal("1.1", report.SchemaVersion);
         Assert.Equal(createdAt, report.CreatedAt);
 
         var item = Assert.Single(report.Items);
         Assert.Equal(filePath, item.Path);
+        Assert.Equal(ScanReportItemKind.File, item.ItemKind);
         Assert.Equal(5, item.SizeBytes);
+        Assert.Equal(expectedLastWriteTime, item.LastWriteTimeUtc);
         Assert.Equal(RiskLevel.Unknown, item.Risk.Level);
         Assert.Equal(SuggestedAction.ReportOnly, item.Risk.SuggestedAction);
     }

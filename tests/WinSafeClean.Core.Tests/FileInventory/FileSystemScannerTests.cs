@@ -1,4 +1,5 @@
 using WinSafeClean.Core.FileInventory;
+using WinSafeClean.Core.Reporting;
 using WinSafeClean.Core.Risk;
 
 namespace WinSafeClean.Core.Tests.FileInventory;
@@ -10,12 +11,15 @@ public sealed class FileSystemScannerTests
     {
         using var sandbox = TemporarySandbox.Create();
         var filePath = sandbox.WriteFile("sample.txt", "hello");
+        var expectedLastWriteTime = new DateTimeOffset(File.GetLastWriteTimeUtc(filePath));
 
         var items = FileSystemScanner.Scan(filePath, new FileSystemScanOptions(MaxItems: 100));
 
         var item = Assert.Single(items);
         Assert.Equal(filePath, item.Path);
+        Assert.Equal(ScanReportItemKind.File, item.ItemKind);
         Assert.Equal(5, item.SizeBytes);
+        Assert.Equal(expectedLastWriteTime, item.LastWriteTimeUtc);
         Assert.Equal(RiskLevel.Unknown, item.Risk.Level);
         Assert.Equal(SuggestedAction.ReportOnly, item.Risk.SuggestedAction);
     }
@@ -35,12 +39,16 @@ public sealed class FileSystemScannerTests
             first =>
             {
                 Assert.Equal(alpha, first.Path);
+                Assert.Equal(ScanReportItemKind.File, first.ItemKind);
                 Assert.Equal(1, first.SizeBytes);
+                Assert.NotNull(first.LastWriteTimeUtc);
             },
             second =>
             {
                 Assert.Equal(nestedDirectory, second.Path);
+                Assert.Equal(ScanReportItemKind.Directory, second.ItemKind);
                 Assert.Equal(0, second.SizeBytes);
+                Assert.NotNull(second.LastWriteTimeUtc);
             });
     }
 
@@ -69,7 +77,9 @@ public sealed class FileSystemScannerTests
 
         var item = Assert.Single(items);
         Assert.Equal(missingPath, item.Path);
+        Assert.Equal(ScanReportItemKind.Unknown, item.ItemKind);
         Assert.Equal(0, item.SizeBytes);
+        Assert.Null(item.LastWriteTimeUtc);
         Assert.Equal(RiskLevel.Unknown, item.Risk.Level);
         Assert.Contains(item.Risk.Reasons, reason => reason.Contains("does not exist", StringComparison.OrdinalIgnoreCase));
     }
@@ -82,6 +92,8 @@ public sealed class FileSystemScannerTests
             new FileSystemScanOptions(MaxItems: 100));
 
         var item = Assert.Single(items);
+        Assert.Equal(ScanReportItemKind.Unknown, item.ItemKind);
+        Assert.Null(item.LastWriteTimeUtc);
         Assert.Equal(RiskLevel.Blocked, item.Risk.Level);
         Assert.Equal(SuggestedAction.Keep, item.Risk.SuggestedAction);
     }
@@ -93,6 +105,8 @@ public sealed class FileSystemScannerTests
 
         var item = Assert.Single(items);
         Assert.Equal("bad\0path", item.Path);
+        Assert.Equal(ScanReportItemKind.Unknown, item.ItemKind);
+        Assert.Null(item.LastWriteTimeUtc);
         Assert.Equal(RiskLevel.Unknown, item.Risk.Level);
         Assert.Contains(item.Risk.Reasons, reason => reason.Contains("invalid", StringComparison.OrdinalIgnoreCase));
     }

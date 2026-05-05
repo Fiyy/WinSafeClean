@@ -18,13 +18,17 @@ public static class ScanReportMarkdownSerializer
         builder.AppendLine();
         builder.AppendLine("## Items");
         builder.AppendLine();
-        builder.AppendLine("| Path | Size | Risk | Suggested Action |");
-        builder.AppendLine("| --- | ---: | --- | --- |");
+        builder.AppendLine("| Path | Type | Size | Last Write (UTC) | Risk | Suggested Action |");
+        builder.AppendLine("| --- | --- | ---: | --- | --- | --- |");
 
         foreach (var item in report.Items)
         {
+            var lastWriteTime = item.LastWriteTimeUtc.HasValue
+                ? $"`{item.LastWriteTimeUtc.Value:O}`"
+                : "-";
+
             builder.AppendLine(
-                $"| `{EscapeTableCell(EscapeInlineCode(item.Path))}` | {FormatBytes(item.SizeBytes)} | {item.Risk.Level} | {item.Risk.SuggestedAction} |");
+                $"| `{EscapeTableCell(EscapeInlineCode(item.Path))}` | {item.ItemKind} | {FormatBytes(item.SizeBytes)} | {lastWriteTime} | {item.Risk.Level} | {item.Risk.SuggestedAction} |");
         }
 
         builder.AppendLine();

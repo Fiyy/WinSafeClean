@@ -14,17 +14,19 @@ Accepted
 
 ## 决策
 
-Phase 1 的下一次报告 schema 扩展应加入：
+Phase 1 报告 schema 从 `1.0` 演进到 `1.1`，并加入：
 
 - `itemKind`：取值为 `File`、`Directory`、`Unknown`。
-- `lastWriteTimeUtc`：可空字段；读取失败时保持缺失或 `null`，不得让扫描失败。
+- `lastWriteTimeUtc`：可空字段；读取失败时保持 `null`，不得让扫描失败。
+
+Markdown 报告的 items 表新增 `Type` 和 `Last Write (UTC)` 列；时间戳缺失时使用 `-` 作为稳定占位符。
 
 Phase 1 不加入：
 
 - `createdTimeUtc`：Windows 创建时间在复制、解压、同步和恢复场景下语义不稳定。
 - `lastAccessTimeUtc`：Windows last access 可能关闭或延迟更新，并且更接近用户行为轨迹，隐私代价高。
 
-本 ADR 记录 schema 方向。字段实现需要通过后续 TDD 任务落地，并同步更新 JSON/Markdown serializer 与 CLI 集成测试。
+本 ADR 已通过 TDD 落地到 JSON、Markdown、scanner 和 CLI 集成测试。
 
 ## 理由
 
@@ -44,6 +46,9 @@ Phase 1 不加入：
 
 代价：
 
-- 报告 schema 会从 `1.0` 演进，需要明确兼容策略。
+- 报告 schema 已从 `1.0` 演进到 `1.1`，需要明确兼容策略。
 - Markdown 和 JSON 输出都需要新增测试。
 - 时间戳会提高报告敏感度，后续需要设计脱敏或摘要模式。
+- `1.1` 是 additive JSON schema；只接受固定字段集合的严格消费者需要调整。
+- Markdown 表格新增列会影响按列位置解析报告的脚本。
+- 时间格式固定使用 ISO 8601 round-trip 格式，避免本地时区和文化设置影响报告稳定性。

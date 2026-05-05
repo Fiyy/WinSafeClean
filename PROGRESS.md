@@ -60,8 +60,12 @@
 - 增加 scanner 权限、路径过长、IO、安全策略异常降级测试
 - 增加报告生成流程测试
 - 新增 ADR 0006，记录报告项 `itemKind` 与有限时间元数据方向
+- 报告 schema 演进到 `1.1`
+- `ScanReportItem` 新增 `itemKind` 和可空 `lastWriteTimeUtc`
+- JSON 和 Markdown 报告输出文件/目录/未知类型以及可读取的修改时间
+- 时间戳读取失败时只置空，不中断扫描
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：73 passed
+- 测试通过：77 passed
 
 ## 正在进行
 
@@ -69,10 +73,10 @@
 
 ## 下一步
 
-1. 按 ADR 0006 实现 `itemKind` 和可空 `lastWriteTimeUtc` schema 扩展。
-2. 补充 CLI 参数边界测试：缺值、未知选项、缺失 output parent、已有目录 output。
-3. 增加 serializer 空报告项测试。
-4. 评估是否添加 `--recursive`，默认仍保持非递归。
+1. 补充 CLI 参数边界测试：缺值、未知选项、缺失 output parent、已有目录 output。
+2. 增加 serializer 空报告项测试。
+3. 评估是否添加 `--recursive`，默认仍保持非递归。
+4. 设计报告 schema 兼容策略和脱敏/摘要模式。
 
 ## 待决策
 
