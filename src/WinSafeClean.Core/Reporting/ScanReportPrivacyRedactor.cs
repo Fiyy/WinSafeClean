@@ -48,7 +48,19 @@ public static class ScanReportPrivacyRedactor
         {
             Path = aliases[item.Path],
             LastWriteTimeUtc = null,
+            Evidence = item.Evidence
+                .Select(evidence => RedactEvidence(evidence, aliases))
+                .ToList(),
             Risk = RedactRisk(item.Risk, aliases)
+        };
+    }
+
+    private static EvidenceRecord RedactEvidence(EvidenceRecord evidence, Dictionary<string, string> aliases)
+    {
+        return evidence with
+        {
+            Source = RedactKnownPaths(evidence.Source, aliases),
+            Message = RedactKnownPaths(evidence.Message, aliases)
         };
     }
 

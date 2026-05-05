@@ -45,6 +45,19 @@ public static class ScanReportMarkdownSerializer
         }
 
         builder.AppendLine();
+        builder.AppendLine("## Evidence");
+        builder.AppendLine();
+
+        foreach (var item in report.Items)
+        {
+            foreach (var evidence in item.Evidence)
+            {
+                builder.AppendLine(
+                    $"- `{EscapeInlineCode(item.Path)}`: {evidence.Type} ({evidence.Confidence.ToString("0.###", CultureInfo.InvariantCulture)}) {SanitizeMarkdownText(evidence.Source)} - {SanitizeMarkdownText(evidence.Message)}");
+            }
+        }
+
+        builder.AppendLine();
         builder.AppendLine("## Blockers");
         builder.AppendLine();
 

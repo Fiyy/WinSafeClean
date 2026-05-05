@@ -23,11 +23,12 @@ public sealed class CommandLineAppTests
 
         using var document = JsonDocument.Parse(stdout.ToString());
         var root = document.RootElement;
-        Assert.Equal("1.2", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("1.3", root.GetProperty("schemaVersion").GetString());
         Assert.Equal("Full", root.GetProperty("privacyMode").GetString());
         var item = root.GetProperty("items")[0];
         Assert.Equal(temp.Path, item.GetProperty("path").GetString());
         Assert.Equal("File", item.GetProperty("itemKind").GetString());
+        Assert.Equal(0, item.GetProperty("evidence").GetArrayLength());
         Assert.NotEqual(JsonValueKind.Null, item.GetProperty("lastWriteTimeUtc").ValueKind);
         Assert.Equal("Unknown", item.GetProperty("risk").GetProperty("level").GetString());
         Assert.Equal("ReportOnly", item.GetProperty("risk").GetProperty("suggestedAction").GetString());

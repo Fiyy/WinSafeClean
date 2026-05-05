@@ -76,8 +76,14 @@
 - 递归扫描使用全局 `MaxItems`
 - 递归扫描默认不跟随 reparse point、junction 或 symlink
 - 新增 ADR 0008，记录递归扫描策略
+- 报告 schema 演进到 `1.3`
+- 新增报告项 `evidence`
+- 新增 `EvidenceRecord` 和 `EvidenceType`
+- Markdown 报告新增 Evidence 区块
+- redacted 会处理 evidence 中的路径文本
+- 新增 ADR 0009，记录证据模型
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：97 passed
+- 测试通过：100 passed
 
 ## 正在进行
 
@@ -85,7 +91,7 @@
 
 ## 下一步
 
-1. 开始 Phase 2 Windows 证据收集设计：服务、计划任务、启动项、卸载注册表、进程引用。
+1. 实现 Phase 2 Windows 证据收集适配器骨架：服务、计划任务、启动项、卸载注册表、进程引用。
 2. 评估是否兼容 BleachBit CleanerML 作为规则输入。
 3. 设计报告 schema 兼容测试夹具。
 4. 为长时间扫描设计取消机制。

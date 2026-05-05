@@ -100,4 +100,39 @@ public sealed class ScanReportPrivacyRedactorTests
         Assert.DoesNotContain("Alice", item.Risk.Reasons.Single(), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Alice", item.Risk.Blockers.Single(), StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public void ShouldRedactPathsInsideEvidence()
+    {
+        const string path = @"C:\Users\Alice\AppData\Local\Vendor\app.exe";
+        var report = new ScanReport(
+            SchemaVersion: "1.3",
+            PrivacyMode: ScanReportPrivacyMode.Full,
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            Items:
+            [
+                new ScanReportItem(
+                    Path: path,
+                    ItemKind: ScanReportItemKind.File,
+                    SizeBytes: 1,
+                    LastWriteTimeUtc: DateTimeOffset.UnixEpoch,
+                    Evidence:
+                    [
+                        new EvidenceRecord(
+                            Type: EvidenceType.ServiceReference,
+                            Source: @"ImagePath C:\Users\Alice\AppData\Local\Vendor\app.exe",
+                            Confidence: 0.9,
+                            Message: @"Service references C:\Users\Alice\AppData\Local\Vendor\app.exe")
+                    ],
+                    Risk: RiskAssessment.Unknown("No path-level rule matched this item."))
+            ]);
+
+        var redacted = ScanReportPrivacyRedactor.Redact(report);
+        var evidence = Assert.Single(Assert.Single(redacted.Items).Evidence);
+
+        Assert.Contains("[redacted-path-0001]", evidence.Source);
+        Assert.Contains("[redacted-path-0001]", evidence.Message);
+        Assert.DoesNotContain("Alice", evidence.Source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Alice", evidence.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }

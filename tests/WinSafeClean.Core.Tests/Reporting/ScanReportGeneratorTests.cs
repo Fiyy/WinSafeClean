@@ -20,7 +20,7 @@ public sealed class ScanReportGeneratorTests
             new FileSystemScanOptions(MaxItems: 100),
             createdAt);
 
-        Assert.Equal("1.2", report.SchemaVersion);
+        Assert.Equal("1.3", report.SchemaVersion);
         Assert.Equal(ScanReportPrivacyMode.Full, report.PrivacyMode);
         Assert.Equal(createdAt, report.CreatedAt);
 
@@ -29,6 +29,7 @@ public sealed class ScanReportGeneratorTests
         Assert.Equal(ScanReportItemKind.File, item.ItemKind);
         Assert.Equal(5, item.SizeBytes);
         Assert.Equal(expectedLastWriteTime, item.LastWriteTimeUtc);
+        Assert.Empty(item.Evidence);
         Assert.Equal(RiskLevel.Unknown, item.Risk.Level);
         Assert.Equal(SuggestedAction.ReportOnly, item.Risk.SuggestedAction);
     }
