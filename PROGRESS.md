@@ -135,17 +135,20 @@
 - 新增只读 `CleanupPlan`、`CleanupPlanItem`、`CleanupPlanAction`
 - `CleanupPlanGenerator` 将报告项保守映射为 `Keep`、`ReportOnly` 或 `ReviewForQuarantine`
 - 新增 ADR 0020，记录只读清理计划草案
+- 新增 `CleanerMlRuleFileLoader`
+- CleanerML 支持显式加载单个用户规则文件或目录顶层 `.xml` 文件
+- CleanerML 规则加载支持取消 token，不递归、不自动下载
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：147 passed
+- 测试通过：150 passed
 
 ## 正在进行
 
-- Phase 2 Windows evidence 适配器
+- Phase 3 只读清理计划
 
 ## 下一步
 
-1. 为 CleanerML provider 增加用户规则文件加载入口。
-2. 为 CleanupPlan 增加 JSON/Markdown serializer。
+1. 为 CleanupPlan 增加 JSON/Markdown serializer。
+2. 为 CLI 增加只读 plan 输出命令。
 
 ## 待决策
 
