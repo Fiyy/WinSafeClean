@@ -119,8 +119,9 @@
 - Core scanner、report generator 和 CLI 支持扫描取消
 - `Program.cs` 支持 Ctrl+C 取消，CLI 取消返回 exit code `130`
 - 新增 ADR 0018，记录扫描取消机制
+- 新增 Program 级端到端 CLI 测试，验证真实入口和默认 evidence provider 组合
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：134 passed
+- 测试通过：135 passed
 
 ## 正在进行
 
@@ -128,9 +129,8 @@
 
 ## 下一步
 
-1. 增加 Program 级端到端 CLI 测试。
-2. 设计 CleanerML 安全子集解析器。
-3. 为 evidence provider 内部读取设计可取消接口。
+1. 设计 CleanerML 安全子集解析器。
+2. 为 evidence provider 内部读取设计可取消接口。
 
 ## 待决策
 
