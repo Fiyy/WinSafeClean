@@ -1,5 +1,6 @@
 using WinSafeClean.Core.Evidence;
 using WinSafeClean.Core.FileInventory;
+using WinSafeClean.Core.Planning;
 using WinSafeClean.Core.Reporting;
 using WinSafeClean.Core.Risk;
 using WinSafeClean.Windows.Evidence;
@@ -11,8 +12,8 @@ public static class CommandLineApp
     private const int Success = 0;
     private const int UsageError = 2;
     private const int Cancelled = 130;
-    private const string Usage = "Use: scan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive]";
-    private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore", "plan"];
+    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive]";
+    private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
     public static int Run(
@@ -40,7 +41,8 @@ public static class CommandLineApp
             return UsageError;
         }
 
-        if (!command.Equals("scan", StringComparison.OrdinalIgnoreCase))
+        if (!command.Equals("scan", StringComparison.OrdinalIgnoreCase)
+            && !command.Equals("plan", StringComparison.OrdinalIgnoreCase))
         {
             stderr.WriteLine($"Unknown command '{command}'. {Usage}");
             return UsageError;
@@ -54,13 +56,12 @@ public static class CommandLineApp
 
         try
         {
-            return RunScan(
-                args[1..],
-                stdout,
-                stderr,
-                now ?? DateTimeOffset.UtcNow,
-                evidenceProvider ?? EmptyEvidenceProvider.Instance,
-                cancellationToken);
+            var createdAt = now ?? DateTimeOffset.UtcNow;
+            var provider = evidenceProvider ?? EmptyEvidenceProvider.Instance;
+
+            return command.Equals("plan", StringComparison.OrdinalIgnoreCase)
+                ? RunPlan(args[1..], stdout, stderr, createdAt, provider, cancellationToken)
+                : RunScan(args[1..], stdout, stderr, createdAt, provider, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -95,6 +96,53 @@ public static class CommandLineApp
         var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
             ? ScanReportMarkdownSerializer.Serialize(report)
             : ScanReportJsonSerializer.Serialize(report);
+
+        if (!string.IsNullOrWhiteSpace(options.OutputPath))
+        {
+            var outputValidationError = ValidateOutputPath(options.OutputPath);
+            if (!string.IsNullOrWhiteSpace(outputValidationError))
+            {
+                stderr.WriteLine(outputValidationError);
+                return UsageError;
+            }
+
+            using var stream = new FileStream(options.OutputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            using var writer = new StreamWriter(stream);
+            writer.Write(rendered);
+            return Success;
+        }
+
+        stdout.Write(rendered);
+        return Success;
+    }
+
+    private static int RunPlan(
+        string[] args,
+        TextWriter stdout,
+        TextWriter stderr,
+        DateTimeOffset createdAt,
+        IFileEvidenceProvider evidenceProvider,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var options = ScanOptions.Parse(args);
+        if (!string.IsNullOrWhiteSpace(options.Error))
+        {
+            stderr.WriteLine(options.Error);
+            return UsageError;
+        }
+
+        var report = BuildReport(options, createdAt, evidenceProvider, cancellationToken);
+        if (options.PrivacyMode == ScanReportPrivacyMode.Redacted)
+        {
+            report = ScanReportPrivacyRedactor.Redact(report);
+        }
+
+        var plan = CleanupPlanGenerator.Generate(report, createdAt);
+        var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
+            ? CleanupPlanMarkdownSerializer.Serialize(plan)
+            : CleanupPlanJsonSerializer.Serialize(plan);
 
         if (!string.IsNullOrWhiteSpace(options.OutputPath))
         {

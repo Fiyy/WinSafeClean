@@ -140,8 +140,10 @@
 - CleanerML 规则加载支持取消 token，不递归、不自动下载
 - 新增 `CleanupPlanJsonSerializer`
 - 新增 `CleanupPlanMarkdownSerializer`
+- CLI 新增只读 `plan` 命令，支持 JSON/Markdown 输出
+- `plan` 命令只生成预览，不执行删除、隔离或修复
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：152 passed
+- 测试通过：153 passed
 
 ## 正在进行
 
@@ -149,8 +151,8 @@
 
 ## 下一步
 
-1. 为 CLI 增加只读 plan 输出命令。
-2. 为 plan 输出增加 schema fixture。
+1. 为 plan 输出增加 schema fixture。
+2. 为 CLI plan 增加 Program 级端到端测试。
 
 ## 待决策
 

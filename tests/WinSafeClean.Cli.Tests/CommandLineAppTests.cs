@@ -133,6 +133,49 @@ public sealed class CommandLineAppTests
     }
 
     [Fact]
+    public void PlanShouldWriteJsonCleanupPlanToStdout()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var root = document.RootElement;
+        Assert.Equal("0.1", root.GetProperty("schemaVersion").GetString());
+        var item = root.GetProperty("items")[0];
+        Assert.Equal(temp.Path, item.GetProperty("path").GetString());
+        Assert.Equal("ReportOnly", item.GetProperty("action").GetString());
+    }
+
+    [Fact]
+    public void PlanShouldWriteMarkdownCleanupPlanWhenRequested()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path, "--format", "markdown"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.Contains("# WinSafeClean Cleanup Plan", stdout.ToString());
+        Assert.Contains(temp.Path, stdout.ToString());
+    }
+
+    [Fact]
     public void ScanShouldRequireExplicitPath()
     {
         using var stdout = new StringWriter();
@@ -540,7 +583,6 @@ public sealed class CommandLineAppTests
     [InlineData("clean")]
     [InlineData("quarantine")]
     [InlineData("restore")]
-    [InlineData("plan")]
     public void ShouldRejectExecutableCommandsDuringReadOnlyPhase(string command)
     {
         using var stdout = new StringWriter();
