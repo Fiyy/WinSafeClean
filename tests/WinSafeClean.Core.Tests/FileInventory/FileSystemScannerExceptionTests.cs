@@ -145,6 +145,29 @@ public sealed class FileSystemScannerExceptionTests
         Assert.Equal(RiskLevel.Unknown, item.Risk.Level);
     }
 
+    [Fact]
+    public void ShouldNotDescendIntoReparsePointDirectoriesWhenRecursive()
+    {
+        var fileSystem = new TestFileSystem
+        {
+            DirectoryExistsFunc = path => path is @"C:\scan-root" or @"C:\scan-root\link",
+            EnumerateFileSystemEntriesFunc = path => path == @"C:\scan-root"
+                ? [@"C:\scan-root\link"]
+                : [@"C:\scan-root\link\hidden.txt"],
+            IsReparsePointFunc = path => path == @"C:\scan-root\link",
+            FileExistsFunc = path => path == @"C:\scan-root\link\hidden.txt"
+        };
+
+        var items = FileSystemScanner.Scan(
+            @"C:\scan-root",
+            new FileSystemScanOptions(MaxItems: 100, Recursive: true),
+            fileSystem);
+
+        var item = Assert.Single(items);
+        Assert.Equal(@"C:\scan-root\link", item.Path);
+        Assert.Equal(ScanReportItemKind.Directory, item.ItemKind);
+    }
+
     private sealed class TestFileSystem : IFileSystem
     {
         public Func<string, string> GetFullPathFunc { get; init; } = path => path;
@@ -160,6 +183,8 @@ public sealed class FileSystemScannerExceptionTests
         public Func<string, DateTimeOffset> GetFileLastWriteTimeUtcFunc { get; init; } = _ => DateTimeOffset.UnixEpoch;
 
         public Func<string, DateTimeOffset> GetDirectoryLastWriteTimeUtcFunc { get; init; } = _ => DateTimeOffset.UnixEpoch;
+
+        public Func<string, bool> IsReparsePointFunc { get; init; } = _ => false;
 
         public string GetFullPath(string path)
         {
@@ -194,6 +219,11 @@ public sealed class FileSystemScannerExceptionTests
         public DateTimeOffset GetDirectoryLastWriteTimeUtc(string path)
         {
             return GetDirectoryLastWriteTimeUtcFunc(path);
+        }
+
+        public bool IsReparsePoint(string path)
+        {
+            return IsReparsePointFunc(path);
         }
     }
 }

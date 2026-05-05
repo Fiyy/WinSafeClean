@@ -42,4 +42,9 @@ internal sealed class SystemFileSystem : IFileSystem
     {
         return new DateTimeOffset(new DirectoryInfo(path).LastWriteTimeUtc);
     }
+
+    public bool IsReparsePoint(string path)
+    {
+        return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
+    }
 }

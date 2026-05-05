@@ -164,21 +164,26 @@ public sealed class CommandLineAppTests
     }
 
     [Fact]
-    public void ScanShouldRejectRecursiveUntilTraversalPolicyExists()
+    public void ScanShouldAcceptRecursiveAndReportNestedChildren()
     {
-        using var temp = TemporaryFile.Create("hello");
+        using var sandbox = TemporarySandbox.Create();
+        var nestedDirectory = sandbox.CreateDirectory("nested");
+        var hidden = sandbox.WriteFile(Path.Combine("nested", "hidden.txt"), "hidden");
         using var stdout = new StringWriter();
         using var stderr = new StringWriter();
 
         var exitCode = CommandLineApp.Run(
-            ["scan", "--path", temp.Path, "--recursive"],
+            ["scan", "--path", sandbox.RootPath, "--recursive"],
             stdout,
             stderr,
             DateTimeOffset.UnixEpoch);
 
-        Assert.Equal(2, exitCode);
-        Assert.Equal(string.Empty, stdout.ToString());
-        Assert.Contains("Unknown option '--recursive'", stderr.ToString());
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var items = document.RootElement.GetProperty("items");
+        Assert.Contains(items.EnumerateArray(), item => item.GetProperty("path").GetString() == nestedDirectory);
+        Assert.Contains(items.EnumerateArray(), item => item.GetProperty("path").GetString() == hidden);
     }
 
     [Fact]

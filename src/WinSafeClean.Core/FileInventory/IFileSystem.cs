@@ -15,4 +15,6 @@ public interface IFileSystem
     DateTimeOffset GetFileLastWriteTimeUtc(string path);
 
     DateTimeOffset GetDirectoryLastWriteTimeUtc(string path);
+
+    bool IsReparsePoint(string path);
 }

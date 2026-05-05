@@ -43,6 +43,16 @@ public static class FileSystemScanner
 
     private static IReadOnlyList<ScanReportItem> ScanDirectory(string path, FileSystemScanOptions options, IFileSystem fileSystem)
     {
+        return options.Recursive
+            ? ScanDirectoryRecursive(path, options, fileSystem)
+            : ScanDirectoryDirectChildren(path, options, fileSystem);
+    }
+
+    private static IReadOnlyList<ScanReportItem> ScanDirectoryDirectChildren(
+        string path,
+        FileSystemScanOptions options,
+        IFileSystem fileSystem)
+    {
         try
         {
             var entries = new List<string>(capacity: options.MaxItems);
@@ -76,6 +86,115 @@ public static class FileSystemScanner
         catch (System.Security.SecurityException)
         {
             return [CreateUnknownItem(path, "Directory access was blocked by security policy.", ScanReportItemKind.Directory)];
+        }
+    }
+
+    private static IReadOnlyList<ScanReportItem> ScanDirectoryRecursive(
+        string path,
+        FileSystemScanOptions options,
+        IFileSystem fileSystem)
+    {
+        var items = new List<ScanReportItem>(capacity: options.MaxItems);
+        AddRecursiveDirectoryChildren(path, options.MaxItems, fileSystem, items, addEnumerationFailureItem: true);
+        return items;
+    }
+
+    private static void AddRecursiveDirectoryChildren(
+        string path,
+        int maxItems,
+        IFileSystem fileSystem,
+        List<ScanReportItem> items,
+        bool addEnumerationFailureItem)
+    {
+        IReadOnlyList<string> entries;
+
+        try
+        {
+            entries = EnumerateLimitedEntries(path, maxItems - items.Count, fileSystem);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            AddEnumerationFailureItemIfNeeded(items, path, "Directory access was denied.", maxItems, addEnumerationFailureItem);
+            return;
+        }
+        catch (PathTooLongException)
+        {
+            AddEnumerationFailureItemIfNeeded(items, path, "Directory path was too long to enumerate.", maxItems, addEnumerationFailureItem);
+            return;
+        }
+        catch (IOException)
+        {
+            AddEnumerationFailureItemIfNeeded(items, path, "Directory could not be enumerated.", maxItems, addEnumerationFailureItem);
+            return;
+        }
+        catch (System.Security.SecurityException)
+        {
+            AddEnumerationFailureItemIfNeeded(items, path, "Directory access was blocked by security policy.", maxItems, addEnumerationFailureItem);
+            return;
+        }
+
+        foreach (var entry in entries)
+        {
+            if (items.Count >= maxItems)
+            {
+                return;
+            }
+
+            var item = CreateItem(entry, fileSystem);
+            items.Add(item);
+
+            if (item.ItemKind != ScanReportItemKind.Directory
+                || item.Risk.Level == RiskLevel.Blocked
+                || TryIsReparsePoint(entry, fileSystem))
+            {
+                continue;
+            }
+
+            AddRecursiveDirectoryChildren(entry, maxItems, fileSystem, items, addEnumerationFailureItem: false);
+        }
+    }
+
+    private static void AddEnumerationFailureItemIfNeeded(
+        List<ScanReportItem> items,
+        string path,
+        string reason,
+        int maxItems,
+        bool addEnumerationFailureItem)
+    {
+        if (addEnumerationFailureItem)
+        {
+            AddItemIfBudgetAllows(items, CreateUnknownItem(path, reason, ScanReportItemKind.Directory), maxItems);
+        }
+    }
+
+    private static IReadOnlyList<string> EnumerateLimitedEntries(string path, int maxEntries, IFileSystem fileSystem)
+    {
+        var entries = new List<string>(capacity: Math.Max(0, maxEntries));
+
+        if (maxEntries <= 0)
+        {
+            return entries;
+        }
+
+        foreach (var entry in fileSystem.EnumerateFileSystemEntries(path))
+        {
+            entries.Add(entry);
+            if (entries.Count >= maxEntries)
+            {
+                break;
+            }
+        }
+
+        return entries
+            .OrderBy(entry => entry, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static void AddItemIfBudgetAllows(List<ScanReportItem> items, ScanReportItem item, int maxItems)
+    {
+        if (items.Count < maxItems)
+        {
+            items.Add(item);
         }
     }
 
@@ -221,6 +340,30 @@ public static class FileSystemScanner
         catch (System.Security.SecurityException)
         {
             return null;
+        }
+    }
+
+    private static bool TryIsReparsePoint(string path, IFileSystem fileSystem)
+    {
+        try
+        {
+            return fileSystem.IsReparsePoint(path);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return true;
+        }
+        catch (PathTooLongException)
+        {
+            return true;
+        }
+        catch (IOException)
+        {
+            return true;
+        }
+        catch (System.Security.SecurityException)
+        {
+            return true;
         }
     }
 }

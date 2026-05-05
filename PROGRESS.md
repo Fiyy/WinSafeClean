@@ -66,15 +66,18 @@
 - 时间戳读取失败时只置空，不中断扫描
 - 补充 CLI 参数边界测试：缺值、未知选项、缺失 output parent、已有目录 output
 - 补充 serializer 空报告项测试
-- 明确 `--recursive` 暂不支持，保持 Phase 1 非递归扫描策略
 - 报告 schema 演进到 `1.2`
 - 新增报告 `privacyMode`
 - CLI 支持 `--privacy full|redacted`
 - redacted 报告会替换路径 token，并抑制 `lastWriteTimeUtc`
 - redacted 会处理 `reasons` 和 `blockers` 中的已知路径
 - 新增 ADR 0007，记录报告隐私模式与兼容影响
+- CLI 支持显式 `--recursive`
+- 递归扫描使用全局 `MaxItems`
+- 递归扫描默认不跟随 reparse point、junction 或 symlink
+- 新增 ADR 0008，记录递归扫描策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：94 passed
+- 测试通过：97 passed
 
 ## 正在进行
 
@@ -82,10 +85,10 @@
 
 ## 下一步
 
-1. 为递归扫描创建单独 ADR：遍历顺序、全局 `MaxItems`、重解析点、权限降级、取消机制。
-2. 开始 Phase 2 Windows 证据收集设计：服务、计划任务、启动项、卸载注册表、进程引用。
-3. 评估是否兼容 BleachBit CleanerML 作为规则输入。
-4. 设计报告 schema 兼容测试夹具。
+1. 开始 Phase 2 Windows 证据收集设计：服务、计划任务、启动项、卸载注册表、进程引用。
+2. 评估是否兼容 BleachBit CleanerML 作为规则输入。
+3. 设计报告 schema 兼容测试夹具。
+4. 为长时间扫描设计取消机制。
 
 ## 待决策
 

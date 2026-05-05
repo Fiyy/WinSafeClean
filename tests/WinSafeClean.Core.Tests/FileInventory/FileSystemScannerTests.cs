@@ -53,6 +53,39 @@ public sealed class FileSystemScannerTests
     }
 
     [Fact]
+    public void ShouldScanNestedChildrenWhenRecursive()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var alpha = sandbox.WriteFile("alpha.txt", "a");
+        var nestedDirectory = sandbox.CreateDirectory("nested");
+        var hidden = sandbox.WriteFile(Path.Combine("nested", "hidden.txt"), "hidden");
+
+        var items = FileSystemScanner.Scan(
+            sandbox.RootPath,
+            new FileSystemScanOptions(MaxItems: 100, Recursive: true));
+
+        Assert.Contains(items, item => item.Path == alpha && item.ItemKind == ScanReportItemKind.File);
+        Assert.Contains(items, item => item.Path == nestedDirectory && item.ItemKind == ScanReportItemKind.Directory);
+        Assert.Contains(items, item => item.Path == hidden && item.ItemKind == ScanReportItemKind.File);
+    }
+
+    [Fact]
+    public void ShouldApplyMaxItemsGloballyWhenRecursive()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        sandbox.CreateDirectory("nested");
+        sandbox.WriteFile(Path.Combine("nested", "a.txt"), "a");
+        sandbox.WriteFile(Path.Combine("nested", "b.txt"), "b");
+        sandbox.WriteFile(Path.Combine("nested", "c.txt"), "c");
+
+        var items = FileSystemScanner.Scan(
+            sandbox.RootPath,
+            new FileSystemScanOptions(MaxItems: 2, Recursive: true));
+
+        Assert.Equal(2, items.Count);
+    }
+
+    [Fact]
     public void ShouldLimitDirectoryResultsByMaxItems()
     {
         using var sandbox = TemporarySandbox.Create();

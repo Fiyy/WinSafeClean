@@ -8,7 +8,7 @@ public static class CommandLineApp
 {
     private const int Success = 0;
     private const int UsageError = 2;
-    private const string Usage = "Use: scan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--no-recursive]";
+    private const string Usage = "Use: scan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive]";
     private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore", "plan"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
@@ -190,6 +190,9 @@ public static class CommandLineApp
                         break;
                     case "--no-recursive":
                         recursive = false;
+                        break;
+                    case "--recursive":
+                        recursive = true;
                         break;
                     default:
                         return Invalid($"Unknown option '{arg}'.");
