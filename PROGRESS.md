@@ -120,8 +120,12 @@
 - `Program.cs` 支持 Ctrl+C 取消，CLI 取消返回 exit code `130`
 - 新增 ADR 0018，记录扫描取消机制
 - 新增 Program 级端到端 CLI 测试，验证真实入口和默认 evidence provider 组合
+- 新增 `WinSafeClean.CleanerRules`
+- 新增 `WinSafeClean.CleanerRules.Tests`
+- 实现 CleanerML 安全子集解析器：metadata、option、running blocker、file/glob/walk 候选
+- CleanerML 解析器忽略 `winreg`、`process`、`truncate`、`shred`、`deep` 和非 Windows action
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：135 passed
+- 测试通过：138 passed
 
 ## 正在进行
 
@@ -129,7 +133,7 @@
 
 ## 下一步
 
-1. 设计 CleanerML 安全子集解析器。
+1. 将 CleanerML 候选规则映射为 `KnownCleanupRule` evidence。
 2. 为 evidence provider 内部读取设计可取消接口。
 
 ## 待决策

@@ -35,6 +35,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 - `WinSafeClean.Core`：只读扫描、风险、报告和 evidence 基础模型
 - `WinSafeClean.Cli`：只读 CLI
 - `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action、注册表启动项、卸载注册表和运行进程映像路径关系证据
+- `WinSafeClean.CleanerRules`：CleanerML 安全子集解析器，只读取规则候选，不执行清理动作
 
 常用命令：
 
