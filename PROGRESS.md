@@ -111,6 +111,8 @@
 - `ScanReportGenerator` 支持注入 `IFileEvidenceProvider`
 - `Program.cs` 默认组合 Windows evidence providers，`CommandLineApp.Run` 保持可注入测试边界
 - 新增 ADR 0016，记录 CLI evidence provider 组合边界
+- 完成 BleachBit CleanerML 兼容性调研
+- 新增 ADR 0017，决定未来只读解析 CleanerML 安全子集，不直接执行或内置 GPL 规则
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 测试通过：131 passed
 
@@ -120,10 +122,10 @@
 
 ## 下一步
 
-1. 评估是否兼容 BleachBit CleanerML 作为规则输入。
-2. 设计报告 schema 兼容测试夹具。
-3. 为长时间扫描设计取消机制。
-4. 增加 Program 级端到端 CLI 测试。
+1. 设计报告 schema 兼容测试夹具。
+2. 为长时间扫描设计取消机制。
+3. 增加 Program 级端到端 CLI 测试。
+4. 设计 CleanerML 安全子集解析器。
 
 ## 待决策
 

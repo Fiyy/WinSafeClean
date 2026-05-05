@@ -29,6 +29,14 @@
 
 - 对任意文件归属解释不足
 - 不提供完整依赖关系图
+- CleanerML 同时包含 delete、truncate、shred、winreg、process 等执行型动作，不应直接作为 WinSafeClean 执行引擎
+
+当前决策：
+
+- 不调用 BleachBit 执行清理
+- 暂不内置 GPL CleanerML 规则文件
+- 后续只考虑解析 CleanerML 安全子集，生成 `KnownCleanupRule` evidence 或报告注释
+- 详见 [ADR 0017](adr/0017-cleanerml-compatibility.md)
 
 ### Bulk Crap Uninstaller
 
@@ -106,4 +114,3 @@ Windows 系统组件清理应优先使用官方能力：
 - DISM StartComponentCleanup
 
 不要手动删除 Windows Installer cache、WinSxS、DriverStore 等系统目录。
-
