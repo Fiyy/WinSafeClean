@@ -70,6 +70,18 @@ public sealed class FileSystemScannerTests
     }
 
     [Fact]
+    public void ShouldThrowWhenCancellationIsRequestedBeforeScan()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        Assert.Throws<OperationCanceledException>(() => FileSystemScanner.Scan(
+            sandbox.RootPath,
+            new FileSystemScanOptions(MaxItems: 100, Recursive: true, CancellationToken: cancellation.Token)));
+    }
+
+    [Fact]
     public void ShouldApplyMaxItemsGloballyWhenRecursive()
     {
         using var sandbox = TemporarySandbox.Create();

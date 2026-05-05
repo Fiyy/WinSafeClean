@@ -241,6 +241,27 @@ public sealed class CommandLineAppTests
     }
 
     [Fact]
+    public void ScanShouldReturnCancelledWhenCancellationIsRequested()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch,
+            cancellationToken: cancellation.Token);
+
+        Assert.Equal(130, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("cancelled", stderr.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ScanShouldWriteReportOnlyToExplicitOutputPath()
     {
         using var temp = TemporaryFile.Create("hello");

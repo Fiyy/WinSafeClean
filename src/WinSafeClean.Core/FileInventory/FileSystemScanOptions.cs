@@ -1,6 +1,9 @@
 namespace WinSafeClean.Core.FileInventory;
 
-public sealed record FileSystemScanOptions(int MaxItems = 1000, bool Recursive = false)
+public sealed record FileSystemScanOptions(
+    int MaxItems = 1000,
+    bool Recursive = false,
+    CancellationToken CancellationToken = default)
 {
     public static FileSystemScanOptions Default { get; } = new();
 }

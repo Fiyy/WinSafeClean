@@ -10,6 +10,7 @@ public static class CommandLineApp
 {
     private const int Success = 0;
     private const int UsageError = 2;
+    private const int Cancelled = 130;
     private const string Usage = "Use: scan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive]";
     private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore", "plan"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
@@ -19,7 +20,8 @@ public static class CommandLineApp
         TextWriter stdout,
         TextWriter stderr,
         DateTimeOffset? now = null,
-        IFileEvidenceProvider? evidenceProvider = null)
+        IFileEvidenceProvider? evidenceProvider = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(stdout);
@@ -50,12 +52,21 @@ public static class CommandLineApp
             return UsageError;
         }
 
-        return RunScan(
-            args[1..],
-            stdout,
-            stderr,
-            now ?? DateTimeOffset.UtcNow,
-            evidenceProvider ?? EmptyEvidenceProvider.Instance);
+        try
+        {
+            return RunScan(
+                args[1..],
+                stdout,
+                stderr,
+                now ?? DateTimeOffset.UtcNow,
+                evidenceProvider ?? EmptyEvidenceProvider.Instance,
+                cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            stderr.WriteLine("Scan cancelled.");
+            return Cancelled;
+        }
     }
 
     private static int RunScan(
@@ -63,8 +74,11 @@ public static class CommandLineApp
         TextWriter stdout,
         TextWriter stderr,
         DateTimeOffset createdAt,
-        IFileEvidenceProvider evidenceProvider)
+        IFileEvidenceProvider evidenceProvider,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var options = ScanOptions.Parse(args);
         if (!string.IsNullOrWhiteSpace(options.Error))
         {
@@ -72,7 +86,7 @@ public static class CommandLineApp
             return UsageError;
         }
 
-        var report = BuildReport(options, createdAt, evidenceProvider);
+        var report = BuildReport(options, createdAt, evidenceProvider, cancellationToken);
         if (options.PrivacyMode == ScanReportPrivacyMode.Redacted)
         {
             report = ScanReportPrivacyRedactor.Redact(report);
@@ -104,11 +118,12 @@ public static class CommandLineApp
     private static ScanReport BuildReport(
         ScanOptions options,
         DateTimeOffset createdAt,
-        IFileEvidenceProvider evidenceProvider)
+        IFileEvidenceProvider evidenceProvider,
+        CancellationToken cancellationToken)
     {
         return ScanReportGenerator.Generate(
             options.Path!,
-            new FileSystemScanOptions(options.MaxItems, options.Recursive),
+            new FileSystemScanOptions(options.MaxItems, options.Recursive, cancellationToken),
             createdAt,
             evidenceProvider);
     }

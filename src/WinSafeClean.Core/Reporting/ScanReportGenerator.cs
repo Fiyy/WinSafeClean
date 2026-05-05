@@ -19,7 +19,7 @@ public static class ScanReportGenerator
         var items = FileSystemScanner.Scan(path, options);
         if (evidenceProvider is not null)
         {
-            items = items.Select(item => AttachEvidence(item, evidenceProvider)).ToArray();
+            items = items.Select(item => AttachEvidence(item, evidenceProvider, options.CancellationToken)).ToArray();
         }
 
         return new ScanReport(
@@ -29,10 +29,15 @@ public static class ScanReportGenerator
             Items: items);
     }
 
-    private static ScanReportItem AttachEvidence(ScanReportItem item, IFileEvidenceProvider evidenceProvider)
+    private static ScanReportItem AttachEvidence(
+        ScanReportItem item,
+        IFileEvidenceProvider evidenceProvider,
+        CancellationToken cancellationToken)
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             return item with
             {
                 Evidence = evidenceProvider.CollectEvidence(item.Path)

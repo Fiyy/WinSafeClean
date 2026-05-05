@@ -115,8 +115,12 @@
 - 新增 ADR 0017，决定未来只读解析 CleanerML 安全子集，不直接执行或内置 GPL 规则
 - 新增报告 schema `1.3` JSON 兼容 fixture
 - 新增 schema fixture 测试，锁住 evidence、risk、privacyMode、itemKind 和时间字段输出结构
+- `FileSystemScanOptions` 新增 `CancellationToken`
+- Core scanner、report generator 和 CLI 支持扫描取消
+- `Program.cs` 支持 Ctrl+C 取消，CLI 取消返回 exit code `130`
+- 新增 ADR 0018，记录扫描取消机制
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：132 passed
+- 测试通过：134 passed
 
 ## 正在进行
 
@@ -124,9 +128,9 @@
 
 ## 下一步
 
-1. 为长时间扫描设计取消机制。
-2. 增加 Program 级端到端 CLI 测试。
-3. 设计 CleanerML 安全子集解析器。
+1. 增加 Program 级端到端 CLI 测试。
+2. 设计 CleanerML 安全子集解析器。
+3. 为 evidence provider 内部读取设计可取消接口。
 
 ## 待决策
 

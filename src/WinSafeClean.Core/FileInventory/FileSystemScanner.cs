@@ -21,6 +21,8 @@ public static class FileSystemScanner
             throw new ArgumentOutOfRangeException(nameof(options), "MaxItems must be greater than zero.");
         }
 
+        options.CancellationToken.ThrowIfCancellationRequested();
+
         if (!TryGetFullPath(path, fileSystem, out var normalizedPath, out var pathError))
         {
             return [CreateUnknownItem(path, "Path syntax is invalid: " + pathError)];
@@ -59,6 +61,8 @@ public static class FileSystemScanner
 
             foreach (var entry in fileSystem.EnumerateFileSystemEntries(path))
             {
+                options.CancellationToken.ThrowIfCancellationRequested();
+
                 entries.Add(entry);
                 if (entries.Count >= options.MaxItems)
                 {
@@ -95,7 +99,13 @@ public static class FileSystemScanner
         IFileSystem fileSystem)
     {
         var items = new List<ScanReportItem>(capacity: options.MaxItems);
-        AddRecursiveDirectoryChildren(path, options.MaxItems, fileSystem, items, addEnumerationFailureItem: true);
+        AddRecursiveDirectoryChildren(
+            path,
+            options.MaxItems,
+            fileSystem,
+            items,
+            options.CancellationToken,
+            addEnumerationFailureItem: true);
         return items;
     }
 
@@ -104,13 +114,15 @@ public static class FileSystemScanner
         int maxItems,
         IFileSystem fileSystem,
         List<ScanReportItem> items,
+        CancellationToken cancellationToken,
         bool addEnumerationFailureItem)
     {
         IReadOnlyList<string> entries;
 
         try
         {
-            entries = EnumerateLimitedEntries(path, maxItems - items.Count, fileSystem);
+            cancellationToken.ThrowIfCancellationRequested();
+            entries = EnumerateLimitedEntries(path, maxItems - items.Count, fileSystem, cancellationToken);
         }
         catch (UnauthorizedAccessException)
         {
@@ -135,6 +147,8 @@ public static class FileSystemScanner
 
         foreach (var entry in entries)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (items.Count >= maxItems)
             {
                 return;
@@ -150,7 +164,13 @@ public static class FileSystemScanner
                 continue;
             }
 
-            AddRecursiveDirectoryChildren(entry, maxItems, fileSystem, items, addEnumerationFailureItem: false);
+            AddRecursiveDirectoryChildren(
+                entry,
+                maxItems,
+                fileSystem,
+                items,
+                cancellationToken,
+                addEnumerationFailureItem: false);
         }
     }
 
@@ -167,7 +187,11 @@ public static class FileSystemScanner
         }
     }
 
-    private static IReadOnlyList<string> EnumerateLimitedEntries(string path, int maxEntries, IFileSystem fileSystem)
+    private static IReadOnlyList<string> EnumerateLimitedEntries(
+        string path,
+        int maxEntries,
+        IFileSystem fileSystem,
+        CancellationToken cancellationToken)
     {
         var entries = new List<string>(capacity: Math.Max(0, maxEntries));
 
@@ -178,6 +202,8 @@ public static class FileSystemScanner
 
         foreach (var entry in fileSystem.EnumerateFileSystemEntries(path))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             entries.Add(entry);
             if (entries.Count >= maxEntries)
             {
