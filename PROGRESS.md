@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-阶段：1 - 只读核心 MVP
+阶段：2 - Windows evidence 适配器
 
-日期：2026-05-05
+日期：2026-05-06
 
 ## 已完成
 
@@ -88,20 +88,25 @@
 - 新增 Windows evidence provider 骨架：服务、计划任务、启动项、卸载注册表、运行进程
 - 证据 provider 失败会降级为 `CollectionFailure` evidence
 - 新增 ADR 0010，记录 Windows 证据适配器骨架
+- 实现 `ServiceEvidenceProvider` 读取 Windows 服务 `ImagePath`
+- 新增 `IWindowsServiceSource` 和 `RegistryWindowsServiceSource`
+- 新增 `ServiceImagePathParser`，覆盖 quoted/unquoted path、参数、环境变量、`\SystemRoot` 和 `\??\` 前缀
+- 新增 ADR 0011，记录服务 `ImagePath` 证据策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：104 passed
+- 测试通过：110 passed
 
 ## 正在进行
 
-- Phase 1 只读核心 MVP
+- Phase 2 Windows evidence 适配器
 
 ## 下一步
 
-1. 实现 `ServiceEvidenceProvider` 读取服务 ImagePath。
-2. 实现 `ScheduledTaskEvidenceProvider` 读取任务 action。
-3. 评估是否兼容 BleachBit CleanerML 作为规则输入。
-4. 设计报告 schema 兼容测试夹具。
-5. 为长时间扫描设计取消机制。
+1. 实现 `ScheduledTaskEvidenceProvider` 读取任务 action。
+2. 实现 `StartupEntryEvidenceProvider` 读取常见启动项。
+3. 实现 `UninstallRegistryEvidenceProvider` 读取卸载注册表关联。
+4. 评估是否兼容 BleachBit CleanerML 作为规则输入。
+5. 设计报告 schema 兼容测试夹具。
+6. 为长时间扫描设计取消机制。
 
 ## 待决策
 

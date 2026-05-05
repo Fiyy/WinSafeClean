@@ -27,7 +27,7 @@ Phase 2 需要收集文件与 Windows 服务、计划任务、启动项、卸载
 - `UninstallRegistryEvidenceProvider`
 - `RunningProcessEvidenceProvider`
 
-当前 Windows provider 只返回空 evidence，不读取系统状态。后续每个 provider 必须通过 TDD 单独实现。
+当前 Windows provider 通过骨架逐步填充真实读取逻辑。服务 `ImagePath` 读取已在 ADR 0011 中实现和记录，其他 provider 仍需通过 TDD 单独实现。
 
 ## 理由
 
@@ -43,5 +43,5 @@ Phase 2 需要收集文件与 Windows 服务、计划任务、启动项、卸载
 
 代价：
 
-- 当前还不会发现真实服务、计划任务、注册表或进程引用。
+- 当前只会发现服务 `ImagePath` 对目标文件的直接引用。
 - 每个 Windows provider 仍需要单独设计读取方式和权限降级测试。
