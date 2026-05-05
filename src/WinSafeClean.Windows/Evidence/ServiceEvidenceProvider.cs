@@ -19,7 +19,7 @@ public sealed class ServiceEvidenceProvider : IFileEvidenceProvider
         this.serviceSource = serviceSource;
     }
 
-    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -28,6 +28,8 @@ public sealed class ServiceEvidenceProvider : IFileEvidenceProvider
 
         foreach (var service in serviceSource.GetServices())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (string.IsNullOrWhiteSpace(service.ImagePath))
             {
                 continue;

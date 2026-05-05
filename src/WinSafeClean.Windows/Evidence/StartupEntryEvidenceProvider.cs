@@ -19,7 +19,7 @@ public sealed class StartupEntryEvidenceProvider : IFileEvidenceProvider
         this.startupEntrySource = startupEntrySource;
     }
 
-    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -28,6 +28,8 @@ public sealed class StartupEntryEvidenceProvider : IFileEvidenceProvider
 
         foreach (var startupEntry in startupEntrySource.GetStartupEntries())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var startupExecutablePath = ServiceImagePathParser.TryGetExecutablePath(startupEntry.Command);
             if (startupExecutablePath is null
                 || !startupExecutablePath.Equals(normalizedPath, StringComparison.OrdinalIgnoreCase))

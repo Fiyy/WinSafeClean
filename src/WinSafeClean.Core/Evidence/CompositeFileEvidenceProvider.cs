@@ -13,7 +13,7 @@ public sealed class CompositeFileEvidenceProvider : IFileEvidenceProvider
         this.providers = providers.ToList();
     }
 
-    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -23,7 +23,12 @@ public sealed class CompositeFileEvidenceProvider : IFileEvidenceProvider
         {
             try
             {
-                evidence.AddRange(provider.CollectEvidence(path));
+                cancellationToken.ThrowIfCancellationRequested();
+                evidence.AddRange(provider.CollectEvidence(path, cancellationToken));
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

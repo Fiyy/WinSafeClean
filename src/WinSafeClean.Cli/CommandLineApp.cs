@@ -141,8 +141,9 @@ public static class CommandLineApp
         {
         }
 
-        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return [];
         }
     }

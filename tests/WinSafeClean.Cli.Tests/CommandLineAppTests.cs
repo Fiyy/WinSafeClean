@@ -608,8 +608,9 @@ public sealed class CommandLineAppTests
 
     private sealed class StubEvidenceProvider(IReadOnlyList<EvidenceRecord> evidence) : IFileEvidenceProvider
     {
-        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return evidence;
         }
     }

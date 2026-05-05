@@ -44,17 +44,32 @@ public sealed class CompositeFileEvidenceProviderTests
         Assert.Contains("InvalidOperationException", item.Message);
     }
 
+    [Fact]
+    public void ShouldPropagateCancellationWithoutCollectionFailureEvidence()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var provider = new CompositeFileEvidenceProvider(
+        [
+            new StubEvidenceProvider([])
+        ]);
+
+        Assert.Throws<OperationCanceledException>(() =>
+            provider.CollectEvidence(@"C:\Tools\app.exe", cancellation.Token));
+    }
+
     private sealed class StubEvidenceProvider(IReadOnlyList<EvidenceRecord> evidence) : IFileEvidenceProvider
     {
-        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return evidence;
         }
     }
 
     private sealed class ThrowingEvidenceProvider : IFileEvidenceProvider
     {
-        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException("adapter failed");
         }

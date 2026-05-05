@@ -19,7 +19,7 @@ public sealed class UninstallRegistryEvidenceProvider : IFileEvidenceProvider
         this.uninstallEntrySource = uninstallEntrySource;
     }
 
-    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -28,6 +28,8 @@ public sealed class UninstallRegistryEvidenceProvider : IFileEvidenceProvider
 
         foreach (var uninstallEntry in uninstallEntrySource.GetUninstallEntries())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             AddCommandEvidence(evidence, normalizedPath, uninstallEntry, "UninstallString", uninstallEntry.UninstallString);
             AddCommandEvidence(evidence, normalizedPath, uninstallEntry, "QuietUninstallString", uninstallEntry.QuietUninstallString);
             AddCommandEvidence(evidence, normalizedPath, uninstallEntry, "DisplayIcon", StripDisplayIconIndex(uninstallEntry.DisplayIcon));

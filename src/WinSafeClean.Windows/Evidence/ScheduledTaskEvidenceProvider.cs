@@ -19,7 +19,7 @@ public sealed class ScheduledTaskEvidenceProvider : IFileEvidenceProvider
         this.scheduledTaskSource = scheduledTaskSource;
     }
 
-    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -28,8 +28,12 @@ public sealed class ScheduledTaskEvidenceProvider : IFileEvidenceProvider
 
         foreach (var task in scheduledTaskSource.GetScheduledTasks())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             foreach (var action in task.Actions)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var actionExecutablePath = ServiceImagePathParser.TryGetExecutablePath(action.Command);
                 if (actionExecutablePath is null
                     || !actionExecutablePath.Equals(normalizedPath, StringComparison.OrdinalIgnoreCase))

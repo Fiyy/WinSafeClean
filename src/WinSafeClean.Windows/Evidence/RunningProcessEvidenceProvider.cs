@@ -19,7 +19,7 @@ public sealed class RunningProcessEvidenceProvider : IFileEvidenceProvider
         this.processSource = processSource;
     }
 
-    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -28,6 +28,8 @@ public sealed class RunningProcessEvidenceProvider : IFileEvidenceProvider
 
         foreach (var process in processSource.GetProcesses())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (string.IsNullOrWhiteSpace(process.MainModuleFilePath))
             {
                 continue;

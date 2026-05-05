@@ -40,8 +40,12 @@ public static class ScanReportGenerator
 
             return item with
             {
-                Evidence = evidenceProvider.CollectEvidence(item.Path)
+                Evidence = evidenceProvider.CollectEvidence(item.Path, cancellationToken)
             };
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

@@ -127,8 +127,12 @@
 - 新增 `CleanerRuleEvidenceProvider`
 - CleanerML file、glob、walk 候选可映射为 `KnownCleanupRule` evidence
 - CleanerML running blocker 会进入 evidence message，但不会执行进程检查
+- `IFileEvidenceProvider.CollectEvidence` 支持可选 `CancellationToken`
+- Composite、report generator、Windows providers 和 CleanerRules provider 会传播取消
+- 取消不会被错误转换为 `CollectionFailure` evidence
+- 新增 ADR 0019，记录 evidence provider 内部取消策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：142 passed
+- 测试通过：143 passed
 
 ## 正在进行
 
@@ -136,8 +140,8 @@
 
 ## 下一步
 
-1. 为 evidence provider 内部读取设计可取消接口。
-2. 设计只读清理计划草案模型。
+1. 设计只读清理计划草案模型。
+2. 为 CleanerML provider 增加用户规则文件加载入口。
 
 ## 待决策
 

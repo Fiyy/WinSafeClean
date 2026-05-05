@@ -81,8 +81,9 @@ public sealed class ScanReportGeneratorTests
     {
         public string? RequestedPath { get; private set; }
 
-        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             RequestedPath = path;
             return evidence;
         }

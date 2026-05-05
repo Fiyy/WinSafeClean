@@ -15,7 +15,7 @@ public sealed class CleanerRuleEvidenceProvider : IFileEvidenceProvider
         this.ruleSet = ruleSet;
     }
 
-    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+    public IReadOnlyList<EvidenceRecord> CollectEvidence(string path, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -24,10 +24,16 @@ public sealed class CleanerRuleEvidenceProvider : IFileEvidenceProvider
 
         foreach (var cleaner in ruleSet.Cleaners)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             foreach (var option in cleaner.Options)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 foreach (var candidate in option.Candidates)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (!Matches(normalizedPath, candidate))
                     {
                         continue;
