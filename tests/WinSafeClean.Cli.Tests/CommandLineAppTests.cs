@@ -195,6 +195,116 @@ public sealed class CommandLineAppTests
         Assert.Contains(@"""suggestedAction"": ""Keep""", stdout.ToString());
     }
 
+    [Fact]
+    public void ScanShouldReportDirectoryChildren()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var alpha = sandbox.WriteFile("alpha.txt", "a");
+        var beta = sandbox.WriteFile("beta.txt", "bb");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", sandbox.RootPath],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var items = document.RootElement.GetProperty("items");
+        Assert.Equal(2, items.GetArrayLength());
+        Assert.Equal(alpha, items[0].GetProperty("path").GetString());
+        Assert.Equal(1, items[0].GetProperty("sizeBytes").GetInt64());
+        Assert.Equal(beta, items[1].GetProperty("path").GetString());
+        Assert.Equal(2, items[1].GetProperty("sizeBytes").GetInt64());
+    }
+
+    [Fact]
+    public void ScanShouldHonorMaxItems()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        sandbox.WriteFile("a.txt", "a");
+        sandbox.WriteFile("b.txt", "b");
+        sandbox.WriteFile("c.txt", "c");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", sandbox.RootPath, "--max-items", "2"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        using var document = JsonDocument.Parse(stdout.ToString());
+        Assert.Equal(2, document.RootElement.GetProperty("items").GetArrayLength());
+    }
+
+    [Fact]
+    public void ScanShouldAcceptNoRecursiveAndSkipNestedChildren()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var nestedDirectory = sandbox.CreateDirectory("nested");
+        sandbox.WriteFile(Path.Combine("nested", "hidden.txt"), "hidden");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", sandbox.RootPath, "--no-recursive"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var items = document.RootElement.GetProperty("items");
+        var item = Assert.Single(items.EnumerateArray());
+        Assert.Equal(nestedDirectory, item.GetProperty("path").GetString());
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("abc")]
+    public void ScanShouldRejectInvalidMaxItems(string maxItems)
+    {
+        using var sandbox = TemporarySandbox.Create();
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", sandbox.RootPath, "--max-items", maxItems],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("--max-items", stderr.ToString());
+    }
+
+    [Fact]
+    public void ScanShouldReturnUnknownReportForInvalidPathSyntax()
+    {
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", "bad\0path"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var item = document.RootElement.GetProperty("items")[0];
+        Assert.Equal("bad\0path", item.GetProperty("path").GetString());
+        Assert.Equal("Unknown", item.GetProperty("risk").GetProperty("level").GetString());
+        Assert.Contains("invalid", item.GetProperty("risk").GetProperty("reasons")[0].GetString(), StringComparison.OrdinalIgnoreCase);
+    }
+
     [Theory]
     [InlineData("delete")]
     [InlineData("clean")]
@@ -263,6 +373,46 @@ public sealed class CommandLineAppTests
         public void Dispose()
         {
             File.Delete(Path);
+        }
+    }
+
+    private sealed class TemporarySandbox : IDisposable
+    {
+        private TemporarySandbox(string rootPath)
+        {
+            RootPath = rootPath;
+        }
+
+        public string RootPath { get; }
+
+        public static TemporarySandbox Create()
+        {
+            var rootPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "WinSafeClean.Cli.Tests", System.IO.Path.GetRandomFileName());
+            Directory.CreateDirectory(rootPath);
+            return new TemporarySandbox(rootPath);
+        }
+
+        public string WriteFile(string relativePath, string content)
+        {
+            var path = System.IO.Path.Combine(RootPath, relativePath);
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, content);
+            return path;
+        }
+
+        public string CreateDirectory(string relativePath)
+        {
+            var path = System.IO.Path.Combine(RootPath, relativePath);
+            Directory.CreateDirectory(path);
+            return path;
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(RootPath))
+            {
+                Directory.Delete(RootPath, recursive: true);
+            }
         }
     }
 }

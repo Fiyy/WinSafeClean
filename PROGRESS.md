@@ -48,8 +48,15 @@
 - 修复子 Agent 审查发现的 `--output` 覆盖风险
 - `--output` 只允许创建不存在的新报告文件，并拒绝受保护 Windows 路径
 - Markdown 报告会将控制字符渲染成可见转义
+- 添加文件扫描抽象 `FileSystemScanner`
+- 支持扫描单个文件、目录直接子项和缺失路径降级
+- 支持 CLI `--max-items`
+- 支持 CLI `--no-recursive`
+- 缺失但受保护的 Windows 路径仍保留 `Blocked` 风险
+- 修复子 Agent 审查发现的 `MaxItems` 枚举成本边界
+- 非法路径语法降级为 `Unknown / ReportOnly` 报告项，CLI 不崩溃
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：49 passed
+- 测试通过：62 passed
 
 ## 正在进行
 
@@ -57,10 +64,10 @@
 
 ## 下一步
 
-1. 添加文件扫描抽象测试。
-2. 添加扫描报告生成流程测试。
-3. 支持目录单层扫描，仍保持只读。
-4. 添加 CLI `--no-recursive` 和 `--max-items` 参数测试。
+1. 添加扫描报告生成流程测试。
+2. 增加 scanner 异常降级测试覆盖。
+3. 增加报告 item kind/timestamps 是否进入 schema 的 ADR。
+4. 评估是否添加 `--recursive`，默认仍保持非递归。
 
 ## 待决策
 

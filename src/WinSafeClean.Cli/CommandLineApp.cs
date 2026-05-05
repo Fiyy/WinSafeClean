@@ -1,3 +1,4 @@
+using WinSafeClean.Core.FileInventory;
 using WinSafeClean.Core.Reporting;
 using WinSafeClean.Core.Risk;
 
@@ -7,6 +8,7 @@ public static class CommandLineApp
 {
     private const int Success = 0;
     private const int UsageError = 2;
+    private const string Usage = "Use: scan --path <PATH> [--format json|markdown] [--output <FILE>] [--max-items <N>] [--no-recursive]";
     private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore", "plan"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
@@ -18,7 +20,7 @@ public static class CommandLineApp
 
         if (args.Length == 0)
         {
-            stderr.WriteLine("A command is required. Use: scan --path <PATH> [--format json|markdown] [--output <FILE>]");
+            stderr.WriteLine("A command is required. " + Usage);
             return UsageError;
         }
 
@@ -31,7 +33,7 @@ public static class CommandLineApp
 
         if (!command.Equals("scan", StringComparison.OrdinalIgnoreCase))
         {
-            stderr.WriteLine($"Unknown command '{command}'. Use: scan --path <PATH> [--format json|markdown] [--output <FILE>]");
+            stderr.WriteLine($"Unknown command '{command}'. {Usage}");
             return UsageError;
         }
 
@@ -53,7 +55,7 @@ public static class CommandLineApp
             return UsageError;
         }
 
-        var report = BuildSingleItemReport(options.Path!, createdAt);
+        var report = BuildReport(options, createdAt);
         var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
             ? ScanReportMarkdownSerializer.Serialize(report)
             : ScanReportJsonSerializer.Serialize(report);
@@ -77,20 +79,16 @@ public static class CommandLineApp
         return Success;
     }
 
-    private static ScanReport BuildSingleItemReport(string path, DateTimeOffset createdAt)
+    private static ScanReport BuildReport(ScanOptions options, DateTimeOffset createdAt)
     {
-        var sizeBytes = File.Exists(path) ? new FileInfo(path).Length : 0;
+        var items = FileSystemScanner.Scan(
+            options.Path!,
+            new FileSystemScanOptions(options.MaxItems, options.Recursive));
 
         return new ScanReport(
             SchemaVersion: "1.0",
             CreatedAt: createdAt,
-            Items:
-            [
-                new ScanReportItem(
-                    Path: path,
-                    SizeBytes: sizeBytes,
-                    Risk: PathRiskClassifier.Assess(path))
-            ]);
+            Items: items);
     }
 
     private static string? ValidateOutputPath(string outputPath)
@@ -115,13 +113,21 @@ public static class CommandLineApp
         return null;
     }
 
-    private sealed record ScanOptions(string? Path, string Format, string? OutputPath, string? Error)
+    private sealed record ScanOptions(
+        string? Path,
+        string Format,
+        string? OutputPath,
+        int MaxItems,
+        bool Recursive,
+        string? Error)
     {
         public static ScanOptions Parse(string[] args)
         {
             string? path = null;
             var format = "json";
             string? outputPath = null;
+            var maxItems = FileSystemScanOptions.Default.MaxItems;
+            var recursive = FileSystemScanOptions.Default.Recursive;
 
             for (var index = 0; index < args.Length; index++)
             {
@@ -155,6 +161,21 @@ public static class CommandLineApp
                         }
 
                         break;
+                    case "--max-items":
+                        if (!TryReadValue(args, ref index, "--max-items", out var maxItemsValue, out var maxItemsError))
+                        {
+                            return Invalid(maxItemsError);
+                        }
+
+                        if (!int.TryParse(maxItemsValue, out maxItems) || maxItems <= 0)
+                        {
+                            return Invalid("--max-items must be a positive integer.");
+                        }
+
+                        break;
+                    case "--no-recursive":
+                        recursive = false;
+                        break;
                     default:
                         return Invalid($"Unknown option '{arg}'.");
                 }
@@ -165,7 +186,7 @@ public static class CommandLineApp
                 return Invalid("--path is required.");
             }
 
-            return new ScanOptions(path, format, outputPath, Error: null);
+            return new ScanOptions(path, format, outputPath, maxItems, recursive, Error: null);
         }
 
         private static bool TryReadValue(string[] args, ref int index, string option, out string value, out string error)
@@ -185,7 +206,13 @@ public static class CommandLineApp
 
         private static ScanOptions Invalid(string error)
         {
-            return new ScanOptions(Path: null, Format: "json", OutputPath: null, Error: error);
+            return new ScanOptions(
+                Path: null,
+                Format: "json",
+                OutputPath: null,
+                MaxItems: FileSystemScanOptions.Default.MaxItems,
+                Recursive: FileSystemScanOptions.Default.Recursive,
+                Error: error);
         }
     }
 }
