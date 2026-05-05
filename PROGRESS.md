@@ -96,8 +96,12 @@
 - 新增 `IWindowsScheduledTaskSource` 和 `FileSystemWindowsScheduledTaskSource`
 - 计划任务数据源只读扫描 `%SystemRoot%\System32\Tasks` XML，并跳过 reparse point 与损坏任务文件
 - 新增 ADR 0012，记录计划任务 action 证据策略
+- 实现 `StartupEntryEvidenceProvider` 读取注册表 `Run` / `RunOnce`
+- 新增 `IWindowsStartupEntrySource` 和 `RegistryWindowsStartupEntrySource`
+- 启动项数据源覆盖 HKCU、HKLM 和 HKLM Wow6432Node 常见位置
+- 新增 ADR 0013，记录启动项注册表证据策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：116 passed
+- 测试通过：120 passed
 
 ## 正在进行
 
@@ -105,12 +109,11 @@
 
 ## 下一步
 
-1. 实现 `StartupEntryEvidenceProvider` 读取常见启动项。
-2. 实现 `UninstallRegistryEvidenceProvider` 读取卸载注册表关联。
-3. 实现 `RunningProcessEvidenceProvider` 读取当前进程映像路径。
-4. 评估是否兼容 BleachBit CleanerML 作为规则输入。
-5. 设计报告 schema 兼容测试夹具。
-6. 为长时间扫描设计取消机制。
+1. 实现 `UninstallRegistryEvidenceProvider` 读取卸载注册表关联。
+2. 实现 `RunningProcessEvidenceProvider` 读取当前进程映像路径。
+3. 评估是否兼容 BleachBit CleanerML 作为规则输入。
+4. 设计报告 schema 兼容测试夹具。
+5. 为长时间扫描设计取消机制。
 
 ## 待决策
 
