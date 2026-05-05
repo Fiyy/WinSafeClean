@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{802DF385
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinSafeClean.Core.Tests", "tests\WinSafeClean.Core.Tests\WinSafeClean.Core.Tests.csproj", "{68198893-CD89-4766-A7F1-91AC763B0233}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinSafeClean.Cli", "src\WinSafeClean.Cli\WinSafeClean.Cli.csproj", "{656D073D-4CEB-4F4C-80DC-BF76279197EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinSafeClean.Cli.Tests", "tests\WinSafeClean.Cli.Tests\WinSafeClean.Cli.Tests.csproj", "{30070DBB-CD7E-4906-B0B3-00B1DC000A87}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,9 +32,19 @@ Global
 		{68198893-CD89-4766-A7F1-91AC763B0233}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68198893-CD89-4766-A7F1-91AC763B0233}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68198893-CD89-4766-A7F1-91AC763B0233}.Release|Any CPU.Build.0 = Release|Any CPU
+		{656D073D-4CEB-4F4C-80DC-BF76279197EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{656D073D-4CEB-4F4C-80DC-BF76279197EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{656D073D-4CEB-4F4C-80DC-BF76279197EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{656D073D-4CEB-4F4C-80DC-BF76279197EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30070DBB-CD7E-4906-B0B3-00B1DC000A87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30070DBB-CD7E-4906-B0B3-00B1DC000A87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30070DBB-CD7E-4906-B0B3-00B1DC000A87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30070DBB-CD7E-4906-B0B3-00B1DC000A87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B511750C-1ACE-4AE4-8CC2-97AE4107B3F0} = {F1BF30A8-6AC9-458A-BCE2-BC93348F8B7C}
 		{68198893-CD89-4766-A7F1-91AC763B0233} = {802DF385-D6B8-4C87-86CA-901A72C3718C}
+		{656D073D-4CEB-4F4C-80DC-BF76279197EC} = {F1BF30A8-6AC9-458A-BCE2-BC93348F8B7C}
+		{30070DBB-CD7E-4906-B0B3-00B1DC000A87} = {802DF385-D6B8-4C87-86CA-901A72C3718C}
 	EndGlobalSection
 EndGlobal

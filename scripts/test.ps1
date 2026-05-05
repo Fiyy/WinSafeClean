@@ -15,6 +15,10 @@ if (-not (Test-Path $dotnet)) {
 
 if ($Restore) {
     & $dotnet restore $solution
+    if ($LASTEXITCODE -ne 0) {
+        exit $LASTEXITCODE
+    }
 }
 
 & $dotnet test $solution --no-restore
+exit $LASTEXITCODE

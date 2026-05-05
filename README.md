@@ -37,6 +37,33 @@ pwsh -File .\scripts\bootstrap-dotnet.ps1
 pwsh -File .\scripts\test.ps1 -Restore
 ```
 
+## CLI
+
+Phase 1 CLI 是只读扫描报告器，不执行清理、删除、隔离或修复。
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Windows\Installer --format markdown
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Temp --format json --output .\scan-report.json
+```
+
+当前支持：
+
+- `scan --path <PATH>`
+- `--format json|markdown`
+- `--output <FILE>`，只允许写入不存在的新报告文件
+
+当前明确拒绝：
+
+- `delete`
+- `clean`
+- `quarantine`
+- `restore`
+- `plan`
+- `--delete`
+- `--fix`
+
+`--output` 不会覆盖已有文件，也不会写入受保护 Windows 路径。
+
 详细设计见：
 
 - [项目原则](PROJECT_PRINCIPLES.md)
