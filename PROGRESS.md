@@ -104,8 +104,12 @@
 - 新增 `IWindowsUninstallEntrySource` 和 `RegistryWindowsUninstallEntrySource`
 - 卸载注册表 provider 区分直接引用 evidence 和 `InstallLocation` 归属 evidence
 - 新增 ADR 0014，记录卸载注册表证据策略
+- 实现 `RunningProcessEvidenceProvider` 读取当前运行进程映像路径
+- 新增 `IWindowsProcessSource` 和 `SystemWindowsProcessSource`
+- 运行进程 provider 对单个进程路径读取失败做跳过降级，不读取进程命令行
+- 新增 ADR 0015，记录运行进程证据策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：125 passed
+- 测试通过：129 passed
 
 ## 正在进行
 
@@ -113,7 +117,7 @@
 
 ## 下一步
 
-1. 实现 `RunningProcessEvidenceProvider` 读取当前进程映像路径。
+1. 将 Windows evidence providers 接入 CLI 报告生成路径。
 2. 评估是否兼容 BleachBit CleanerML 作为规则输入。
 3. 设计报告 schema 兼容测试夹具。
 4. 为长时间扫描设计取消机制。
