@@ -138,8 +138,10 @@
 - 新增 `CleanerMlRuleFileLoader`
 - CleanerML 支持显式加载单个用户规则文件或目录顶层 `.xml` 文件
 - CleanerML 规则加载支持取消 token，不递归、不自动下载
+- 新增 `CleanupPlanJsonSerializer`
+- 新增 `CleanupPlanMarkdownSerializer`
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：150 passed
+- 测试通过：152 passed
 
 ## 正在进行
 
@@ -147,8 +149,8 @@
 
 ## 下一步
 
-1. 为 CleanupPlan 增加 JSON/Markdown serializer。
-2. 为 CLI 增加只读 plan 输出命令。
+1. 为 CLI 增加只读 plan 输出命令。
+2. 为 plan 输出增加 schema fixture。
 
 ## 待决策
 
