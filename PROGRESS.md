@@ -92,8 +92,12 @@
 - 新增 `IWindowsServiceSource` 和 `RegistryWindowsServiceSource`
 - 新增 `ServiceImagePathParser`，覆盖 quoted/unquoted path、参数、环境变量、`\SystemRoot` 和 `\??\` 前缀
 - 新增 ADR 0011，记录服务 `ImagePath` 证据策略
+- 实现 `ScheduledTaskEvidenceProvider` 读取计划任务 Exec action
+- 新增 `IWindowsScheduledTaskSource` 和 `FileSystemWindowsScheduledTaskSource`
+- 计划任务数据源只读扫描 `%SystemRoot%\System32\Tasks` XML，并跳过 reparse point 与损坏任务文件
+- 新增 ADR 0012，记录计划任务 action 证据策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：110 passed
+- 测试通过：116 passed
 
 ## 正在进行
 
@@ -101,9 +105,9 @@
 
 ## 下一步
 
-1. 实现 `ScheduledTaskEvidenceProvider` 读取任务 action。
-2. 实现 `StartupEntryEvidenceProvider` 读取常见启动项。
-3. 实现 `UninstallRegistryEvidenceProvider` 读取卸载注册表关联。
+1. 实现 `StartupEntryEvidenceProvider` 读取常见启动项。
+2. 实现 `UninstallRegistryEvidenceProvider` 读取卸载注册表关联。
+3. 实现 `RunningProcessEvidenceProvider` 读取当前进程映像路径。
 4. 评估是否兼容 BleachBit CleanerML 作为规则输入。
 5. 设计报告 schema 兼容测试夹具。
 6. 为长时间扫描设计取消机制。
