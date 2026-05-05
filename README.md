@@ -30,6 +30,12 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 
 当前仓库使用项目内本地 SDK：`.tools/dotnet/dotnet.exe`。该目录已加入 `.gitignore`，避免把工具链提交进仓库。
 
+当前项目包含：
+
+- `WinSafeClean.Core`：只读扫描、风险、报告和 evidence 基础模型
+- `WinSafeClean.Cli`：只读 CLI
+- `WinSafeClean.Windows`：Windows evidence provider 骨架，后续逐步实现服务、计划任务、启动项、注册表和进程引用读取
+
 常用命令：
 
 ```powershell

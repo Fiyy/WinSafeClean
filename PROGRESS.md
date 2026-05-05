@@ -82,8 +82,14 @@
 - Markdown 报告新增 Evidence 区块
 - redacted 会处理 evidence 中的路径文本
 - 新增 ADR 0009，记录证据模型
+- 新增 `WinSafeClean.Windows`
+- 新增 `WinSafeClean.Windows.Tests`
+- 新增 `IFileEvidenceProvider` 和 `CompositeFileEvidenceProvider`
+- 新增 Windows evidence provider 骨架：服务、计划任务、启动项、卸载注册表、运行进程
+- 证据 provider 失败会降级为 `CollectionFailure` evidence
+- 新增 ADR 0010，记录 Windows 证据适配器骨架
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：100 passed
+- 测试通过：104 passed
 
 ## 正在进行
 
@@ -91,10 +97,11 @@
 
 ## 下一步
 
-1. 实现 Phase 2 Windows 证据收集适配器骨架：服务、计划任务、启动项、卸载注册表、进程引用。
-2. 评估是否兼容 BleachBit CleanerML 作为规则输入。
-3. 设计报告 schema 兼容测试夹具。
-4. 为长时间扫描设计取消机制。
+1. 实现 `ServiceEvidenceProvider` 读取服务 ImagePath。
+2. 实现 `ScheduledTaskEvidenceProvider` 读取任务 action。
+3. 评估是否兼容 BleachBit CleanerML 作为规则输入。
+4. 设计报告 schema 兼容测试夹具。
+5. 为长时间扫描设计取消机制。
 
 ## 待决策
 
