@@ -34,7 +34,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 
 - `WinSafeClean.Core`：只读扫描、风险、报告和 evidence 基础模型
 - `WinSafeClean.Cli`：只读 CLI
-- `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action 和注册表启动项关系证据，后续逐步实现卸载注册表和进程引用读取
+- `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action、注册表启动项和卸载注册表关系证据，后续逐步实现进程引用读取
 
 常用命令：
 

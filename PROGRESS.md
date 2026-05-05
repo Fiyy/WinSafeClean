@@ -100,8 +100,12 @@
 - 新增 `IWindowsStartupEntrySource` 和 `RegistryWindowsStartupEntrySource`
 - 启动项数据源覆盖 HKCU、HKLM 和 HKLM Wow6432Node 常见位置
 - 新增 ADR 0013，记录启动项注册表证据策略
+- 实现 `UninstallRegistryEvidenceProvider` 读取卸载注册表项
+- 新增 `IWindowsUninstallEntrySource` 和 `RegistryWindowsUninstallEntrySource`
+- 卸载注册表 provider 区分直接引用 evidence 和 `InstallLocation` 归属 evidence
+- 新增 ADR 0014，记录卸载注册表证据策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：120 passed
+- 测试通过：125 passed
 
 ## 正在进行
 
@@ -109,11 +113,10 @@
 
 ## 下一步
 
-1. 实现 `UninstallRegistryEvidenceProvider` 读取卸载注册表关联。
-2. 实现 `RunningProcessEvidenceProvider` 读取当前进程映像路径。
-3. 评估是否兼容 BleachBit CleanerML 作为规则输入。
-4. 设计报告 schema 兼容测试夹具。
-5. 为长时间扫描设计取消机制。
+1. 实现 `RunningProcessEvidenceProvider` 读取当前进程映像路径。
+2. 评估是否兼容 BleachBit CleanerML 作为规则输入。
+3. 设计报告 schema 兼容测试夹具。
+4. 为长时间扫描设计取消机制。
 
 ## 待决策
 
