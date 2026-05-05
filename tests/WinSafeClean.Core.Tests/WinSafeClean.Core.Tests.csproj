@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\src\WinSafeClean.Core\WinSafeClean.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Reporting\fixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

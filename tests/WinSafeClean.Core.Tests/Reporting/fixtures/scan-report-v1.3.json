@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.3",
+  "privacyMode": "Full",
+  "createdAt": "2026-05-06T01:02:03+00:00",
+  "items": [
+    {
+      "path": "C:\\Users\\Alice\\AppData\\Local\\Example\\cache.db",
+      "itemKind": "File",
+      "sizeBytes": 4096,
+      "lastWriteTimeUtc": "2026-05-04T03:02:01+00:00",
+      "evidence": [
+        {
+          "type": "KnownCleanupRule",
+          "source": "CleanerML: example.cache",
+          "confidence": 0.7,
+          "message": "Matched read-only cleanup rule candidate."
+        }
+      ],
+      "risk": {
+        "level": "Unknown",
+        "confidence": 0.25,
+        "suggestedAction": "ReportOnly",
+        "reasons": [
+          "Known cleanup rule evidence is not enough to delete automatically."
+        ],
+        "blockers": [
+          "No ownership or active-reference evidence has been evaluated."
+        ]
+      }
+    }
+  ]
+}

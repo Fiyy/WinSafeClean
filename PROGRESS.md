@@ -113,8 +113,10 @@
 - 新增 ADR 0016，记录 CLI evidence provider 组合边界
 - 完成 BleachBit CleanerML 兼容性调研
 - 新增 ADR 0017，决定未来只读解析 CleanerML 安全子集，不直接执行或内置 GPL 规则
+- 新增报告 schema `1.3` JSON 兼容 fixture
+- 新增 schema fixture 测试，锁住 evidence、risk、privacyMode、itemKind 和时间字段输出结构
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：131 passed
+- 测试通过：132 passed
 
 ## 正在进行
 
@@ -122,10 +124,9 @@
 
 ## 下一步
 
-1. 设计报告 schema 兼容测试夹具。
-2. 为长时间扫描设计取消机制。
-3. 增加 Program 级端到端 CLI 测试。
-4. 设计 CleanerML 安全子集解析器。
+1. 为长时间扫描设计取消机制。
+2. 增加 Program 级端到端 CLI 测试。
+3. 设计 CleanerML 安全子集解析器。
 
 ## 待决策
 
