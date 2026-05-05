@@ -124,8 +124,11 @@
 - 新增 `WinSafeClean.CleanerRules.Tests`
 - 实现 CleanerML 安全子集解析器：metadata、option、running blocker、file/glob/walk 候选
 - CleanerML 解析器忽略 `winreg`、`process`、`truncate`、`shred`、`deep` 和非 Windows action
+- 新增 `CleanerRuleEvidenceProvider`
+- CleanerML file、glob、walk 候选可映射为 `KnownCleanupRule` evidence
+- CleanerML running blocker 会进入 evidence message，但不会执行进程检查
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：138 passed
+- 测试通过：142 passed
 
 ## 正在进行
 
@@ -133,8 +136,8 @@
 
 ## 下一步
 
-1. 将 CleanerML 候选规则映射为 `KnownCleanupRule` evidence。
-2. 为 evidence provider 内部读取设计可取消接口。
+1. 为 evidence provider 内部读取设计可取消接口。
+2. 设计只读清理计划草案模型。
 
 ## 待决策
 

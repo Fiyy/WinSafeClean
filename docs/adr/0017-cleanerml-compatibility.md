@@ -59,7 +59,7 @@ WinSafeClean 不把 BleachBit 作为运行时依赖，也不调用 BleachBit 执
 - deep scan。
 - 自动下载 winapp2.ini 或 CleanerML 仓库规则。
 
-解析出的规则只能生成 `EvidenceType.KnownCleanupRule` 或报告注释，默认 `SuggestedAction.ReportOnly`。任何清理计划能力必须另行设计，并再次经过 TDD 和风险模型审查。
+解析出的规则只能生成 `EvidenceType.KnownCleanupRule` 或报告注释，默认 `SuggestedAction.ReportOnly`。当前已实现 `CleanerRuleEvidenceProvider`，用于将 file、glob、walk 候选映射为 `KnownCleanupRule` evidence。任何清理计划能力必须另行设计，并再次经过 TDD 和风险模型审查。
 
 项目暂不内置 GPL CleanerML 规则文件，避免把外部规则内容和项目许可证边界混在一起。后续若要分发规则包，需要单独决定许可策略。
 

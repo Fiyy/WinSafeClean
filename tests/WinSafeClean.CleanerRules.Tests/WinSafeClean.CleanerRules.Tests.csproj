@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\WinSafeClean.Core\WinSafeClean.Core.csproj" />
     <ProjectReference Include="..\..\src\WinSafeClean.CleanerRules\WinSafeClean.CleanerRules.csproj" />
   </ItemGroup>
 

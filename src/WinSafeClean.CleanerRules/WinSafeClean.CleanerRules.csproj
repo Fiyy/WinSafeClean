@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WinSafeClean.Core\WinSafeClean.Core.csproj" />
+  </ItemGroup>
+
 </Project>
