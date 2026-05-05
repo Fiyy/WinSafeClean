@@ -18,6 +18,8 @@ Phase 1 需要从“评估单个显式路径”推进到“生成扫描报告”
 Scan(path, options) -> IReadOnlyList<ScanReportItem>
 ```
 
+扫描器通过 `IFileSystem` 探针访问路径规范化、存在性判断、目录枚举和文件长度读取。默认运行时使用系统文件系统适配器；测试可以注入探针稳定模拟权限、路径过长、IO 和安全策略异常。
+
 当前行为：
 
 - 文件：返回单个 item，大小为文件长度。
@@ -27,6 +29,7 @@ Scan(path, options) -> IReadOnlyList<ScanReportItem>
 - 缺失但受保护的 Windows 路径：保留 `Blocked` 风险。
 - `MaxItems`：限制实际枚举和返回项数量。
 - 非法路径语法：降级为单个 `Unknown / ReportOnly` item。
+- 目录枚举或文件元数据读取失败：降级为单个 `Unknown / ReportOnly` item。
 - 结果路径：输出完整路径，便于报告稳定。
 
 CLI 接入：

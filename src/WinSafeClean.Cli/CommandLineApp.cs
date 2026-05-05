@@ -81,14 +81,10 @@ public static class CommandLineApp
 
     private static ScanReport BuildReport(ScanOptions options, DateTimeOffset createdAt)
     {
-        var items = FileSystemScanner.Scan(
+        return ScanReportGenerator.Generate(
             options.Path!,
-            new FileSystemScanOptions(options.MaxItems, options.Recursive));
-
-        return new ScanReport(
-            SchemaVersion: "1.0",
-            CreatedAt: createdAt,
-            Items: items);
+            new FileSystemScanOptions(options.MaxItems, options.Recursive),
+            createdAt);
     }
 
     private static string? ValidateOutputPath(string outputPath)

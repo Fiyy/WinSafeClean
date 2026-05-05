@@ -7,41 +7,47 @@ public static class FileSystemScanner
 {
     public static IReadOnlyList<ScanReportItem> Scan(string path, FileSystemScanOptions options)
     {
+        return Scan(path, options, SystemFileSystem.Instance);
+    }
+
+    public static IReadOnlyList<ScanReportItem> Scan(string path, FileSystemScanOptions options, IFileSystem fileSystem)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(fileSystem);
 
         if (options.MaxItems <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(options), "MaxItems must be greater than zero.");
         }
 
-        if (!TryGetFullPath(path, out var normalizedPath, out var pathError))
+        if (!TryGetFullPath(path, fileSystem, out var normalizedPath, out var pathError))
         {
             return [CreateUnknownItem(path, "Path syntax is invalid: " + pathError)];
         }
 
         path = normalizedPath;
 
-        if (File.Exists(path))
+        if (fileSystem.FileExists(path))
         {
-            return [CreateFileItem(path)];
+            return [CreateFileItem(path, fileSystem)];
         }
 
-        if (Directory.Exists(path))
+        if (fileSystem.DirectoryExists(path))
         {
-            return ScanDirectory(path, options);
+            return ScanDirectory(path, options, fileSystem);
         }
 
         return [CreateMissingPathItem(path)];
     }
 
-    private static IReadOnlyList<ScanReportItem> ScanDirectory(string path, FileSystemScanOptions options)
+    private static IReadOnlyList<ScanReportItem> ScanDirectory(string path, FileSystemScanOptions options, IFileSystem fileSystem)
     {
         try
         {
             var entries = new List<string>(capacity: options.MaxItems);
 
-            foreach (var entry in Directory.EnumerateFileSystemEntries(path))
+            foreach (var entry in fileSystem.EnumerateFileSystemEntries(path))
             {
                 entries.Add(entry);
                 if (entries.Count >= options.MaxItems)
@@ -52,7 +58,7 @@ public static class FileSystemScanner
 
             return entries
                 .OrderBy(entry => entry, StringComparer.OrdinalIgnoreCase)
-                .Select(CreateItem)
+                .Select(entry => CreateItem(entry, fileSystem))
                 .ToList();
         }
         catch (UnauthorizedAccessException)
@@ -73,11 +79,11 @@ public static class FileSystemScanner
         }
     }
 
-    private static bool TryGetFullPath(string path, out string normalizedPath, out string error)
+    private static bool TryGetFullPath(string path, IFileSystem fileSystem, out string normalizedPath, out string error)
     {
         try
         {
-            normalizedPath = Path.GetFullPath(path);
+            normalizedPath = fileSystem.GetFullPath(path);
             error = string.Empty;
             return true;
         }
@@ -107,14 +113,14 @@ public static class FileSystemScanner
         }
     }
 
-    private static ScanReportItem CreateItem(string path)
+    private static ScanReportItem CreateItem(string path, IFileSystem fileSystem)
     {
-        if (File.Exists(path))
+        if (fileSystem.FileExists(path))
         {
-            return CreateFileItem(path);
+            return CreateFileItem(path, fileSystem);
         }
 
-        if (Directory.Exists(path))
+        if (fileSystem.DirectoryExists(path))
         {
             return new ScanReportItem(
                 Path: path,
@@ -125,13 +131,13 @@ public static class FileSystemScanner
         return CreateUnknownItem(path, "Path disappeared during scan.");
     }
 
-    private static ScanReportItem CreateFileItem(string path)
+    private static ScanReportItem CreateFileItem(string path, IFileSystem fileSystem)
     {
         long sizeBytes;
 
         try
         {
-            sizeBytes = new FileInfo(path).Length;
+            sizeBytes = fileSystem.GetFileLength(path);
         }
         catch (UnauthorizedAccessException)
         {
