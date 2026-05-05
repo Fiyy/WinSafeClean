@@ -1,0 +1,14 @@
+# Local toolchain
+.tools/
+
+# .NET build outputs
+bin/
+obj/
+TestResults/
+
+# User and IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+

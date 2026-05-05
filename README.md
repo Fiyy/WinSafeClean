@@ -1,0 +1,53 @@
+# WinSafeClean
+
+WinSafeClean 是一个面向 Windows 日常使用场景的安全磁盘清理与文件解释工具。
+
+GitHub: https://github.com/Fiyy/WinSafeClean
+
+项目目标不是做一个“见到垃圾就删除”的清理器，而是先回答三个问题：
+
+1. 这个文件或目录是干什么的？
+2. 它和哪些程序、系统组件、服务、计划任务、启动项或注册表记录有关？
+3. 删除、隔离或交给系统工具清理是否会影响 Windows 或应用程序正常运行？
+
+当前项目处于 0 阶段：只建立项目原则、目标、实现框架和 TDD 约束。默认不做真实删除。
+
+## 核心方向
+
+- 先解释，再评估，最后才允许清理。
+- 默认只读扫描，任何删除能力都必须经过风险模型和测试约束。
+- 高置信度清理项可以自动建议；中低置信度项目只能报告或隔离。
+- 系统敏感目录必须进入禁止或强警告列表。
+- 所有核心判断逻辑先写测试，再写实现。
+
+## 建议技术路线
+
+- Runtime: .NET 8
+- MVP 入口: CLI
+- 后续 UI: WPF 或 WinUI 3
+- 测试框架: xUnit
+- 核心模块: 文件发现、归属识别、关系证据、风险评分、清理计划、隔离恢复
+
+当前仓库使用项目内本地 SDK：`.tools/dotnet/dotnet.exe`。该目录已加入 `.gitignore`，避免把工具链提交进仓库。
+
+常用命令：
+
+```powershell
+pwsh -File .\scripts\bootstrap-dotnet.ps1
+pwsh -File .\scripts\test.ps1 -Restore
+```
+
+详细设计见：
+
+- [项目原则](PROJECT_PRINCIPLES.md)
+- [项目目标](GOALS.md)
+- [实现框架](docs/IMPLEMENTATION_FRAMEWORK.md)
+- [TDD 策略](TDD_STRATEGY.md)
+- [AI Agent 协作指南](AI_AGENT_GUIDE.md)
+- [Agent 根目录约束](AGENTS.md)
+- [风险模型](docs/RISK_MODEL.md)
+- [调研摘要](docs/RESEARCH_SUMMARY.md)
+- [路线图](docs/ROADMAP.md)
+- [质量门禁](docs/QUALITY_GATES.md)
+- [任务模板](docs/TASK_TEMPLATE.md)
+- [项目进度](PROGRESS.md)
