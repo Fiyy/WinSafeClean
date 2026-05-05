@@ -4,7 +4,7 @@ namespace WinSafeClean.Core.Reporting;
 
 public static class ScanReportGenerator
 {
-    private const string CurrentSchemaVersion = "1.1";
+    private const string CurrentSchemaVersion = "1.2";
 
     public static ScanReport Generate(string path, FileSystemScanOptions options, DateTimeOffset createdAt)
     {
@@ -13,6 +13,7 @@ public static class ScanReportGenerator
 
         return new ScanReport(
             SchemaVersion: CurrentSchemaVersion,
+            PrivacyMode: ScanReportPrivacyMode.Full,
             CreatedAt: createdAt,
             Items: FileSystemScanner.Scan(path, options));
     }

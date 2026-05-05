@@ -14,6 +14,7 @@ public static class ScanReportMarkdownSerializer
         builder.AppendLine("# WinSafeClean Scan Report");
         builder.AppendLine();
         builder.AppendLine($"Schema version: `{EscapeInlineCode(report.SchemaVersion)}`");
+        builder.AppendLine($"Privacy mode: `{report.PrivacyMode}`");
         builder.AppendLine($"Created at: `{report.CreatedAt:O}`");
         builder.AppendLine();
         builder.AppendLine("## Items");

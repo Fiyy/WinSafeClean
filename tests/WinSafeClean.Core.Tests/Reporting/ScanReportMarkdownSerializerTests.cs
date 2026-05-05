@@ -9,7 +9,7 @@ public sealed class ScanReportMarkdownSerializerTests
     public void ShouldRenderHumanReadableRiskReport()
     {
         var report = new ScanReport(
-            SchemaVersion: "1.1",
+            SchemaVersion: "1.2",
             CreatedAt: new DateTimeOffset(2026, 5, 5, 0, 0, 0, TimeSpan.Zero),
             Items:
             [
@@ -24,7 +24,8 @@ public sealed class ScanReportMarkdownSerializerTests
         var markdown = ScanReportMarkdownSerializer.Serialize(report);
 
         Assert.Contains("# WinSafeClean Scan Report", markdown);
-        Assert.Contains("Schema version: `1.1`", markdown);
+        Assert.Contains("Schema version: `1.2`", markdown);
+        Assert.Contains("Privacy mode: `Full`", markdown);
         Assert.Contains("Created at: `2026-05-05T00:00:00.0000000+00:00`", markdown);
         Assert.Contains("| Path | Type | Size | Last Write (UTC) | Risk | Suggested Action |", markdown);
         Assert.Contains(@"| `C:\Windows\Installer` | Directory | 1 KB | `2026-05-04T03:02:01.0000000+00:00` | Blocked | Keep |", markdown);
@@ -80,7 +81,7 @@ public sealed class ScanReportMarkdownSerializerTests
     public void ShouldRenderMissingLastWriteTimeAsDash()
     {
         var report = new ScanReport(
-            SchemaVersion: "1.1",
+            SchemaVersion: "1.2",
             CreatedAt: DateTimeOffset.UnixEpoch,
             Items:
             [
@@ -101,7 +102,7 @@ public sealed class ScanReportMarkdownSerializerTests
     public void ShouldRenderEmptyReportItemsSections()
     {
         var report = new ScanReport(
-            SchemaVersion: "1.1",
+            SchemaVersion: "1.2",
             CreatedAt: DateTimeOffset.UnixEpoch,
             Items: []);
 

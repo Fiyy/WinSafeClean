@@ -20,7 +20,8 @@ public sealed class ScanReportGeneratorTests
             new FileSystemScanOptions(MaxItems: 100),
             createdAt);
 
-        Assert.Equal("1.1", report.SchemaVersion);
+        Assert.Equal("1.2", report.SchemaVersion);
+        Assert.Equal(ScanReportPrivacyMode.Full, report.PrivacyMode);
         Assert.Equal(createdAt, report.CreatedAt);
 
         var item = Assert.Single(report.Items);

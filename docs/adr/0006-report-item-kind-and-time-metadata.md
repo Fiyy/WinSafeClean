@@ -28,6 +28,8 @@ Phase 1 不加入：
 
 本 ADR 已通过 TDD 落地到 JSON、Markdown、scanner 和 CLI 集成测试。
 
+后续 ADR 0007 将当前 schema 演进到 `1.2`，新增 `privacyMode` 和 redacted 输出模式。
+
 ## 理由
 
 `itemKind` 是低隐私、强语义字段，能避免报告消费者误读目录大小。

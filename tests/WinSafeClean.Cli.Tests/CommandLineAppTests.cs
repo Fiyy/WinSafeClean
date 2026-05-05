@@ -23,13 +23,59 @@ public sealed class CommandLineAppTests
 
         using var document = JsonDocument.Parse(stdout.ToString());
         var root = document.RootElement;
-        Assert.Equal("1.1", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("1.2", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("Full", root.GetProperty("privacyMode").GetString());
         var item = root.GetProperty("items")[0];
         Assert.Equal(temp.Path, item.GetProperty("path").GetString());
         Assert.Equal("File", item.GetProperty("itemKind").GetString());
         Assert.NotEqual(JsonValueKind.Null, item.GetProperty("lastWriteTimeUtc").ValueKind);
         Assert.Equal("Unknown", item.GetProperty("risk").GetProperty("level").GetString());
         Assert.Equal("ReportOnly", item.GetProperty("risk").GetProperty("suggestedAction").GetString());
+    }
+
+    [Fact]
+    public void ScanShouldWriteRedactedJsonWhenRequested()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path, "--privacy", "redacted"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var root = document.RootElement;
+        Assert.Equal("Redacted", root.GetProperty("privacyMode").GetString());
+        var item = root.GetProperty("items")[0];
+        Assert.Equal("[redacted-path-0001]", item.GetProperty("path").GetString());
+        Assert.Equal(JsonValueKind.Null, item.GetProperty("lastWriteTimeUtc").ValueKind);
+        Assert.DoesNotContain(temp.Path, stdout.ToString());
+    }
+
+    [Fact]
+    public void ScanShouldWriteRedactedMarkdownWhenRequested()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path, "--format", "markdown", "--privacy", "redacted"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.Contains("Privacy mode: `Redacted`", stdout.ToString());
+        Assert.Contains("[redacted-path-0001]", stdout.ToString());
+        Assert.DoesNotContain(temp.Path, stdout.ToString());
     }
 
     [Fact]
@@ -86,6 +132,7 @@ public sealed class CommandLineAppTests
     [InlineData("--format")]
     [InlineData("--output")]
     [InlineData("--max-items")]
+    [InlineData("--privacy")]
     public void ScanShouldRejectOptionsMissingValues(string option)
     {
         using var stdout = new StringWriter();
@@ -132,6 +179,24 @@ public sealed class CommandLineAppTests
         Assert.Equal(2, exitCode);
         Assert.Equal(string.Empty, stdout.ToString());
         Assert.Contains("Unknown option '--recursive'", stderr.ToString());
+    }
+
+    [Fact]
+    public void ScanShouldRejectInvalidPrivacyMode()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path, "--privacy", "public"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("--privacy must be either 'full' or 'redacted'", stderr.ToString());
     }
 
     [Fact]

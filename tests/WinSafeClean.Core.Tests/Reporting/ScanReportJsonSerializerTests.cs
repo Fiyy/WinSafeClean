@@ -10,7 +10,7 @@ public sealed class ScanReportJsonSerializerTests
     public void ShouldSerializeRiskReportWithReadableEnumValues()
     {
         var report = new ScanReport(
-            SchemaVersion: "1.1",
+            SchemaVersion: "1.2",
             CreatedAt: new DateTimeOffset(2026, 5, 5, 0, 0, 0, TimeSpan.Zero),
             Items:
             [
@@ -24,7 +24,8 @@ public sealed class ScanReportJsonSerializerTests
 
         var json = ScanReportJsonSerializer.Serialize(report);
 
-        Assert.Contains(@"""schemaVersion"": ""1.1""", json);
+        Assert.Contains(@"""schemaVersion"": ""1.2""", json);
+        Assert.Contains(@"""privacyMode"": ""Full""", json);
         Assert.Contains(@"""path"": ""C:\\Windows\\Installer""", json);
         Assert.Contains(@"""itemKind"": ""Directory""", json);
         Assert.Contains(@"""lastWriteTimeUtc"": ""2026-05-04T03:02:01+00:00""", json);
@@ -37,7 +38,7 @@ public sealed class ScanReportJsonSerializerTests
     public void ShouldSerializeNullLastWriteTimeForUnknownItems()
     {
         var report = new ScanReport(
-            SchemaVersion: "1.1",
+            SchemaVersion: "1.2",
             CreatedAt: DateTimeOffset.UnixEpoch,
             Items:
             [
@@ -59,14 +60,15 @@ public sealed class ScanReportJsonSerializerTests
     public void ShouldSerializeEmptyReportItems()
     {
         var report = new ScanReport(
-            SchemaVersion: "1.1",
+            SchemaVersion: "1.2",
             CreatedAt: DateTimeOffset.UnixEpoch,
             Items: []);
 
         var json = ScanReportJsonSerializer.Serialize(report);
 
         using var document = JsonDocument.Parse(json);
-        Assert.Equal("1.1", document.RootElement.GetProperty("schemaVersion").GetString());
+        Assert.Equal("1.2", document.RootElement.GetProperty("schemaVersion").GetString());
+        Assert.Equal("Full", document.RootElement.GetProperty("privacyMode").GetString());
         Assert.Equal(0, document.RootElement.GetProperty("items").GetArrayLength());
     }
 }

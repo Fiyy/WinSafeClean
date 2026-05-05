@@ -43,7 +43,7 @@
 - 修复 `scripts/test.ps1`，确保测试失败时传播退出码
 - 创建 `WinSafeClean.Cli`
 - 创建 `WinSafeClean.Cli.Tests`
-- 实现只读 CLI：`scan --path <PATH> [--format json|markdown] [--output <FILE>]`
+- 实现只读 CLI：`scan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>]`
 - CLI 明确拒绝 `delete`、`clean`、`quarantine`、`restore`、`plan` 等执行型命令
 - 修复子 Agent 审查发现的 `--output` 覆盖风险
 - `--output` 只允许创建不存在的新报告文件，并拒绝受保护 Windows 路径
@@ -67,8 +67,14 @@
 - 补充 CLI 参数边界测试：缺值、未知选项、缺失 output parent、已有目录 output
 - 补充 serializer 空报告项测试
 - 明确 `--recursive` 暂不支持，保持 Phase 1 非递归扫描策略
+- 报告 schema 演进到 `1.2`
+- 新增报告 `privacyMode`
+- CLI 支持 `--privacy full|redacted`
+- redacted 报告会替换路径 token，并抑制 `lastWriteTimeUtc`
+- redacted 会处理 `reasons` 和 `blockers` 中的已知路径
+- 新增 ADR 0007，记录报告隐私模式与兼容影响
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：87 passed
+- 测试通过：94 passed
 
 ## 正在进行
 
@@ -76,10 +82,10 @@
 
 ## 下一步
 
-1. 设计报告 schema 兼容策略和脱敏/摘要模式。
-2. 为递归扫描创建单独 ADR：遍历顺序、全局 `MaxItems`、重解析点、权限降级、取消机制。
-3. 开始 Phase 2 Windows 证据收集设计：服务、计划任务、启动项、卸载注册表、进程引用。
-4. 评估是否兼容 BleachBit CleanerML 作为规则输入。
+1. 为递归扫描创建单独 ADR：遍历顺序、全局 `MaxItems`、重解析点、权限降级、取消机制。
+2. 开始 Phase 2 Windows 证据收集设计：服务、计划任务、启动项、卸载注册表、进程引用。
+3. 评估是否兼容 BleachBit CleanerML 作为规则输入。
+4. 设计报告 schema 兼容测试夹具。
 
 ## 待决策
 

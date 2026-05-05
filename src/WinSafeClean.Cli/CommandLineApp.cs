@@ -8,7 +8,7 @@ public static class CommandLineApp
 {
     private const int Success = 0;
     private const int UsageError = 2;
-    private const string Usage = "Use: scan --path <PATH> [--format json|markdown] [--output <FILE>] [--max-items <N>] [--no-recursive]";
+    private const string Usage = "Use: scan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--no-recursive]";
     private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore", "plan"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
@@ -56,6 +56,11 @@ public static class CommandLineApp
         }
 
         var report = BuildReport(options, createdAt);
+        if (options.PrivacyMode == ScanReportPrivacyMode.Redacted)
+        {
+            report = ScanReportPrivacyRedactor.Redact(report);
+        }
+
         var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
             ? ScanReportMarkdownSerializer.Serialize(report)
             : ScanReportJsonSerializer.Serialize(report);
@@ -115,6 +120,7 @@ public static class CommandLineApp
         string? OutputPath,
         int MaxItems,
         bool Recursive,
+        ScanReportPrivacyMode PrivacyMode,
         string? Error)
     {
         public static ScanOptions Parse(string[] args)
@@ -124,6 +130,7 @@ public static class CommandLineApp
             string? outputPath = null;
             var maxItems = FileSystemScanOptions.Default.MaxItems;
             var recursive = FileSystemScanOptions.Default.Recursive;
+            var privacyMode = ScanReportPrivacyMode.Full;
 
             for (var index = 0; index < args.Length; index++)
             {
@@ -157,6 +164,18 @@ public static class CommandLineApp
                         }
 
                         break;
+                    case "--privacy":
+                        if (!TryReadValue(args, ref index, "--privacy", out var privacyModeValue, out var privacyError))
+                        {
+                            return Invalid(privacyError);
+                        }
+
+                        if (!TryParsePrivacyMode(privacyModeValue, out privacyMode))
+                        {
+                            return Invalid("--privacy must be either 'full' or 'redacted'.");
+                        }
+
+                        break;
                     case "--max-items":
                         if (!TryReadValue(args, ref index, "--max-items", out var maxItemsValue, out var maxItemsError))
                         {
@@ -182,7 +201,25 @@ public static class CommandLineApp
                 return Invalid("--path is required.");
             }
 
-            return new ScanOptions(path, format, outputPath, maxItems, recursive, Error: null);
+            return new ScanOptions(path, format, outputPath, maxItems, recursive, privacyMode, Error: null);
+        }
+
+        private static bool TryParsePrivacyMode(string value, out ScanReportPrivacyMode privacyMode)
+        {
+            if (value.Equals("full", StringComparison.OrdinalIgnoreCase))
+            {
+                privacyMode = ScanReportPrivacyMode.Full;
+                return true;
+            }
+
+            if (value.Equals("redacted", StringComparison.OrdinalIgnoreCase))
+            {
+                privacyMode = ScanReportPrivacyMode.Redacted;
+                return true;
+            }
+
+            privacyMode = ScanReportPrivacyMode.Full;
+            return false;
         }
 
         private static bool TryReadValue(string[] args, ref int index, string option, out string value, out string error)
@@ -208,6 +245,7 @@ public static class CommandLineApp
                 OutputPath: null,
                 MaxItems: FileSystemScanOptions.Default.MaxItems,
                 Recursive: FileSystemScanOptions.Default.Recursive,
+                PrivacyMode: ScanReportPrivacyMode.Full,
                 Error: error);
         }
     }
