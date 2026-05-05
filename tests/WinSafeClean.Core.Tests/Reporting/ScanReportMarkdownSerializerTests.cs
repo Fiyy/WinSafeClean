@@ -96,4 +96,21 @@ public sealed class ScanReportMarkdownSerializerTests
 
         Assert.Contains(@"| `C:\missing.tmp` | Unknown | 0 B | - | Unknown | ReportOnly |", markdown);
     }
+
+    [Fact]
+    public void ShouldRenderEmptyReportItemsSections()
+    {
+        var report = new ScanReport(
+            SchemaVersion: "1.1",
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            Items: []);
+
+        var markdown = ScanReportMarkdownSerializer.Serialize(report);
+
+        Assert.Contains("## Items", markdown);
+        Assert.Contains("| Path | Type | Size | Last Write (UTC) | Risk | Suggested Action |", markdown);
+        Assert.Contains("## Reasons", markdown);
+        Assert.Contains("## Blockers", markdown);
+        Assert.DoesNotContain("| `", markdown);
+    }
 }

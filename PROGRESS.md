@@ -64,8 +64,11 @@
 - `ScanReportItem` 新增 `itemKind` 和可空 `lastWriteTimeUtc`
 - JSON 和 Markdown 报告输出文件/目录/未知类型以及可读取的修改时间
 - 时间戳读取失败时只置空，不中断扫描
+- 补充 CLI 参数边界测试：缺值、未知选项、缺失 output parent、已有目录 output
+- 补充 serializer 空报告项测试
+- 明确 `--recursive` 暂不支持，保持 Phase 1 非递归扫描策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：77 passed
+- 测试通过：87 passed
 
 ## 正在进行
 
@@ -73,10 +76,10 @@
 
 ## 下一步
 
-1. 补充 CLI 参数边界测试：缺值、未知选项、缺失 output parent、已有目录 output。
-2. 增加 serializer 空报告项测试。
-3. 评估是否添加 `--recursive`，默认仍保持非递归。
-4. 设计报告 schema 兼容策略和脱敏/摘要模式。
+1. 设计报告 schema 兼容策略和脱敏/摘要模式。
+2. 为递归扫描创建单独 ADR：遍历顺序、全局 `MaxItems`、重解析点、权限降级、取消机制。
+3. 开始 Phase 2 Windows 证据收集设计：服务、计划任务、启动项、卸载注册表、进程引用。
+4. 评估是否兼容 BleachBit CleanerML 作为规则输入。
 
 ## 待决策
 

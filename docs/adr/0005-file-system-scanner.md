@@ -40,7 +40,7 @@ CLI 接入：
 scan --path <PATH> [--format json|markdown] [--output <FILE>] [--max-items <N>] [--no-recursive]
 ```
 
-`--no-recursive` 当前是显式安全开关；默认也保持非递归。
+`--no-recursive` 当前是显式安全开关；默认也保持非递归。`--recursive` 暂不支持，在设计遍历顺序、全局 `MaxItems`、重解析点、权限降级和取消机制前必须保持拒绝状态。
 
 ## 理由
 

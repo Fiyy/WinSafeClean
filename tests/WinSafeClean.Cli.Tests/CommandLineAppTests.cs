@@ -81,6 +81,59 @@ public sealed class CommandLineAppTests
         Assert.Contains("--format must be either 'json' or 'markdown'", stderr.ToString());
     }
 
+    [Theory]
+    [InlineData("--path")]
+    [InlineData("--format")]
+    [InlineData("--output")]
+    [InlineData("--max-items")]
+    public void ScanShouldRejectOptionsMissingValues(string option)
+    {
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(["scan", option], stdout, stderr, DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains($"{option} requires a value", stderr.ToString());
+    }
+
+    [Fact]
+    public void ScanShouldRejectUnknownOption()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path, "--unknown"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("Unknown option '--unknown'", stderr.ToString());
+    }
+
+    [Fact]
+    public void ScanShouldRejectRecursiveUntilTraversalPolicyExists()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path, "--recursive"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("Unknown option '--recursive'", stderr.ToString());
+    }
+
     [Fact]
     public void ScanShouldWriteReportOnlyToExplicitOutputPath()
     {
@@ -150,6 +203,48 @@ public sealed class CommandLineAppTests
         Assert.Equal(string.Empty, stdout.ToString());
         Assert.Contains("must not overwrite", stderr.ToString());
         Assert.Equal("existing report", File.ReadAllText(output.Path));
+    }
+
+    [Fact]
+    public void ScanShouldRejectOutputPathMatchingExistingDirectory()
+    {
+        using var temp = TemporaryFile.Create("scan target");
+        using var sandbox = TemporarySandbox.Create();
+        var outputDirectory = sandbox.CreateDirectory("existing-report-dir");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path, "--output", outputDirectory],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("must not overwrite", stderr.ToString());
+        Assert.True(Directory.Exists(outputDirectory));
+    }
+
+    [Fact]
+    public void ScanShouldRejectMissingOutputParentDirectory()
+    {
+        using var temp = TemporaryFile.Create("scan target");
+        var missingParent = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
+        var outputPath = System.IO.Path.Combine(missingParent, "report.json");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path, "--output", outputPath],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("parent directory does not exist", stderr.ToString());
+        Assert.False(File.Exists(outputPath));
     }
 
     [Fact]

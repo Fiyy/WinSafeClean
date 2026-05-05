@@ -1,3 +1,4 @@
+using System.Text.Json;
 using WinSafeClean.Core.Reporting;
 using WinSafeClean.Core.Risk;
 
@@ -52,5 +53,20 @@ public sealed class ScanReportJsonSerializerTests
 
         Assert.Contains(@"""itemKind"": ""Unknown""", json);
         Assert.Contains(@"""lastWriteTimeUtc"": null", json);
+    }
+
+    [Fact]
+    public void ShouldSerializeEmptyReportItems()
+    {
+        var report = new ScanReport(
+            SchemaVersion: "1.1",
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            Items: []);
+
+        var json = ScanReportJsonSerializer.Serialize(report);
+
+        using var document = JsonDocument.Parse(json);
+        Assert.Equal("1.1", document.RootElement.GetProperty("schemaVersion").GetString());
+        Assert.Equal(0, document.RootElement.GetProperty("items").GetArrayLength());
     }
 }
