@@ -131,8 +131,12 @@
 - Composite、report generator、Windows providers 和 CleanerRules provider 会传播取消
 - 取消不会被错误转换为 `CollectionFailure` evidence
 - 新增 ADR 0019，记录 evidence provider 内部取消策略
+- 新增 Core `Planning` 模块
+- 新增只读 `CleanupPlan`、`CleanupPlanItem`、`CleanupPlanAction`
+- `CleanupPlanGenerator` 将报告项保守映射为 `Keep`、`ReportOnly` 或 `ReviewForQuarantine`
+- 新增 ADR 0020，记录只读清理计划草案
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：143 passed
+- 测试通过：147 passed
 
 ## 正在进行
 
@@ -140,8 +144,8 @@
 
 ## 下一步
 
-1. 设计只读清理计划草案模型。
-2. 为 CleanerML provider 增加用户规则文件加载入口。
+1. 为 CleanerML provider 增加用户规则文件加载入口。
+2. 为 CleanupPlan 增加 JSON/Markdown serializer。
 
 ## 待决策
 
