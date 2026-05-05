@@ -1,3 +1,7 @@
 using WinSafeClean.Cli;
 
-return CommandLineApp.Run(args, Console.Out, Console.Error);
+return CommandLineApp.Run(
+    args,
+    Console.Out,
+    Console.Error,
+    evidenceProvider: CommandLineApp.CreateDefaultEvidenceProvider());

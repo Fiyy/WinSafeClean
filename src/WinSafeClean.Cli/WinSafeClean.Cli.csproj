@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WinSafeClean.Core\WinSafeClean.Core.csproj" />
+    <ProjectReference Include="..\WinSafeClean.Windows\WinSafeClean.Windows.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

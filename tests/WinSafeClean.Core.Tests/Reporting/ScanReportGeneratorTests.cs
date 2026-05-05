@@ -1,6 +1,7 @@
 using WinSafeClean.Core.FileInventory;
 using WinSafeClean.Core.Reporting;
 using WinSafeClean.Core.Risk;
+using WinSafeClean.Core.Evidence;
 
 namespace WinSafeClean.Core.Tests.Reporting;
 
@@ -48,6 +49,43 @@ public sealed class ScanReportGeneratorTests
             DateTimeOffset.UnixEpoch);
 
         Assert.Equal(2, report.Items.Count);
+    }
+
+    [Fact]
+    public void ShouldAttachEvidenceFromProviderToScannedItems()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var filePath = sandbox.WriteFile("sample.txt", "hello");
+        var evidenceProvider = new StubEvidenceProvider(
+        [
+            new EvidenceRecord(
+                Type: EvidenceType.RunningProcessReference,
+                Source: "example (PID 1234)",
+                Confidence: 1.0,
+                Message: "Running process image path matches this file.")
+        ]);
+
+        var report = ScanReportGenerator.Generate(
+            filePath,
+            new FileSystemScanOptions(MaxItems: 100),
+            DateTimeOffset.UnixEpoch,
+            evidenceProvider);
+
+        var item = Assert.Single(report.Items);
+        var evidence = Assert.Single(item.Evidence);
+        Assert.Equal(EvidenceType.RunningProcessReference, evidence.Type);
+        Assert.Equal(filePath, evidenceProvider.RequestedPath);
+    }
+
+    private sealed class StubEvidenceProvider(IReadOnlyList<EvidenceRecord> evidence) : IFileEvidenceProvider
+    {
+        public string? RequestedPath { get; private set; }
+
+        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+        {
+            RequestedPath = path;
+            return evidence;
+        }
     }
 
     private sealed class TemporarySandbox : IDisposable

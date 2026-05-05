@@ -1,6 +1,8 @@
+using WinSafeClean.Core.Evidence;
 using WinSafeClean.Core.FileInventory;
 using WinSafeClean.Core.Reporting;
 using WinSafeClean.Core.Risk;
+using WinSafeClean.Windows.Evidence;
 
 namespace WinSafeClean.Cli;
 
@@ -12,7 +14,12 @@ public static class CommandLineApp
     private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore", "plan"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
-    public static int Run(string[] args, TextWriter stdout, TextWriter stderr, DateTimeOffset? now = null)
+    public static int Run(
+        string[] args,
+        TextWriter stdout,
+        TextWriter stderr,
+        DateTimeOffset? now = null,
+        IFileEvidenceProvider? evidenceProvider = null)
     {
         ArgumentNullException.ThrowIfNull(args);
         ArgumentNullException.ThrowIfNull(stdout);
@@ -43,10 +50,20 @@ public static class CommandLineApp
             return UsageError;
         }
 
-        return RunScan(args[1..], stdout, stderr, now ?? DateTimeOffset.UtcNow);
+        return RunScan(
+            args[1..],
+            stdout,
+            stderr,
+            now ?? DateTimeOffset.UtcNow,
+            evidenceProvider ?? EmptyEvidenceProvider.Instance);
     }
 
-    private static int RunScan(string[] args, TextWriter stdout, TextWriter stderr, DateTimeOffset createdAt)
+    private static int RunScan(
+        string[] args,
+        TextWriter stdout,
+        TextWriter stderr,
+        DateTimeOffset createdAt,
+        IFileEvidenceProvider evidenceProvider)
     {
         var options = ScanOptions.Parse(args);
         if (!string.IsNullOrWhiteSpace(options.Error))
@@ -55,7 +72,7 @@ public static class CommandLineApp
             return UsageError;
         }
 
-        var report = BuildReport(options, createdAt);
+        var report = BuildReport(options, createdAt, evidenceProvider);
         if (options.PrivacyMode == ScanReportPrivacyMode.Redacted)
         {
             report = ScanReportPrivacyRedactor.Redact(report);
@@ -84,12 +101,35 @@ public static class CommandLineApp
         return Success;
     }
 
-    private static ScanReport BuildReport(ScanOptions options, DateTimeOffset createdAt)
+    private static ScanReport BuildReport(
+        ScanOptions options,
+        DateTimeOffset createdAt,
+        IFileEvidenceProvider evidenceProvider)
     {
         return ScanReportGenerator.Generate(
             options.Path!,
             new FileSystemScanOptions(options.MaxItems, options.Recursive),
-            createdAt);
+            createdAt,
+            evidenceProvider);
+    }
+
+    public static IFileEvidenceProvider CreateDefaultEvidenceProvider()
+    {
+        return new CompositeFileEvidenceProvider(WindowsEvidenceProviderFactory.CreateDefaultProviders());
+    }
+
+    private sealed class EmptyEvidenceProvider : IFileEvidenceProvider
+    {
+        public static readonly EmptyEvidenceProvider Instance = new();
+
+        private EmptyEvidenceProvider()
+        {
+        }
+
+        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+        {
+            return [];
+        }
     }
 
     private static string? ValidateOutputPath(string outputPath)

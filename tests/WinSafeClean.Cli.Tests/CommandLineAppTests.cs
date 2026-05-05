@@ -1,4 +1,6 @@
 using System.Text.Json;
+using WinSafeClean.Core.Evidence;
+using WinSafeClean.Core.Reporting;
 using WinSafeClean.Cli;
 
 namespace WinSafeClean.Cli.Tests;
@@ -57,6 +59,39 @@ public sealed class CommandLineAppTests
         Assert.Equal("[redacted-path-0001]", item.GetProperty("path").GetString());
         Assert.Equal(JsonValueKind.Null, item.GetProperty("lastWriteTimeUtc").ValueKind);
         Assert.DoesNotContain(temp.Path, stdout.ToString());
+    }
+
+    [Fact]
+    public void ScanShouldIncludeEvidenceFromInjectedProvider()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+        var evidenceProvider = new StubEvidenceProvider(
+        [
+            new EvidenceRecord(
+                Type: EvidenceType.RunningProcessReference,
+                Source: "example (PID 1234)",
+                Confidence: 1.0,
+                Message: $"Running process image path matches this file: {temp.Path}")
+        ]);
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", temp.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch,
+            evidenceProvider);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var evidence = document.RootElement.GetProperty("items")[0].GetProperty("evidence");
+        var item = Assert.Single(evidence.EnumerateArray());
+        Assert.Equal("RunningProcessReference", item.GetProperty("type").GetString());
+        Assert.Equal("example (PID 1234)", item.GetProperty("source").GetString());
+        Assert.Equal(1.0, item.GetProperty("confidence").GetDouble());
     }
 
     [Fact]
@@ -547,6 +582,14 @@ public sealed class CommandLineAppTests
         public void Dispose()
         {
             File.Delete(Path);
+        }
+    }
+
+    private sealed class StubEvidenceProvider(IReadOnlyList<EvidenceRecord> evidence) : IFileEvidenceProvider
+    {
+        public IReadOnlyList<EvidenceRecord> CollectEvidence(string path)
+        {
+            return evidence;
         }
     }
 
