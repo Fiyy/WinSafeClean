@@ -149,6 +149,7 @@
 - `--cleanerml` 只加载用户显式提供的规则文件或目录顶层 `.xml` 文件
 - `plan --cleanerml` 可将命中的 CleanerML 候选体现在只读计划原因中，但不会执行清理
 - 新增 CLI Program 级 `scan --cleanerml` 端到端测试
+- 新增 `docs/USAGE.md`，补充 `scan`、`plan`、CleanerML 和 `--output` 的只读使用示例
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 测试通过：168 passed
 
@@ -158,8 +159,7 @@
 
 ## 下一步
 
-1. 为只读 plan 输出补充用户文档示例。
-2. 设计文件签名 evidence provider。
+1. 设计文件签名 evidence provider。
 
 ## 待决策
 

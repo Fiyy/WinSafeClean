@@ -100,6 +100,7 @@ Core 已包含只读 `CleanupPlan` 草案模型，可把扫描报告转换为 `K
 - [AI Agent 协作指南](AI_AGENT_GUIDE.md)
 - [Agent 根目录约束](AGENTS.md)
 - [风险模型](docs/RISK_MODEL.md)
+- [使用示例](docs/USAGE.md)
 - [调研摘要](docs/RESEARCH_SUMMARY.md)
 - [路线图](docs/ROADMAP.md)
 - [质量门禁](docs/QUALITY_GATES.md)
