@@ -89,6 +89,51 @@ public sealed class ProgramEndToEndTests
         Assert.Equal(JsonValueKind.Array, item.GetProperty("reasons").ValueKind);
     }
 
+    [Fact]
+    public async Task ProgramShouldRunScanWithExplicitCleanerMlRuleFile()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var rules = TemporaryFile.Create($"""
+            <cleaner id="example">
+              <option id="cache">
+                <action command="delete" search="file" path="{temp.Path}"/>
+              </option>
+            </cleaner>
+            """);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var executablePath = Path.Combine(AppContext.BaseDirectory, "WinSafeClean.Cli.exe");
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = executablePath,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false
+        };
+        startInfo.ArgumentList.Add("scan");
+        startInfo.ArgumentList.Add("--path");
+        startInfo.ArgumentList.Add(temp.Path);
+        startInfo.ArgumentList.Add("--cleanerml");
+        startInfo.ArgumentList.Add(rules.Path);
+
+        using var process = Process.Start(startInfo)!;
+        var stdoutTask = process.StandardOutput.ReadToEndAsync(timeout.Token);
+        var stderrTask = process.StandardError.ReadToEndAsync(timeout.Token);
+
+        await process.WaitForExitAsync(timeout.Token);
+        var stdout = await stdoutTask;
+        var stderr = await stderrTask;
+
+        Assert.Equal(0, process.ExitCode);
+        Assert.Equal(string.Empty, stderr);
+
+        using var document = JsonDocument.Parse(stdout);
+        var evidence = document.RootElement.GetProperty("items")[0].GetProperty("evidence");
+        Assert.Contains(
+            evidence.EnumerateArray(),
+            item => item.GetProperty("type").GetString() == "KnownCleanupRule");
+    }
+
     private sealed class TemporaryFile : IDisposable
     {
         private TemporaryFile(string path)
