@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-阶段：2 - Windows evidence 适配器
+阶段：3 - 只读清理计划
 
 日期：2026-05-06
 
@@ -150,8 +150,13 @@
 - `plan --cleanerml` 可将命中的 CleanerML 候选体现在只读计划原因中，但不会执行清理
 - 新增 CLI Program 级 `scan --cleanerml` 端到端测试
 - 新增 `docs/USAGE.md`，补充 `scan`、`plan`、CleanerML 和 `--output` 的只读使用示例
+- 实现 `FileSignatureEvidenceProvider` 读取 Authenticode 签名元数据
+- 新增 `IWindowsFileSignatureSource`、`AuthenticodeFileSignatureSource` 和 `WindowsFileSignatureRecord`
+- 文件签名 evidence 只解释来源，不降低风险、不触发清理候选
+- 默认 Windows evidence provider factory 接入文件签名 provider
+- 新增 ADR 0021，记录文件签名证据策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：168 passed
+- 测试通过：176 passed
 
 ## 正在进行
 
@@ -159,7 +164,7 @@
 
 ## 下一步
 
-1. 设计文件签名 evidence provider。
+1. 设计只读隔离计划模型。
 
 ## 待决策
 

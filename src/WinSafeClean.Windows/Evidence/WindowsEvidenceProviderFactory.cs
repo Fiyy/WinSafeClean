@@ -12,6 +12,7 @@ public static class WindowsEvidenceProviderFactory
             new ScheduledTaskEvidenceProvider(),
             new StartupEntryEvidenceProvider(),
             new UninstallRegistryEvidenceProvider(),
+            new FileSignatureEvidenceProvider(),
             new RunningProcessEvidenceProvider()
         ];
     }

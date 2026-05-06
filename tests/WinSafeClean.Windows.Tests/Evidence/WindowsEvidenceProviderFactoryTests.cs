@@ -16,11 +16,12 @@ public sealed class WindowsEvidenceProviderFactoryTests
             provider => Assert.IsType<ScheduledTaskEvidenceProvider>(provider),
             provider => Assert.IsType<StartupEntryEvidenceProvider>(provider),
             provider => Assert.IsType<UninstallRegistryEvidenceProvider>(provider),
+            provider => Assert.IsType<FileSignatureEvidenceProvider>(provider),
             provider => Assert.IsType<RunningProcessEvidenceProvider>(provider));
     }
 
     [Fact]
-    public void DefaultProvidersShouldReturnEmptyEvidenceUntilAdaptersAreImplemented()
+    public void DefaultProvidersShouldReturnEmptyEvidenceForMissingPath()
     {
         var composite = new CompositeFileEvidenceProvider(WindowsEvidenceProviderFactory.CreateDefaultProviders());
 

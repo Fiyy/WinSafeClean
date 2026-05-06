@@ -87,6 +87,27 @@ public sealed class CleanupPlanGeneratorTests
         Assert.Contains("Evidence collection failed", item.Reasons);
     }
 
+    [Fact]
+    public void ShouldNotTreatFileSignatureAsCleanupPermission()
+    {
+        var report = CreateReport(new ScanReportItem(
+            Path: @"C:\Users\Alice\Downloads\signed.tmp",
+            ItemKind: ScanReportItemKind.File,
+            SizeBytes: 1024,
+            LastWriteTimeUtc: null,
+            Evidence:
+            [
+                new EvidenceRecord(EvidenceType.FileSignature, "Authenticode", 0.6, "Signature metadata")
+            ],
+            Risk: new RiskAssessment(RiskLevel.LowRisk, 0.8, SuggestedAction.ReportOnly, ["Signed file."], [])));
+
+        var plan = CleanupPlanGenerator.Generate(report, DateTimeOffset.UnixEpoch);
+
+        var item = Assert.Single(plan.Items);
+        Assert.Equal(CleanupPlanAction.ReportOnly, item.Action);
+        Assert.Contains("Insufficient evidence", item.Reasons[0]);
+    }
+
     private static ScanReport CreateReport(ScanReportItem item)
     {
         return new ScanReport(

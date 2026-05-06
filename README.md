@@ -10,7 +10,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 2. 它和哪些程序、系统组件、服务、计划任务、启动项或注册表记录有关？
 3. 删除、隔离或交给系统工具清理是否会影响 Windows 或应用程序正常运行？
 
-当前项目处于 Phase 2：Windows 关系证据适配器。默认不做真实删除。
+当前项目处于 Phase 3：只读清理计划。默认不做真实删除。
 
 ## 核心方向
 
@@ -34,7 +34,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 
 - `WinSafeClean.Core`：只读扫描、风险、报告和 evidence 基础模型
 - `WinSafeClean.Cli`：只读 CLI
-- `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action、注册表启动项、卸载注册表和运行进程映像路径关系证据
+- `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action、注册表启动项、卸载注册表、文件 Authenticode 签名和运行进程映像路径关系证据
 - `WinSafeClean.CleanerRules`：CleanerML 安全子集解析器、用户规则文件加载器和 `KnownCleanupRule` evidence provider，只读取规则候选，不执行清理动作
 
 常用命令：

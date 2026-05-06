@@ -25,9 +25,10 @@ Phase 2 需要收集文件与 Windows 服务、计划任务、启动项、卸载
 - `ScheduledTaskEvidenceProvider`
 - `StartupEntryEvidenceProvider`
 - `UninstallRegistryEvidenceProvider`
+- `FileSignatureEvidenceProvider`
 - `RunningProcessEvidenceProvider`
 
-当前 Windows provider 通过骨架逐步填充真实读取逻辑。服务 `ImagePath` 读取已在 ADR 0011 中实现和记录，计划任务 action 读取已在 ADR 0012 中实现和记录，启动项注册表读取已在 ADR 0013 中实现和记录，卸载注册表读取已在 ADR 0014 中实现和记录，运行进程映像路径读取已在 ADR 0015 中实现和记录。
+当前 Windows provider 通过骨架逐步填充真实读取逻辑。服务 `ImagePath` 读取已在 ADR 0011 中实现和记录，计划任务 action 读取已在 ADR 0012 中实现和记录，启动项注册表读取已在 ADR 0013 中实现和记录，卸载注册表读取已在 ADR 0014 中实现和记录，运行进程映像路径读取已在 ADR 0015 中实现和记录，文件签名读取已在 ADR 0021 中实现和记录。
 
 ## 理由
 
@@ -43,5 +44,5 @@ Phase 2 需要收集文件与 Windows 服务、计划任务、启动项、卸载
 
 代价：
 
-- 当前会发现服务 `ImagePath`、计划任务 Exec action、注册表启动项、卸载注册表和运行进程映像路径对目标文件的直接引用，也会标记目标路径位于已安装应用目录下的归属证据。
+- 当前会发现服务 `ImagePath`、计划任务 Exec action、注册表启动项、卸载注册表和运行进程映像路径对目标文件的直接引用，也会标记目标路径位于已安装应用目录下的归属证据，并读取 Authenticode 文件签名来源证据。
 - 每个 Windows provider 仍需要单独设计读取方式和权限降级测试。
