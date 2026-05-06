@@ -161,8 +161,13 @@
 - 隔离预览不创建目录、不写元数据、不移动或删除文件
 - `plan --privacy redacted` 会脱敏隔离预览路径、恢复元数据路径和 restore plan id
 - 新增 ADR 0022，记录只读隔离预览策略
+- 新增 `WinSafeClean.Core.Quarantine` 模块
+- 新增 `RestoreMetadata` schema `1.0`、生成器和 JSON serializer
+- 新增 `QuarantineOperationLog` schema `1.0` 和 JSON serializer
+- 恢复元数据和操作日志当前只生成内存模型，不写文件、不接执行器
+- 新增 ADR 0023，记录恢复元数据和操作日志模型策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：181 passed
+- 测试通过：185 passed
 
 ## 正在进行
 
@@ -170,7 +175,7 @@
 
 ## 下一步
 
-1. 设计恢复元数据文件格式和操作日志模型。
+1. 设计只读执行器边界和执行前校验清单。
 
 ## 待决策
 

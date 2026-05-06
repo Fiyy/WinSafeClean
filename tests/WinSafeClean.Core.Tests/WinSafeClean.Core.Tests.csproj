@@ -27,6 +27,7 @@
   <ItemGroup>
     <None Include="Reporting\fixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Planning\fixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Quarantine\fixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

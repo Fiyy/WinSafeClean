@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "createdAt": "2026-05-06T01:02:03+00:00",
+  "entries": [
+    {
+      "operationId": "op-001",
+      "runId": "run-001",
+      "restorePlanId": "abcd",
+      "operationType": "PlanGenerated",
+      "status": "Succeeded",
+      "timestamp": "2026-05-06T01:02:04+00:00",
+      "sourcePath": "C:\\Users\\Alice\\AppData\\Local\\Example\\cache.tmp",
+      "targetPath": "C:\\Users\\Alice\\AppData\\Local\\WinSafeClean\\Quarantine\\items\\abcd-cache.tmp",
+      "restoreMetadataPath": "C:\\Users\\Alice\\AppData\\Local\\WinSafeClean\\Quarantine\\restore\\abcd.restore.json",
+      "isDryRun": true,
+      "actor": "WinSafeClean.Core",
+      "message": "Operation model preview only; no file operation has been executed."
+    }
+  ]
+}

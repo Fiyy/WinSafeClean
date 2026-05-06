@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "createdAt": "2026-05-06T01:02:03+00:00",
+  "cleanupPlanSchemaVersion": "0.2",
+  "restorePlanId": "abcd",
+  "originalPath": "C:\\Users\\Alice\\AppData\\Local\\Example\\cache.tmp",
+  "quarantinePath": "C:\\Users\\Alice\\AppData\\Local\\WinSafeClean\\Quarantine\\items\\abcd-cache.tmp",
+  "restoreMetadataPath": "C:\\Users\\Alice\\AppData\\Local\\WinSafeClean\\Quarantine\\restore\\abcd.restore.json",
+  "riskLevel": "LowRisk",
+  "planAction": "ReviewForQuarantine",
+  "reasons": [
+    "Known cleanup rule matched; manual review required before quarantine."
+  ],
+  "warnings": [
+    "Quarantine preview only; no file operation has been executed."
+  ],
+  "requiresManualConfirmation": true,
+  "redacted": false
+}

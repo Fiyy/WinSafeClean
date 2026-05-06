@@ -65,8 +65,8 @@
 
 - Dry-run plan
 - Read-only quarantine preview
-- 恢复元数据
-- 操作日志
+- Restore metadata model
+- Operation log model
 - 回滚命令
 
 完成标准：
