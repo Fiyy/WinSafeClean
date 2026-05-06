@@ -150,7 +150,7 @@ public sealed class CommandLineAppTests
 
         using var document = JsonDocument.Parse(stdout.ToString());
         var root = document.RootElement;
-        Assert.Equal("0.1", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("0.2", root.GetProperty("schemaVersion").GetString());
         var item = root.GetProperty("items")[0];
         Assert.Equal(temp.Path, item.GetProperty("path").GetString());
         Assert.Equal("ReportOnly", item.GetProperty("action").GetString());
@@ -195,8 +195,14 @@ public sealed class CommandLineAppTests
         using var document = JsonDocument.Parse(stdout.ToString());
         var root = document.RootElement;
         Assert.False(root.TryGetProperty("privacyMode", out _));
+        Assert.Equal("[redacted-quarantine-root]", root.GetProperty("quarantineRoot").GetString());
         var item = root.GetProperty("items")[0];
         Assert.Equal("[redacted-path-0001]", item.GetProperty("path").GetString());
+        var localApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        if (!string.IsNullOrWhiteSpace(localApplicationData))
+        {
+            Assert.DoesNotContain(localApplicationData, stdout.ToString(), StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Fact]
@@ -291,7 +297,7 @@ public sealed class CommandLineAppTests
             Assert.True(File.Exists(outputPath));
 
             using var document = JsonDocument.Parse(File.ReadAllText(outputPath));
-            Assert.Equal("0.1", document.RootElement.GetProperty("schemaVersion").GetString());
+            Assert.Equal("0.2", document.RootElement.GetProperty("schemaVersion").GetString());
         }
         finally
         {

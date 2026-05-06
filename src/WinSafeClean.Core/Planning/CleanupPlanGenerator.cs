@@ -5,7 +5,7 @@ namespace WinSafeClean.Core.Planning;
 
 public static class CleanupPlanGenerator
 {
-    private const string CurrentSchemaVersion = "0.1";
+    private const string CurrentSchemaVersion = "0.2";
 
     private static readonly HashSet<EvidenceType> ActiveReferenceEvidenceTypes =
     [
@@ -17,26 +17,35 @@ public static class CleanupPlanGenerator
         EvidenceType.InstalledApplication
     ];
 
-    public static CleanupPlan Generate(ScanReport report, DateTimeOffset createdAt)
+    public static CleanupPlan Generate(ScanReport report, DateTimeOffset createdAt, string? quarantineRoot = null)
     {
         ArgumentNullException.ThrowIfNull(report);
+
+        var effectiveQuarantineRoot = string.IsNullOrWhiteSpace(quarantineRoot)
+            ? QuarantinePathPlanner.GetDefaultQuarantineRoot()
+            : QuarantinePathPlanner.NormalizeQuarantineRoot(quarantineRoot);
 
         return new CleanupPlan(
             SchemaVersion: CurrentSchemaVersion,
             CreatedAt: createdAt,
-            Items: report.Items.Select(CreatePlanItem).ToArray());
+            Items: report.Items.Select(item => CreatePlanItem(item, effectiveQuarantineRoot)).ToArray(),
+            QuarantineRoot: effectiveQuarantineRoot);
     }
 
-    private static CleanupPlanItem CreatePlanItem(ScanReportItem reportItem)
+    private static CleanupPlanItem CreatePlanItem(ScanReportItem reportItem, string quarantineRoot)
     {
         var reasons = new List<string>();
         var action = ChooseAction(reportItem, reasons);
+        var quarantinePreview = action == CleanupPlanAction.ReviewForQuarantine
+            ? QuarantinePathPlanner.CreatePreview(reportItem.Path, quarantineRoot)
+            : null;
 
         return new CleanupPlanItem(
             Path: reportItem.Path,
             Action: action,
             RiskLevel: reportItem.Risk.Level,
-            Reasons: reasons);
+            Reasons: reasons,
+            QuarantinePreview: quarantinePreview);
     }
 
     private static CleanupPlanAction ChooseAction(ScanReportItem reportItem, List<string> reasons)

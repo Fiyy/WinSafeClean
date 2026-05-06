@@ -64,7 +64,7 @@
 交付物：
 
 - Dry-run plan
-- Quarantine plan
+- Read-only quarantine preview
 - 恢复元数据
 - 操作日志
 - 回滚命令
@@ -92,4 +92,3 @@
 - 用户能先理解再操作
 - 危险操作需要明确确认
 - 不用营销式风险文案
-

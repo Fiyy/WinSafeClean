@@ -147,12 +147,12 @@ public static class CommandLineApp
         }
 
         var report = BuildReport(options, createdAt, effectiveEvidenceProvider, cancellationToken);
+        var plan = CleanupPlanGenerator.Generate(report, createdAt);
         if (options.PrivacyMode == ScanReportPrivacyMode.Redacted)
         {
-            report = ScanReportPrivacyRedactor.Redact(report);
+            plan = CleanupPlanPrivacyRedactor.Redact(plan);
         }
 
-        var plan = CleanupPlanGenerator.Generate(report, createdAt);
         var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
             ? CleanupPlanMarkdownSerializer.Serialize(plan)
             : CleanupPlanJsonSerializer.Serialize(plan);

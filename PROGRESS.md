@@ -155,8 +155,14 @@
 - 文件签名 evidence 只解释来源，不降低风险、不触发清理候选
 - 默认 Windows evidence provider factory 接入文件签名 provider
 - 新增 ADR 0021，记录文件签名证据策略
+- `CleanupPlan` schema 升级到 `0.2`
+- 新增 `QuarantinePreview` 和 `QuarantinePathPlanner`
+- `ReviewForQuarantine` 项会生成只读隔离路径和恢复元数据路径预览
+- 隔离预览不创建目录、不写元数据、不移动或删除文件
+- `plan --privacy redacted` 会脱敏隔离预览路径、恢复元数据路径和 restore plan id
+- 新增 ADR 0022，记录只读隔离预览策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：176 passed
+- 测试通过：181 passed
 
 ## 正在进行
 
@@ -164,7 +170,7 @@
 
 ## 下一步
 
-1. 设计只读隔离计划模型。
+1. 设计恢复元数据文件格式和操作日志模型。
 
 ## 待决策
 

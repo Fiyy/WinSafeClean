@@ -78,7 +78,7 @@ CLI 是只读报告器，不执行清理、删除、隔离或修复。
 
 CLI 支持 Ctrl+C 取消扫描；取消时返回 exit code `130`，不输出部分报告。
 
-Core 已包含只读 `CleanupPlan` 草案模型，可把扫描报告转换为 `Keep`、`ReportOnly` 或 `ReviewForQuarantine` 预览动作；当前仍不执行删除或隔离。
+Core 已包含只读 `CleanupPlan` 草案模型，可把扫描报告转换为 `Keep`、`ReportOnly` 或 `ReviewForQuarantine` 预览动作。当前清理计划 schema 为 `0.2`，会为 `ReviewForQuarantine` 项附加 `quarantinePreview`，展示拟议隔离路径和恢复元数据路径；`--privacy redacted` 会同步脱敏隔离预览路径。当前仍不创建目录、不写元数据、不执行删除或隔离。
 
 当前明确拒绝：
 

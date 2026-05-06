@@ -81,7 +81,8 @@ public sealed class ProgramEndToEndTests
 
         using var document = JsonDocument.Parse(stdout);
         var root = document.RootElement;
-        Assert.Equal("0.1", root.GetProperty("schemaVersion").GetString());
+        Assert.Equal("0.2", root.GetProperty("schemaVersion").GetString());
+        Assert.True(root.TryGetProperty("quarantineRoot", out _));
         var item = root.GetProperty("items")[0];
         Assert.Equal(temp.Path, item.GetProperty("path").GetString());
         Assert.True(Enum.TryParse<CleanupPlanAction>(item.GetProperty("action").GetString(), out _));

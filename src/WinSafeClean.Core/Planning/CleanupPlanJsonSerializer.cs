@@ -18,6 +18,7 @@ public static class CleanupPlanJsonSerializer
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             WriteIndented = true
         };
 

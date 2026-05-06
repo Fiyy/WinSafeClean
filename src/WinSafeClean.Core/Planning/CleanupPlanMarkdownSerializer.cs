@@ -13,6 +13,11 @@ public static class CleanupPlanMarkdownSerializer
         builder.AppendLine();
         builder.AppendLine($"Schema version: `{EscapeInlineCode(plan.SchemaVersion)}`");
         builder.AppendLine($"Created at: `{plan.CreatedAt:O}`");
+        if (!string.IsNullOrWhiteSpace(plan.QuarantineRoot))
+        {
+            builder.AppendLine($"Quarantine root: `{EscapeInlineCode(plan.QuarantineRoot)}`");
+        }
+
         builder.AppendLine();
         builder.AppendLine("## Items");
         builder.AppendLine();
@@ -33,6 +38,38 @@ public static class CleanupPlanMarkdownSerializer
             foreach (var reason in item.Reasons)
             {
                 builder.AppendLine($"- `{EscapeInlineCode(item.Path)}`: {SanitizeMarkdownText(reason)}");
+            }
+        }
+
+        var quarantinePreviewItems = plan.Items
+            .Where(item => item.QuarantinePreview is not null)
+            .ToArray();
+        if (quarantinePreviewItems.Length > 0)
+        {
+            builder.AppendLine();
+            builder.AppendLine("## Quarantine Preview");
+            builder.AppendLine();
+            builder.AppendLine("| Source | Proposed quarantine path | Restore metadata |");
+            builder.AppendLine("| --- | --- | --- |");
+
+            foreach (var item in quarantinePreviewItems)
+            {
+                var preview = item.QuarantinePreview!;
+                builder.AppendLine(
+                    $"| `{EscapeTableCell(EscapeInlineCode(preview.OriginalPath))}` | `{EscapeTableCell(EscapeInlineCode(preview.ProposedQuarantinePath))}` | `{EscapeTableCell(EscapeInlineCode(preview.RestoreMetadataPath))}` |");
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("## Quarantine Warnings");
+            builder.AppendLine();
+
+            foreach (var item in quarantinePreviewItems)
+            {
+                var preview = item.QuarantinePreview!;
+                foreach (var warning in preview.Warnings)
+                {
+                    builder.AppendLine($"- `{EscapeInlineCode(preview.OriginalPath)}`: {SanitizeMarkdownText(warning)}");
+                }
             }
         }
 

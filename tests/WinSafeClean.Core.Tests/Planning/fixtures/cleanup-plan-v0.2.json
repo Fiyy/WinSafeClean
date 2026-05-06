@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "0.2",
+  "createdAt": "2026-05-06T01:02:03+00:00",
+  "items": [
+    {
+      "path": "C:\\Users\\Alice\\AppData\\Local\\Example\\cache.tmp",
+      "action": "ReviewForQuarantine",
+      "riskLevel": "LowRisk",
+      "reasons": [
+        "Known cleanup rule matched; manual review required before quarantine."
+      ],
+      "quarantinePreview": {
+        "originalPath": "C:\\Users\\Alice\\AppData\\Local\\Example\\cache.tmp",
+        "proposedQuarantinePath": "C:\\Users\\Alice\\AppData\\Local\\WinSafeClean\\Quarantine\\items\\abcd-cache.tmp",
+        "restoreMetadataPath": "C:\\Users\\Alice\\AppData\\Local\\WinSafeClean\\Quarantine\\restore\\abcd.restore.json",
+        "restorePlanId": "abcd",
+        "requiresManualConfirmation": true,
+        "warnings": [
+          "Quarantine preview only; no file operation has been executed."
+        ]
+      }
+    },
+    {
+      "path": "C:\\Users\\Alice\\Downloads\\unknown.bin",
+      "action": "ReportOnly",
+      "riskLevel": "Unknown",
+      "reasons": [
+        "Insufficient evidence for a cleanup action; report only."
+      ]
+    },
+    {
+      "path": "C:\\Windows\\Installer\\example.msi",
+      "action": "Keep",
+      "riskLevel": "Blocked",
+      "reasons": [
+        "Blocked risk level must be kept.",
+        "Windows Installer cache"
+      ]
+    }
+  ],
+  "quarantineRoot": "C:\\Users\\Alice\\AppData\\Local\\WinSafeClean\\Quarantine"
+}

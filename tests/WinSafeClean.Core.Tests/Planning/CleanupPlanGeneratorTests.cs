@@ -48,6 +48,7 @@ public sealed class CleanupPlanGeneratorTests
     [Fact]
     public void ShouldMarkKnownCleanupRuleLowRiskItemsAsQuarantineReviewCandidates()
     {
+        const string quarantineRoot = @"C:\Users\Alice\AppData\Local\WinSafeClean\Quarantine";
         var report = CreateReport(new ScanReportItem(
             Path: @"C:\Users\Alice\AppData\Local\Example\cache.tmp",
             ItemKind: ScanReportItemKind.File,
@@ -59,11 +60,16 @@ public sealed class CleanupPlanGeneratorTests
             ],
             Risk: new RiskAssessment(RiskLevel.LowRisk, 0.8, SuggestedAction.ReportOnly, ["Known cache."], [])));
 
-        var plan = CleanupPlanGenerator.Generate(report, DateTimeOffset.UnixEpoch);
+        var plan = CleanupPlanGenerator.Generate(report, DateTimeOffset.UnixEpoch, quarantineRoot);
 
         var item = Assert.Single(plan.Items);
         Assert.Equal(CleanupPlanAction.ReviewForQuarantine, item.Action);
         Assert.Contains("manual review", string.Join(" ", item.Reasons), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(quarantineRoot, plan.QuarantineRoot);
+        Assert.NotNull(item.QuarantinePreview);
+        Assert.Equal(item.Path, item.QuarantinePreview.OriginalPath);
+        Assert.StartsWith(quarantineRoot, item.QuarantinePreview.ProposedQuarantinePath, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("no file operation", string.Join(" ", item.QuarantinePreview.Warnings), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -106,6 +112,7 @@ public sealed class CleanupPlanGeneratorTests
         var item = Assert.Single(plan.Items);
         Assert.Equal(CleanupPlanAction.ReportOnly, item.Action);
         Assert.Contains("Insufficient evidence", item.Reasons[0]);
+        Assert.Null(item.QuarantinePreview);
     }
 
     private static ScanReport CreateReport(ScanReportItem item)

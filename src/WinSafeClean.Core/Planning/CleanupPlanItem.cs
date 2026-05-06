@@ -6,4 +6,5 @@ public sealed record CleanupPlanItem(
     string Path,
     CleanupPlanAction Action,
     RiskLevel RiskLevel,
-    IReadOnlyList<string> Reasons);
+    IReadOnlyList<string> Reasons,
+    QuarantinePreview? QuarantinePreview = null);
