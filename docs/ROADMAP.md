@@ -67,6 +67,7 @@
 - Read-only quarantine preview
 - Restore metadata model
 - Operation log model
+- Preflight checklist
 - 回滚命令
 
 完成标准：

@@ -166,8 +166,12 @@
 - 新增 `QuarantineOperationLog` schema `1.0` 和 JSON serializer
 - 恢复元数据和操作日志当前只生成内存模型，不写文件、不接执行器
 - 新增 ADR 0023，记录恢复元数据和操作日志模型策略
+- 新增 `QuarantinePreflightValidator`
+- 新增 preflight checklist schema `1.0` 和 JSON serializer
+- 执行前校验会阻断 redacted metadata、未确认、schema 不匹配、路径逃逸、受保护隔离根和路径冲突
+- 新增 ADR 0024，记录隔离执行前校验策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：185 passed
+- 测试通过：198 passed
 
 ## 正在进行
 
@@ -175,7 +179,7 @@
 
 ## 下一步
 
-1. 设计只读执行器边界和执行前校验清单。
+1. 设计只读 `preflight` CLI 命令。
 
 ## 待决策
 
