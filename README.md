@@ -55,6 +55,7 @@ CLI 是只读报告器，不执行清理、删除、隔离或修复。
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Temp --privacy redacted
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Temp --recursive --max-items 200
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- plan --path C:\Temp --format markdown
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- plan --path C:\Temp --cleanerml .\rules\example.xml
 ```
 
 当前支持：
@@ -67,6 +68,7 @@ CLI 是只读报告器，不执行清理、删除、隔离或修复。
 - `--max-items <N>`，限制返回项数量
 - `--recursive`，显式启用递归扫描
 - `--no-recursive`，显式保持单层目录扫描
+- `--cleanerml <FILE_OR_DIR>`，显式加载用户提供的 CleanerML 文件或目录顶层 `.xml` 文件，只作为只读规则证据
 
 目录扫描默认只读取直接子项；传入 `--recursive` 后会扫描子树，但仍不会跟随 reparse point、junction 或 symlink。目录项大小暂记为 `0 B`，不会递归计算目录大小。
 

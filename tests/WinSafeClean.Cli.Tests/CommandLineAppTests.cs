@@ -200,6 +200,57 @@ public sealed class CommandLineAppTests
     }
 
     [Fact]
+    public void PlanShouldUseExplicitCleanerMlRuleFileAsKnownCleanupEvidence()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var rules = TemporaryFile.Create($"""
+            <cleaner id="example">
+              <option id="cache">
+                <action command="delete" search="file" path="{temp.Path}"/>
+              </option>
+            </cleaner>
+            """);
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path, "--cleanerml", rules.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var item = document.RootElement.GetProperty("items")[0];
+        Assert.Equal("ReportOnly", item.GetProperty("action").GetString());
+        Assert.Contains(
+            item.GetProperty("reasons").EnumerateArray(),
+            reason => reason.GetString()!.Contains("Known cleanup rule matched", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void PlanShouldRejectMissingCleanerMlRulePath()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        var missingRules = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path, "--cleanerml", missingRules],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("--cleanerml", stderr.ToString());
+    }
+
+
+    [Fact]
     public void PlanShouldWriteRedactedMarkdownWhenRequested()
     {
         using var temp = TemporaryFile.Create("hello");

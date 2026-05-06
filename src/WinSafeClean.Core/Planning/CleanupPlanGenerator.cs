@@ -73,6 +73,12 @@ public static class CleanupPlanGenerator
             return CleanupPlanAction.ReviewForQuarantine;
         }
 
+        if (HasKnownCleanupRule(reportItem))
+        {
+            reasons.Add("Known cleanup rule matched, but current risk evidence is not enough for quarantine review.");
+            return CleanupPlanAction.ReportOnly;
+        }
+
         reasons.Add("Insufficient evidence for a cleanup action; report only.");
         return CleanupPlanAction.ReportOnly;
     }

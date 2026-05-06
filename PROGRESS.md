@@ -145,8 +145,11 @@
 - 新增 `CleanupPlan` JSON schema fixture，覆盖 `Keep`、`ReportOnly`、`ReviewForQuarantine`
 - 新增 CLI `plan` Program 级端到端测试
 - 补充 CLI `plan` redacted 输出、输出文件保护、输入不修改和 Markdown 转义测试
+- CLI `scan` / `plan` 支持 `--cleanerml <FILE_OR_DIR>`
+- `--cleanerml` 只加载用户显式提供的规则文件或目录顶层 `.xml` 文件
+- `plan --cleanerml` 可将命中的 CleanerML 候选体现在只读计划原因中，但不会执行清理
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：165 passed
+- 测试通过：167 passed
 
 ## 正在进行
 
@@ -154,8 +157,8 @@
 
 ## 下一步
 
-1. 为 CLI `plan` 增加 CleanerML 用户规则输入参数。
-2. 为只读 plan 输出补充用户文档示例。
+1. 为只读 plan 输出补充用户文档示例。
+2. 为 CleanerML CLI 输入增加 Program 级端到端测试。
 
 ## 待决策
 

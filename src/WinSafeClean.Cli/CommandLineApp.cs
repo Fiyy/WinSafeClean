@@ -3,6 +3,7 @@ using WinSafeClean.Core.FileInventory;
 using WinSafeClean.Core.Planning;
 using WinSafeClean.Core.Reporting;
 using WinSafeClean.Core.Risk;
+using WinSafeClean.CleanerRules;
 using WinSafeClean.Windows.Evidence;
 
 namespace WinSafeClean.Cli;
@@ -12,7 +13,7 @@ public static class CommandLineApp
     private const int Success = 0;
     private const int UsageError = 2;
     private const int Cancelled = 130;
-    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive]";
+    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>]";
     private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
@@ -87,7 +88,13 @@ public static class CommandLineApp
             return UsageError;
         }
 
-        var report = BuildReport(options, createdAt, evidenceProvider, cancellationToken);
+        if (!TryCreateEvidenceProvider(options, evidenceProvider, cancellationToken, out var effectiveEvidenceProvider, out var evidenceProviderError))
+        {
+            stderr.WriteLine(evidenceProviderError);
+            return UsageError;
+        }
+
+        var report = BuildReport(options, createdAt, effectiveEvidenceProvider, cancellationToken);
         if (options.PrivacyMode == ScanReportPrivacyMode.Redacted)
         {
             report = ScanReportPrivacyRedactor.Redact(report);
@@ -133,7 +140,13 @@ public static class CommandLineApp
             return UsageError;
         }
 
-        var report = BuildReport(options, createdAt, evidenceProvider, cancellationToken);
+        if (!TryCreateEvidenceProvider(options, evidenceProvider, cancellationToken, out var effectiveEvidenceProvider, out var evidenceProviderError))
+        {
+            stderr.WriteLine(evidenceProviderError);
+            return UsageError;
+        }
+
+        var report = BuildReport(options, createdAt, effectiveEvidenceProvider, cancellationToken);
         if (options.PrivacyMode == ScanReportPrivacyMode.Redacted)
         {
             report = ScanReportPrivacyRedactor.Redact(report);
@@ -181,6 +194,56 @@ public static class CommandLineApp
         return new CompositeFileEvidenceProvider(WindowsEvidenceProviderFactory.CreateDefaultProviders());
     }
 
+    private static bool TryCreateEvidenceProvider(
+        ScanOptions options,
+        IFileEvidenceProvider baseEvidenceProvider,
+        CancellationToken cancellationToken,
+        out IFileEvidenceProvider evidenceProvider,
+        out string? error)
+    {
+        evidenceProvider = baseEvidenceProvider;
+        error = null;
+
+        if (string.IsNullOrWhiteSpace(options.CleanerMlRulePath))
+        {
+            return true;
+        }
+
+        try
+        {
+            CleanerMlRuleSet ruleSet;
+            if (File.Exists(options.CleanerMlRulePath))
+            {
+                ruleSet = CleanerMlRuleFileLoader.LoadFile(options.CleanerMlRulePath, cancellationToken: cancellationToken);
+            }
+            else if (Directory.Exists(options.CleanerMlRulePath))
+            {
+                ruleSet = CleanerMlRuleFileLoader.LoadDirectory(options.CleanerMlRulePath, cancellationToken: cancellationToken);
+            }
+            else
+            {
+                error = "--cleanerml must point to an existing CleanerML file or directory.";
+                return false;
+            }
+
+            evidenceProvider = new CompositeFileEvidenceProvider(
+            [
+                baseEvidenceProvider,
+                new CleanerRuleEvidenceProvider(ruleSet)
+            ]);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            error = $"--cleanerml could not be loaded: {ex.Message}";
+            return false;
+        }
+    }
+
     private sealed class EmptyEvidenceProvider : IFileEvidenceProvider
     {
         public static readonly EmptyEvidenceProvider Instance = new();
@@ -225,6 +288,7 @@ public static class CommandLineApp
         int MaxItems,
         bool Recursive,
         ScanReportPrivacyMode PrivacyMode,
+        string? CleanerMlRulePath,
         string? Error)
     {
         public static ScanOptions Parse(string[] args)
@@ -235,6 +299,7 @@ public static class CommandLineApp
             var maxItems = FileSystemScanOptions.Default.MaxItems;
             var recursive = FileSystemScanOptions.Default.Recursive;
             var privacyMode = ScanReportPrivacyMode.Full;
+            string? cleanerMlRulePath = null;
 
             for (var index = 0; index < args.Length; index++)
             {
@@ -292,6 +357,13 @@ public static class CommandLineApp
                         }
 
                         break;
+                    case "--cleanerml":
+                        if (!TryReadValue(args, ref index, "--cleanerml", out cleanerMlRulePath, out var cleanerMlError))
+                        {
+                            return Invalid(cleanerMlError);
+                        }
+
+                        break;
                     case "--no-recursive":
                         recursive = false;
                         break;
@@ -308,7 +380,7 @@ public static class CommandLineApp
                 return Invalid("--path is required.");
             }
 
-            return new ScanOptions(path, format, outputPath, maxItems, recursive, privacyMode, Error: null);
+            return new ScanOptions(path, format, outputPath, maxItems, recursive, privacyMode, cleanerMlRulePath, Error: null);
         }
 
         private static bool TryParsePrivacyMode(string value, out ScanReportPrivacyMode privacyMode)
@@ -353,6 +425,7 @@ public static class CommandLineApp
                 MaxItems: FileSystemScanOptions.Default.MaxItems,
                 Recursive: FileSystemScanOptions.Default.Recursive,
                 PrivacyMode: ScanReportPrivacyMode.Full,
+                CleanerMlRulePath: null,
                 Error: error);
         }
     }
