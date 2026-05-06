@@ -176,6 +176,190 @@ public sealed class CommandLineAppTests
     }
 
     [Fact]
+    public void PlanShouldWriteRedactedJsonWhenRequested()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path, "--privacy", "redacted"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.DoesNotContain(temp.Path, stdout.ToString());
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var root = document.RootElement;
+        Assert.False(root.TryGetProperty("privacyMode", out _));
+        var item = root.GetProperty("items")[0];
+        Assert.Equal("[redacted-path-0001]", item.GetProperty("path").GetString());
+    }
+
+    [Fact]
+    public void PlanShouldWriteRedactedMarkdownWhenRequested()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path, "--format", "markdown", "--privacy", "redacted"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.Contains("[redacted-path-0001]", stdout.ToString());
+        Assert.DoesNotContain(temp.Path, stdout.ToString());
+    }
+
+    [Fact]
+    public void PlanShouldWritePlanOnlyToExplicitOutputPath()
+    {
+        using var temp = TemporaryFile.Create("hello");
+        var outputPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        try
+        {
+            var exitCode = CommandLineApp.Run(
+                ["plan", "--path", temp.Path, "--output", outputPath],
+                stdout,
+                stderr,
+                DateTimeOffset.UnixEpoch);
+
+            Assert.Equal(0, exitCode);
+            Assert.Equal(string.Empty, stdout.ToString());
+            Assert.Equal(string.Empty, stderr.ToString());
+            Assert.True(File.Exists(outputPath));
+
+            using var document = JsonDocument.Parse(File.ReadAllText(outputPath));
+            Assert.Equal("0.1", document.RootElement.GetProperty("schemaVersion").GetString());
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
+
+    [Fact]
+    public void PlanShouldRejectExistingOutputFile()
+    {
+        using var temp = TemporaryFile.Create("scan target");
+        using var output = TemporaryFile.Create("existing plan");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path, "--output", output.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("must not overwrite", stderr.ToString());
+        Assert.Equal("existing plan", File.ReadAllText(output.Path));
+    }
+
+    [Fact]
+    public void PlanShouldRejectOutputPathMatchingExistingDirectory()
+    {
+        using var temp = TemporaryFile.Create("scan target");
+        using var sandbox = TemporarySandbox.Create();
+        var outputDirectory = sandbox.CreateDirectory("existing-plan-dir");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path, "--output", outputDirectory],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("must not overwrite", stderr.ToString());
+        Assert.True(Directory.Exists(outputDirectory));
+    }
+
+
+    [Fact]
+    public void PlanShouldRejectMissingOutputParentDirectory()
+    {
+        using var temp = TemporaryFile.Create("scan target");
+        var missingParent = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
+        var outputPath = System.IO.Path.Combine(missingParent, "plan.json");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["plan", "--path", temp.Path, "--output", outputPath],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("parent directory does not exist", stderr.ToString());
+        Assert.False(File.Exists(outputPath));
+    }
+
+    [Fact]
+    public void PlanShouldRejectProtectedOutputPath()
+    {
+        using var temp = TemporaryFile.Create("scan target");
+        const string outputPath = @"C:\Windows\Installer\plan.json";
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        try
+        {
+            var exitCode = CommandLineApp.Run(
+                ["plan", "--path", temp.Path, "--output", outputPath],
+                stdout,
+                stderr,
+                DateTimeOffset.UnixEpoch);
+
+            Assert.Equal(2, exitCode);
+            Assert.Equal(string.Empty, stdout.ToString());
+            Assert.Contains("protected Windows path", stderr.ToString());
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
+
+    [Fact]
+    public void PlanShouldNotModifyInputFile()
+    {
+        using var temp = TemporaryFile.Create("stable content");
+        var beforeContent = File.ReadAllText(temp.Path);
+        var beforeWriteTime = File.GetLastWriteTimeUtc(temp.Path);
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(["plan", "--path", temp.Path], stdout, stderr, DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(beforeContent, File.ReadAllText(temp.Path));
+        Assert.Equal(beforeWriteTime, File.GetLastWriteTimeUtc(temp.Path));
+    }
+
+    [Fact]
     public void ScanShouldRequireExplicitPath()
     {
         using var stdout = new StringWriter();

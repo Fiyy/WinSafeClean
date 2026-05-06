@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "0.1",
+  "createdAt": "2026-05-06T01:02:03+00:00",
+  "items": [
+    {
+      "path": "C:\\Users\\Alice\\AppData\\Local\\Example\\cache.tmp",
+      "action": "ReviewForQuarantine",
+      "riskLevel": "LowRisk",
+      "reasons": [
+        "Known cleanup rule matched; manual review required before quarantine."
+      ]
+    },
+    {
+      "path": "C:\\Users\\Alice\\Downloads\\unknown.bin",
+      "action": "ReportOnly",
+      "riskLevel": "Unknown",
+      "reasons": [
+        "Insufficient evidence for a cleanup action; report only."
+      ]
+    },
+    {
+      "path": "C:\\Windows\\Installer\\example.msi",
+      "action": "Keep",
+      "riskLevel": "Blocked",
+      "reasons": [
+        "Blocked risk level must be kept.",
+        "Windows Installer cache"
+      ]
+    }
+  ]
+}

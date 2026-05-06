@@ -36,6 +36,46 @@ public sealed class CleanupPlanSerializerTests
         Assert.Contains("Known cleanup rule", markdown);
     }
 
+    [Fact]
+    public void ShouldEscapeMarkdownTableSeparatorsAndBackticksInPlanPath()
+    {
+        var plan = new CleanupPlan(
+            SchemaVersion: "0.1",
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            Items:
+            [
+                new CleanupPlanItem(
+                    Path: @"C:\Temp\cache`name|part.tmp",
+                    Action: CleanupPlanAction.ReportOnly,
+                    RiskLevel: RiskLevel.Unknown,
+                    Reasons: ["Report only."])
+            ]);
+
+        var markdown = CleanupPlanMarkdownSerializer.Serialize(plan);
+
+        Assert.Contains(@"cache\`name\|part.tmp", markdown);
+    }
+
+    [Fact]
+    public void ShouldSanitizeControlCharactersInPlanReasons()
+    {
+        var plan = new CleanupPlan(
+            SchemaVersion: "0.1",
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            Items:
+            [
+                new CleanupPlanItem(
+                    Path: @"C:\Temp\cache.tmp",
+                    Action: CleanupPlanAction.ReportOnly,
+                    RiskLevel: RiskLevel.Unknown,
+                    Reasons: ["Line one\r\nLine two\t\u0001"])
+            ]);
+
+        var markdown = CleanupPlanMarkdownSerializer.Serialize(plan);
+
+        Assert.Contains(@"Line one\r\nLine two\t\u0001", markdown);
+    }
+
     private static CleanupPlan CreatePlan()
     {
         return new CleanupPlan(

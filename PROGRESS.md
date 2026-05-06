@@ -142,8 +142,11 @@
 - 新增 `CleanupPlanMarkdownSerializer`
 - CLI 新增只读 `plan` 命令，支持 JSON/Markdown 输出
 - `plan` 命令只生成预览，不执行删除、隔离或修复
+- 新增 `CleanupPlan` JSON schema fixture，覆盖 `Keep`、`ReportOnly`、`ReviewForQuarantine`
+- 新增 CLI `plan` Program 级端到端测试
+- 补充 CLI `plan` redacted 输出、输出文件保护、输入不修改和 Markdown 转义测试
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：153 passed
+- 测试通过：165 passed
 
 ## 正在进行
 
@@ -151,8 +154,8 @@
 
 ## 下一步
 
-1. 为 plan 输出增加 schema fixture。
-2. 为 CLI plan 增加 Program 级端到端测试。
+1. 为 CLI `plan` 增加 CleanerML 用户规则输入参数。
+2. 为只读 plan 输出补充用户文档示例。
 
 ## 待决策
 
