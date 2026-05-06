@@ -664,6 +664,95 @@ public sealed class CommandLineAppTests
     }
 
     [Fact]
+    public void QuarantineShouldRequireExplicitDangerConfirmation()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var sourcePath = sandbox.WriteFile("cache.tmp", "cache");
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan(sourcePath, quarantineRoot)));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata(sourcePath, quarantineRoot)));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["quarantine", "--plan", planFile.Path, "--metadata", metadataFile.Path, "--manual-confirmation"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("i-understand", stderr.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(sourcePath));
+    }
+
+    [Fact]
+    public void QuarantineShouldMoveFileWithExplicitConfirmation()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var sourcePath = sandbox.WriteFile("cache.tmp", "cache");
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        var metadata = CreateRestoreMetadata(sourcePath, quarantineRoot);
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan(sourcePath, quarantineRoot)));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(metadata));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            [
+                "quarantine",
+                "--plan", planFile.Path,
+                "--metadata", metadataFile.Path,
+                "--manual-confirmation",
+                "--i-understand-this-moves-files"
+            ],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.False(File.Exists(sourcePath));
+        Assert.True(File.Exists(metadata.QuarantinePath));
+        Assert.True(File.Exists(metadata.RestoreMetadataPath));
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        Assert.True(document.RootElement.GetProperty("succeeded").GetBoolean());
+    }
+
+    [Fact]
+    public void QuarantineShouldAppendOperationLogWhenRequested()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var sourcePath = sandbox.WriteFile("cache.tmp", "cache");
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        var metadata = CreateRestoreMetadata(sourcePath, quarantineRoot);
+        var operationLogPath = System.IO.Path.Combine(quarantineRoot, "logs", "operations.jsonl");
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan(sourcePath, quarantineRoot)));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(metadata));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            [
+                "quarantine",
+                "--plan", planFile.Path,
+                "--metadata", metadataFile.Path,
+                "--manual-confirmation",
+                "--i-understand-this-moves-files",
+                "--operation-log", operationLogPath
+            ],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.True(File.Exists(operationLogPath));
+        var log = File.ReadAllText(operationLogPath);
+        Assert.Contains("QuarantineStarted", log);
+        Assert.Contains("QuarantineCompleted", log);
+    }
+
+    [Fact]
     public void ScanShouldRequireExplicitPath()
     {
         using var stdout = new StringWriter();
@@ -1069,7 +1158,6 @@ public sealed class CommandLineAppTests
     [Theory]
     [InlineData("delete")]
     [InlineData("clean")]
-    [InlineData("quarantine")]
     [InlineData("restore")]
     public void ShouldRejectExecutableCommandsDuringReadOnlyPhase(string command)
     {
@@ -1188,7 +1276,11 @@ public sealed class CommandLineAppTests
     private static CleanupPlan CreatePreflightPlan()
     {
         const string quarantineRoot = @"C:\Users\Alice\AppData\Local\WinSafeClean\Quarantine";
+        return CreatePreflightPlan(@"C:\Users\Alice\AppData\Local\Example\cache.tmp", quarantineRoot);
+    }
 
+    private static CleanupPlan CreatePreflightPlan(string sourcePath, string quarantineRoot)
+    {
         return new CleanupPlan(
             SchemaVersion: "0.2",
             CreatedAt: DateTimeOffset.UnixEpoch,
@@ -1196,12 +1288,12 @@ public sealed class CommandLineAppTests
             Items:
             [
                 new CleanupPlanItem(
-                    Path: @"C:\Users\Alice\AppData\Local\Example\cache.tmp",
+                    Path: sourcePath,
                     Action: CleanupPlanAction.ReviewForQuarantine,
                     RiskLevel: RiskLevel.LowRisk,
                     Reasons: ["Known cleanup rule matched; manual review required before quarantine."],
                     QuarantinePreview: new QuarantinePreview(
-                        OriginalPath: @"C:\Users\Alice\AppData\Local\Example\cache.tmp",
+                        OriginalPath: sourcePath,
                         ProposedQuarantinePath: System.IO.Path.Combine(quarantineRoot, "items", "abcd-cache.tmp"),
                         RestoreMetadataPath: System.IO.Path.Combine(quarantineRoot, "restore", "abcd.restore.json"),
                         RestorePlanId: "abcd",
@@ -1213,13 +1305,17 @@ public sealed class CommandLineAppTests
     private static RestoreMetadata CreateRestoreMetadata()
     {
         const string quarantineRoot = @"C:\Users\Alice\AppData\Local\WinSafeClean\Quarantine";
+        return CreateRestoreMetadata(@"C:\Users\Alice\AppData\Local\Example\cache.tmp", quarantineRoot);
+    }
 
+    private static RestoreMetadata CreateRestoreMetadata(string sourcePath, string quarantineRoot)
+    {
         return new RestoreMetadata(
             SchemaVersion: "1.0",
             CreatedAt: DateTimeOffset.UnixEpoch,
             CleanupPlanSchemaVersion: "0.2",
             RestorePlanId: "abcd",
-            OriginalPath: @"C:\Users\Alice\AppData\Local\Example\cache.tmp",
+            OriginalPath: sourcePath,
             QuarantinePath: System.IO.Path.Combine(quarantineRoot, "items", "abcd-cache.tmp"),
             RestoreMetadataPath: System.IO.Path.Combine(quarantineRoot, "restore", "abcd.restore.json"),
             RiskLevel: RiskLevel.LowRisk,

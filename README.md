@@ -47,7 +47,7 @@ pwsh -File .\scripts\test.ps1 -Restore
 
 ## CLI
 
-CLI 是只读报告器，不执行清理、删除、隔离或修复。
+CLI 默认是只读报告器；`scan`、`plan` 和 `preflight` 不执行清理、删除、隔离或修复。`quarantine` 是唯一会移动文件的命令，必须同时提供 `--manual-confirmation` 和 `--i-understand-this-moves-files`。
 
 ```powershell
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Windows\Installer --format markdown
@@ -58,6 +58,7 @@ CLI 是只读报告器，不执行清理、删除、隔离或修复。
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- plan --path C:\Temp --format markdown
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- plan --path C:\Temp --cleanerml .\rules\example.xml
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- preflight --plan .\plan.json --metadata .\abcd.restore.json --manual-confirmation
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- quarantine --plan .\plan.json --metadata .\abcd.restore.json --manual-confirmation --i-understand-this-moves-files
 ```
 
 当前支持：
@@ -65,6 +66,7 @@ CLI 是只读报告器，不执行清理、删除、隔离或修复。
 - `scan --path <PATH>`
 - `plan --path <PATH>`，输出只读清理计划预览
 - `preflight --plan <FILE> --metadata <FILE>`，输出只读执行前校验清单
+- `quarantine --plan <FILE> --metadata <FILE> --manual-confirmation --i-understand-this-moves-files`，通过 preflight 后移动文件到隔离路径
 - `--format json|markdown`
 - `--privacy full|redacted`，默认 `full`
 - `--output <FILE>`，只允许写入不存在的新报告文件
@@ -89,7 +91,6 @@ Core 已包含只读 `CleanupPlan` 草案模型，可把扫描报告转换为 `K
 
 - `delete`
 - `clean`
-- `quarantine`
 - `restore`
 - `--delete`
 - `--fix`

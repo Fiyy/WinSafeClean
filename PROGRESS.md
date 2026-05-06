@@ -178,19 +178,22 @@
 - 新增 `IQuarantineFileSystem` 和 `SystemQuarantineFileSystem`
 - 执行器通过 preflight 后才写 restore metadata 并移动文件
 - restore metadata 写入失败不会移动源文件，移动失败会删除刚写入的 metadata
+- 新增 ADR 0026，记录最小隔离执行器策略
 - 执行器支持可选 operation log JSONL 追加
 - `QuarantineStarted` 日志追加失败会阻止移动，`QuarantineCompleted` 日志追加失败只返回 warning
-- 新增 ADR 0026，记录最小隔离执行器策略
+- CLI 新增真实 `quarantine` 命令，必须双重确认才会移动文件
+- `quarantine` 执行前会重新运行 preflight，并可追加 operation log JSONL
+- 新增 ADR 0027，记录带强确认的 quarantine CLI 策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：227 passed
+- 测试通过：229 passed
 
 ## 正在进行
 
-- Phase 3 只读清理计划
+- Phase 3 清理计划、隔离和恢复
 
 ## 下一步
 
-1. 设计 operation log 文件追加与真实隔离 CLI 门禁。
+1. 设计 restore CLI 和回滚命令。
 
 ## 待决策
 

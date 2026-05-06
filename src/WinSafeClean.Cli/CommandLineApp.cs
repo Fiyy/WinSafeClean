@@ -12,10 +12,11 @@ namespace WinSafeClean.Cli;
 public static class CommandLineApp
 {
     private const int Success = 0;
+    private const int OperationFailed = 1;
     private const int UsageError = 2;
     private const int Cancelled = 130;
-    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>]";
-    private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore"];
+    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>] OR quarantine --plan <FILE> --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--operation-log <FILE>] [--format json|markdown] [--output <FILE>]";
+    private static readonly string[] ExecutableCommands = ["delete", "clean", "restore"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
     public static int Run(
@@ -45,7 +46,8 @@ public static class CommandLineApp
 
         if (!command.Equals("scan", StringComparison.OrdinalIgnoreCase)
             && !command.Equals("plan", StringComparison.OrdinalIgnoreCase)
-            && !command.Equals("preflight", StringComparison.OrdinalIgnoreCase))
+            && !command.Equals("preflight", StringComparison.OrdinalIgnoreCase)
+            && !command.Equals("quarantine", StringComparison.OrdinalIgnoreCase))
         {
             stderr.WriteLine($"Unknown command '{command}'. {Usage}");
             return UsageError;
@@ -65,6 +67,11 @@ public static class CommandLineApp
             if (command.Equals("preflight", StringComparison.OrdinalIgnoreCase))
             {
                 return RunPreflight(args[1..], stdout, stderr, createdAt, cancellationToken);
+            }
+
+            if (command.Equals("quarantine", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunQuarantine(args[1..], stdout, stderr, createdAt, cancellationToken);
             }
 
             return command.Equals("plan", StringComparison.OrdinalIgnoreCase)
@@ -252,6 +259,104 @@ public static class CommandLineApp
         return Success;
     }
 
+    private static int RunQuarantine(
+        string[] args,
+        TextWriter stdout,
+        TextWriter stderr,
+        DateTimeOffset createdAt,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var options = QuarantineOptions.Parse(args);
+        if (!string.IsNullOrWhiteSpace(options.Error))
+        {
+            stderr.WriteLine(options.Error);
+            return UsageError;
+        }
+
+        if (!options.ManualConfirmationProvided)
+        {
+            stderr.WriteLine("quarantine requires --manual-confirmation.");
+            return UsageError;
+        }
+
+        if (!options.UnderstandsFileMove)
+        {
+            stderr.WriteLine("quarantine requires --i-understand-this-moves-files.");
+            return UsageError;
+        }
+
+        if (!File.Exists(options.PlanPath))
+        {
+            stderr.WriteLine("--plan must point to an existing cleanup plan JSON file.");
+            return UsageError;
+        }
+
+        if (!File.Exists(options.MetadataPath))
+        {
+            stderr.WriteLine("--metadata must point to an existing restore metadata JSON file.");
+            return UsageError;
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.OperationLogPath))
+        {
+            var operationLogValidationError = ValidateAppendPath(options.OperationLogPath);
+            if (!string.IsNullOrWhiteSpace(operationLogValidationError))
+            {
+                stderr.WriteLine(operationLogValidationError);
+                return UsageError;
+            }
+        }
+
+        CleanupPlan plan;
+        RestoreMetadata metadata;
+        try
+        {
+            plan = CleanupPlanJsonSerializer.Deserialize(File.ReadAllText(options.PlanPath));
+            metadata = RestoreMetadataJsonSerializer.Deserialize(File.ReadAllText(options.MetadataPath));
+        }
+        catch (Exception exception)
+        {
+            stderr.WriteLine($"quarantine input could not be read: {exception.Message}");
+            return UsageError;
+        }
+
+        var result = new QuarantineExecutor().Execute(
+            plan,
+            metadata,
+            new QuarantineExecutionOptions(
+                ManualConfirmationProvided: options.ManualConfirmationProvided,
+                OperationId: Guid.NewGuid().ToString("N"),
+                RunId: Guid.NewGuid().ToString("N"),
+                OperationLogPath: options.OperationLogPath),
+            createdAt);
+
+        var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
+            ? QuarantineExecutionResultMarkdownSerializer.Serialize(result)
+            : QuarantineExecutionResultJsonSerializer.Serialize(result);
+
+        if (!string.IsNullOrWhiteSpace(options.OutputPath))
+        {
+            var outputValidationError = ValidateOutputPath(options.OutputPath);
+            if (!string.IsNullOrWhiteSpace(outputValidationError))
+            {
+                stderr.WriteLine(outputValidationError);
+                return UsageError;
+            }
+
+            using var stream = new FileStream(options.OutputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            using var writer = new StreamWriter(stream);
+            writer.Write(rendered);
+        }
+        else
+        {
+            stdout.Write(rendered);
+        }
+
+        return result.Succeeded ? Success : OperationFailed;
+    }
+
     private static ScanReport BuildReport(
         ScanOptions options,
         DateTimeOffset createdAt,
@@ -352,6 +457,22 @@ public static class CommandLineApp
         if (!string.IsNullOrWhiteSpace(parent) && !Directory.Exists(parent))
         {
             return "--output parent directory does not exist.";
+        }
+
+        return null;
+    }
+
+    private static string? ValidateAppendPath(string appendPath)
+    {
+        var appendRisk = PathRiskClassifier.Assess(appendPath);
+        if (appendRisk.Level == RiskLevel.Blocked)
+        {
+            return "--operation-log must not target a protected Windows path.";
+        }
+
+        if (Directory.Exists(appendPath))
+        {
+            return "--operation-log must not target an existing directory.";
         }
 
         return null;
@@ -605,6 +726,133 @@ public static class CommandLineApp
                 Format: "json",
                 OutputPath: null,
                 ManualConfirmationProvided: false,
+                Error: error);
+        }
+    }
+
+    private sealed record QuarantineOptions(
+        string? PlanPath,
+        string? MetadataPath,
+        string Format,
+        string? OutputPath,
+        string? OperationLogPath,
+        bool ManualConfirmationProvided,
+        bool UnderstandsFileMove,
+        string? Error)
+    {
+        public static QuarantineOptions Parse(string[] args)
+        {
+            string? planPath = null;
+            string? metadataPath = null;
+            var format = "json";
+            string? outputPath = null;
+            string? operationLogPath = null;
+            var manualConfirmationProvided = false;
+            var understandsFileMove = false;
+
+            for (var index = 0; index < args.Length; index++)
+            {
+                var arg = args[index];
+                switch (arg)
+                {
+                    case "--plan":
+                        if (!TryReadValue(args, ref index, "--plan", out planPath, out var planError))
+                        {
+                            return Invalid(planError);
+                        }
+
+                        break;
+                    case "--metadata":
+                        if (!TryReadValue(args, ref index, "--metadata", out metadataPath, out var metadataError))
+                        {
+                            return Invalid(metadataError);
+                        }
+
+                        break;
+                    case "--format":
+                        if (!TryReadValue(args, ref index, "--format", out format, out var formatError))
+                        {
+                            return Invalid(formatError);
+                        }
+
+                        if (!format.Equals("json", StringComparison.OrdinalIgnoreCase)
+                            && !format.Equals("markdown", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return Invalid("--format must be either 'json' or 'markdown'.");
+                        }
+
+                        break;
+                    case "--output":
+                        if (!TryReadValue(args, ref index, "--output", out outputPath, out var outputError))
+                        {
+                            return Invalid(outputError);
+                        }
+
+                        break;
+                    case "--operation-log":
+                        if (!TryReadValue(args, ref index, "--operation-log", out operationLogPath, out var operationLogError))
+                        {
+                            return Invalid(operationLogError);
+                        }
+
+                        break;
+                    case "--manual-confirmation":
+                        manualConfirmationProvided = true;
+                        break;
+                    case "--i-understand-this-moves-files":
+                        understandsFileMove = true;
+                        break;
+                    default:
+                        return Invalid($"Unknown option '{arg}'.");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(planPath))
+            {
+                return Invalid("--plan is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(metadataPath))
+            {
+                return Invalid("--metadata is required.");
+            }
+
+            return new QuarantineOptions(
+                planPath,
+                metadataPath,
+                format,
+                outputPath,
+                operationLogPath,
+                manualConfirmationProvided,
+                understandsFileMove,
+                Error: null);
+        }
+
+        private static bool TryReadValue(string[] args, ref int index, string option, out string value, out string error)
+        {
+            if (index + 1 >= args.Length || args[index + 1].StartsWith("--", StringComparison.Ordinal))
+            {
+                value = string.Empty;
+                error = $"{option} requires a value.";
+                return false;
+            }
+
+            index++;
+            value = args[index];
+            error = string.Empty;
+            return true;
+        }
+
+        private static QuarantineOptions Invalid(string error)
+        {
+            return new QuarantineOptions(
+                PlanPath: null,
+                MetadataPath: null,
+                Format: "json",
+                OutputPath: null,
+                OperationLogPath: null,
+                ManualConfirmationProvided: false,
+                UnderstandsFileMove: false,
                 Error: error);
         }
     }

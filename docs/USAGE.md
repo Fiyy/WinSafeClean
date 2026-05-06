@@ -68,3 +68,19 @@ WinSafeClean 可以显式加载用户提供的 CleanerML 文件或目录顶层 `
 ```
 
 该命令不会重新扫描、不会写恢复元数据、不会追加日志、不会创建隔离目录，也不会执行隔离或恢复。`isExecutable=false` 是校验结果，不是命令失败。
+
+## 隔离
+
+`quarantine` 是真实写操作，会移动文件，并写入 restore metadata。必须同时提供人工确认和危险操作确认：
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- quarantine --plan .\plan.json --metadata .\abcd.restore.json --manual-confirmation --i-understand-this-moves-files --operation-log .\operations.jsonl
+```
+
+安全边界：
+
+- 执行前会重新运行 preflight checklist。
+- 不通过 preflight 不会移动文件。
+- 只支持文件隔离，不支持目录隔离。
+- 不覆盖已有隔离目标或 restore metadata。
+- `delete`、`clean` 和 `restore` 仍未开放。
