@@ -26,6 +26,39 @@ public sealed class QuarantinePreflightChecklistSerializerTests
         Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(json));
     }
 
+    [Fact]
+    public void ShouldRenderChecklistMarkdown()
+    {
+        var checklist = CreateChecklist();
+
+        var markdown = QuarantinePreflightChecklistMarkdownSerializer.Serialize(checklist);
+
+        Assert.Contains("# WinSafeClean Preflight Checklist", markdown);
+        Assert.Contains("ManualConfirmation", markdown);
+        Assert.Contains("`Passed`", markdown);
+    }
+
+    [Fact]
+    public void ShouldSanitizeControlCharactersInChecklistMarkdown()
+    {
+        var checklist = new QuarantinePreflightChecklist(
+            SchemaVersion: "1.0",
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            IsExecutable: false,
+            Checks:
+            [
+                new QuarantinePreflightCheck(
+                    Code: "Bad|Code",
+                    Status: QuarantinePreflightCheckStatus.Failed,
+                    Message: "Line one\r\nLine two\t\u0001")
+            ]);
+
+        var markdown = QuarantinePreflightChecklistMarkdownSerializer.Serialize(checklist);
+
+        Assert.Contains("Bad\\|Code", markdown);
+        Assert.Contains(@"Line one\r\nLine two\t\u0001", markdown);
+    }
+
     private static QuarantinePreflightChecklist CreateChecklist()
     {
         return new QuarantinePreflightChecklist(

@@ -14,6 +14,14 @@ public static class RestoreMetadataJsonSerializer
         return JsonSerializer.Serialize(metadata, Options);
     }
 
+    public static RestoreMetadata Deserialize(string json)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
+
+        return JsonSerializer.Deserialize<RestoreMetadata>(json, Options)
+            ?? throw new InvalidOperationException("Restore metadata JSON did not contain metadata.");
+    }
+
     private static JsonSerializerOptions CreateOptions()
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)

@@ -170,8 +170,12 @@
 - 新增 preflight checklist schema `1.0` 和 JSON serializer
 - 执行前校验会阻断 redacted metadata、未确认、schema 不匹配、路径逃逸、受保护隔离根和路径冲突
 - 新增 ADR 0024，记录隔离执行前校验策略
+- CLI 新增只读 `preflight` 命令，读取 cleanup plan 和 restore metadata 后输出 checklist
+- `preflight` 支持 JSON/Markdown 输出和安全 `--output`
+- `preflight` 不重新扫描、不写元数据、不追加日志、不移动或删除文件
+- 新增 ADR 0025，记录只读 preflight CLI 策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：198 passed
+- 测试通过：216 passed
 
 ## 正在进行
 
@@ -179,7 +183,7 @@
 
 ## 下一步
 
-1. 设计只读 `preflight` CLI 命令。
+1. 设计真实隔离执行器的最小安全实现。
 
 ## 待决策
 

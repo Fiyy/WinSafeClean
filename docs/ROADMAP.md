@@ -68,6 +68,7 @@
 - Restore metadata model
 - Operation log model
 - Preflight checklist
+- Read-only preflight CLI
 - 回滚命令
 
 完成标准：

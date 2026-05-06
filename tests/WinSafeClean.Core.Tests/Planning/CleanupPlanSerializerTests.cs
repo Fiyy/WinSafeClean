@@ -28,6 +28,26 @@ public sealed class CleanupPlanSerializerTests
     }
 
     [Fact]
+    public void ShouldDeserializeCleanupPlanJsonWithReadableEnumValues()
+    {
+        var json = CleanupPlanJsonSerializer.Serialize(CreatePlan());
+
+        var plan = CleanupPlanJsonSerializer.Deserialize(json);
+
+        var item = Assert.Single(plan.Items);
+        Assert.Equal("0.2", plan.SchemaVersion);
+        Assert.Equal(CleanupPlanAction.ReviewForQuarantine, item.Action);
+        Assert.Equal(RiskLevel.LowRisk, item.RiskLevel);
+        Assert.NotNull(item.QuarantinePreview);
+    }
+
+    [Fact]
+    public void ShouldRejectInvalidCleanupPlanJson()
+    {
+        Assert.ThrowsAny<Exception>(() => CleanupPlanJsonSerializer.Deserialize("{not valid json"));
+    }
+
+    [Fact]
     public void ShouldRenderCleanupPlanMarkdown()
     {
         var plan = CreatePlan();

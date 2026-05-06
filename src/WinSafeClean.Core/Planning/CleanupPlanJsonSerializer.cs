@@ -14,6 +14,14 @@ public static class CleanupPlanJsonSerializer
         return JsonSerializer.Serialize(plan, Options);
     }
 
+    public static CleanupPlan Deserialize(string json)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
+
+        return JsonSerializer.Deserialize<CleanupPlan>(json, Options)
+            ?? throw new InvalidOperationException("Cleanup plan JSON did not contain a plan.");
+    }
+
     private static JsonSerializerOptions CreateOptions()
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)

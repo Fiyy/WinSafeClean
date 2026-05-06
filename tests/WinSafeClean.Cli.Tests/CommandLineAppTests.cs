@@ -1,6 +1,9 @@
 using System.Text.Json;
 using WinSafeClean.Core.Evidence;
+using WinSafeClean.Core.Planning;
+using WinSafeClean.Core.Quarantine;
 using WinSafeClean.Core.Reporting;
+using WinSafeClean.Core.Risk;
 using WinSafeClean.Cli;
 
 namespace WinSafeClean.Cli.Tests;
@@ -414,6 +417,250 @@ public sealed class CommandLineAppTests
         Assert.Equal(0, exitCode);
         Assert.Equal(beforeContent, File.ReadAllText(temp.Path));
         Assert.Equal(beforeWriteTime, File.GetLastWriteTimeUtc(temp.Path));
+    }
+
+    [Fact]
+    public void PreflightShouldReadPlanAndMetadataAndWriteJsonChecklist()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path, "--manual-confirmation"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var root = document.RootElement;
+        Assert.Equal("1.0", root.GetProperty("schemaVersion").GetString());
+        Assert.True(root.GetProperty("isExecutable").GetBoolean());
+        Assert.Contains(
+            root.GetProperty("checks").EnumerateArray(),
+            check => check.GetProperty("code").GetString() == "ManualConfirmation"
+                && check.GetProperty("status").GetString() == "Passed");
+    }
+
+    [Fact]
+    public void PreflightShouldWriteMarkdownWhenRequested()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path, "--manual-confirmation", "--format", "markdown"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.Contains("# WinSafeClean Preflight Checklist", stdout.ToString());
+        Assert.Contains("ManualConfirmation", stdout.ToString());
+    }
+
+    [Fact]
+    public void PreflightShouldReturnChecklistFailureWithoutManualConfirmation()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        Assert.False(document.RootElement.GetProperty("isExecutable").GetBoolean());
+    }
+
+    [Fact]
+    public void PreflightShouldRejectMissingPlanFile()
+    {
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        var missingPlan = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", missingPlan, "--metadata", metadataFile.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        Assert.Contains("--plan", stderr.ToString());
+    }
+
+    [Fact]
+    public void PreflightShouldRequirePlanAndMetadata()
+    {
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(["preflight"], stdout, stderr, DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("--plan is required", stderr.ToString());
+    }
+
+    [Fact]
+    public void PreflightShouldRejectMissingMetadataFile()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        var missingMetadata = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", missingMetadata],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("--metadata", stderr.ToString());
+    }
+
+    [Fact]
+    public void PreflightShouldRejectInvalidPlanJson()
+    {
+        using var planFile = TemporaryFile.Create("{not valid json");
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("could not be read", stderr.ToString());
+    }
+
+    [Fact]
+    public void PreflightShouldRejectInvalidFormat()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path, "--format", "html"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("--format", stderr.ToString());
+    }
+
+    [Fact]
+    public void PreflightShouldRejectUnknownOption()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path, "--unknown"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("Unknown option", stderr.ToString());
+    }
+
+    [Fact]
+    public void PreflightShouldWriteChecklistOnlyToExplicitOutputPath()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        var outputPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        try
+        {
+            var exitCode = CommandLineApp.Run(
+                ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path, "--manual-confirmation", "--output", outputPath],
+                stdout,
+                stderr,
+                DateTimeOffset.UnixEpoch);
+
+            Assert.Equal(0, exitCode);
+            Assert.Equal(string.Empty, stdout.ToString());
+            Assert.True(File.Exists(outputPath));
+            using var document = JsonDocument.Parse(File.ReadAllText(outputPath));
+            Assert.Equal("1.0", document.RootElement.GetProperty("schemaVersion").GetString());
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
+
+    [Fact]
+    public void PreflightShouldRejectExistingOutputFile()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        using var output = TemporaryFile.Create("existing");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path, "--output", output.Path],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("must not overwrite", stderr.ToString());
+        Assert.Equal("existing", File.ReadAllText(output.Path));
+    }
+
+    [Fact]
+    public void PreflightShouldNotModifyPlanOrMetadataFiles()
+    {
+        using var planFile = TemporaryFile.Create(CleanupPlanJsonSerializer.Serialize(CreatePreflightPlan()));
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(CreateRestoreMetadata()));
+        var planBefore = File.ReadAllText(planFile.Path);
+        var metadataBefore = File.ReadAllText(metadataFile.Path);
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["preflight", "--plan", planFile.Path, "--metadata", metadataFile.Path, "--manual-confirmation"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(planBefore, File.ReadAllText(planFile.Path));
+        Assert.Equal(metadataBefore, File.ReadAllText(metadataFile.Path));
     }
 
     [Fact]
@@ -936,5 +1183,50 @@ public sealed class CommandLineAppTests
                 Directory.Delete(RootPath, recursive: true);
             }
         }
+    }
+
+    private static CleanupPlan CreatePreflightPlan()
+    {
+        const string quarantineRoot = @"C:\Users\Alice\AppData\Local\WinSafeClean\Quarantine";
+
+        return new CleanupPlan(
+            SchemaVersion: "0.2",
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            QuarantineRoot: quarantineRoot,
+            Items:
+            [
+                new CleanupPlanItem(
+                    Path: @"C:\Users\Alice\AppData\Local\Example\cache.tmp",
+                    Action: CleanupPlanAction.ReviewForQuarantine,
+                    RiskLevel: RiskLevel.LowRisk,
+                    Reasons: ["Known cleanup rule matched; manual review required before quarantine."],
+                    QuarantinePreview: new QuarantinePreview(
+                        OriginalPath: @"C:\Users\Alice\AppData\Local\Example\cache.tmp",
+                        ProposedQuarantinePath: System.IO.Path.Combine(quarantineRoot, "items", "abcd-cache.tmp"),
+                        RestoreMetadataPath: System.IO.Path.Combine(quarantineRoot, "restore", "abcd.restore.json"),
+                        RestorePlanId: "abcd",
+                        RequiresManualConfirmation: true,
+                        Warnings: ["Quarantine preview only; no file operation has been executed."]))
+            ]);
+    }
+
+    private static RestoreMetadata CreateRestoreMetadata()
+    {
+        const string quarantineRoot = @"C:\Users\Alice\AppData\Local\WinSafeClean\Quarantine";
+
+        return new RestoreMetadata(
+            SchemaVersion: "1.0",
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            CleanupPlanSchemaVersion: "0.2",
+            RestorePlanId: "abcd",
+            OriginalPath: @"C:\Users\Alice\AppData\Local\Example\cache.tmp",
+            QuarantinePath: System.IO.Path.Combine(quarantineRoot, "items", "abcd-cache.tmp"),
+            RestoreMetadataPath: System.IO.Path.Combine(quarantineRoot, "restore", "abcd.restore.json"),
+            RiskLevel: RiskLevel.LowRisk,
+            PlanAction: CleanupPlanAction.ReviewForQuarantine,
+            Reasons: ["Known cleanup rule matched; manual review required before quarantine."],
+            Warnings: ["Quarantine preview only; no file operation has been executed."],
+            RequiresManualConfirmation: true,
+            Redacted: false);
     }
 }

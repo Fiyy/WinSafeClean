@@ -57,12 +57,14 @@ CLI 是只读报告器，不执行清理、删除、隔离或修复。
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Temp --recursive --max-items 200
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- plan --path C:\Temp --format markdown
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- plan --path C:\Temp --cleanerml .\rules\example.xml
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- preflight --plan .\plan.json --metadata .\abcd.restore.json --manual-confirmation
 ```
 
 当前支持：
 
 - `scan --path <PATH>`
 - `plan --path <PATH>`，输出只读清理计划预览
+- `preflight --plan <FILE> --metadata <FILE>`，输出只读执行前校验清单
 - `--format json|markdown`
 - `--privacy full|redacted`，默认 `full`
 - `--output <FILE>`，只允许写入不存在的新报告文件
@@ -70,6 +72,8 @@ CLI 是只读报告器，不执行清理、删除、隔离或修复。
 - `--recursive`，显式启用递归扫描
 - `--no-recursive`，显式保持单层目录扫描
 - `--cleanerml <FILE_OR_DIR>`，显式加载用户提供的 CleanerML 文件或目录顶层 `.xml` 文件，只作为只读规则证据
+
+`preflight` 不接受 `--path`、`--cleanerml`、`--recursive` 或 `--privacy`，也不会重新扫描。`isExecutable=false` 表示校验完成但未来执行不应继续，命令本身仍返回 exit code `0`；只有参数、输入文件或输出路径错误返回 exit code `2`。
 
 目录扫描默认只读取直接子项；传入 `--recursive` 后会扫描子树，但仍不会跟随 reparse point、junction 或 symlink。目录项大小暂记为 `0 B`，不会递归计算目录大小。
 

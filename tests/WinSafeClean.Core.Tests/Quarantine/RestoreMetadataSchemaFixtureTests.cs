@@ -9,7 +9,35 @@ public sealed class RestoreMetadataSchemaFixtureTests
     [Fact]
     public void ShouldMatchVersion10JsonFixture()
     {
-        var metadata = new RestoreMetadata(
+        var metadata = CreateMetadata();
+
+        var json = RestoreMetadataJsonSerializer.Serialize(metadata);
+        var expected = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Quarantine", "fixtures", "restore-metadata-v1.0.json"));
+
+        Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(json));
+    }
+
+    [Fact]
+    public void ShouldDeserializeRestoreMetadataJsonWithReadableEnumValues()
+    {
+        var json = RestoreMetadataJsonSerializer.Serialize(CreateMetadata());
+
+        var metadata = RestoreMetadataJsonSerializer.Deserialize(json);
+
+        Assert.Equal("1.0", metadata.SchemaVersion);
+        Assert.Equal(RiskLevel.LowRisk, metadata.RiskLevel);
+        Assert.Equal(CleanupPlanAction.ReviewForQuarantine, metadata.PlanAction);
+    }
+
+    [Fact]
+    public void ShouldRejectInvalidRestoreMetadataJson()
+    {
+        Assert.ThrowsAny<Exception>(() => RestoreMetadataJsonSerializer.Deserialize("{not valid json"));
+    }
+
+    private static RestoreMetadata CreateMetadata()
+    {
+        return new RestoreMetadata(
             SchemaVersion: "1.0",
             CreatedAt: new DateTimeOffset(2026, 5, 6, 1, 2, 3, TimeSpan.Zero),
             CleanupPlanSchemaVersion: "0.2",
@@ -23,11 +51,6 @@ public sealed class RestoreMetadataSchemaFixtureTests
             Warnings: ["Quarantine preview only; no file operation has been executed."],
             RequiresManualConfirmation: true,
             Redacted: false);
-
-        var json = RestoreMetadataJsonSerializer.Serialize(metadata);
-        var expected = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Quarantine", "fixtures", "restore-metadata-v1.0.json"));
-
-        Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(json));
     }
 
     private static string NormalizeLineEndings(string text)

@@ -1,6 +1,7 @@
 using WinSafeClean.Core.Evidence;
 using WinSafeClean.Core.FileInventory;
 using WinSafeClean.Core.Planning;
+using WinSafeClean.Core.Quarantine;
 using WinSafeClean.Core.Reporting;
 using WinSafeClean.Core.Risk;
 using WinSafeClean.CleanerRules;
@@ -13,7 +14,7 @@ public static class CommandLineApp
     private const int Success = 0;
     private const int UsageError = 2;
     private const int Cancelled = 130;
-    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>]";
+    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>]";
     private static readonly string[] ExecutableCommands = ["delete", "clean", "quarantine", "restore"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
@@ -43,7 +44,8 @@ public static class CommandLineApp
         }
 
         if (!command.Equals("scan", StringComparison.OrdinalIgnoreCase)
-            && !command.Equals("plan", StringComparison.OrdinalIgnoreCase))
+            && !command.Equals("plan", StringComparison.OrdinalIgnoreCase)
+            && !command.Equals("preflight", StringComparison.OrdinalIgnoreCase))
         {
             stderr.WriteLine($"Unknown command '{command}'. {Usage}");
             return UsageError;
@@ -59,6 +61,11 @@ public static class CommandLineApp
         {
             var createdAt = now ?? DateTimeOffset.UtcNow;
             var provider = evidenceProvider ?? EmptyEvidenceProvider.Instance;
+
+            if (command.Equals("preflight", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunPreflight(args[1..], stdout, stderr, createdAt, cancellationToken);
+            }
 
             return command.Equals("plan", StringComparison.OrdinalIgnoreCase)
                 ? RunPlan(args[1..], stdout, stderr, createdAt, provider, cancellationToken)
@@ -156,6 +163,75 @@ public static class CommandLineApp
         var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
             ? CleanupPlanMarkdownSerializer.Serialize(plan)
             : CleanupPlanJsonSerializer.Serialize(plan);
+
+        if (!string.IsNullOrWhiteSpace(options.OutputPath))
+        {
+            var outputValidationError = ValidateOutputPath(options.OutputPath);
+            if (!string.IsNullOrWhiteSpace(outputValidationError))
+            {
+                stderr.WriteLine(outputValidationError);
+                return UsageError;
+            }
+
+            using var stream = new FileStream(options.OutputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            using var writer = new StreamWriter(stream);
+            writer.Write(rendered);
+            return Success;
+        }
+
+        stdout.Write(rendered);
+        return Success;
+    }
+
+    private static int RunPreflight(
+        string[] args,
+        TextWriter stdout,
+        TextWriter stderr,
+        DateTimeOffset createdAt,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var options = PreflightOptions.Parse(args);
+        if (!string.IsNullOrWhiteSpace(options.Error))
+        {
+            stderr.WriteLine(options.Error);
+            return UsageError;
+        }
+
+        if (!File.Exists(options.PlanPath))
+        {
+            stderr.WriteLine("--plan must point to an existing cleanup plan JSON file.");
+            return UsageError;
+        }
+
+        if (!File.Exists(options.MetadataPath))
+        {
+            stderr.WriteLine("--metadata must point to an existing restore metadata JSON file.");
+            return UsageError;
+        }
+
+        CleanupPlan plan;
+        RestoreMetadata metadata;
+        try
+        {
+            plan = CleanupPlanJsonSerializer.Deserialize(File.ReadAllText(options.PlanPath));
+            metadata = RestoreMetadataJsonSerializer.Deserialize(File.ReadAllText(options.MetadataPath));
+        }
+        catch (Exception exception)
+        {
+            stderr.WriteLine($"preflight input could not be read: {exception.Message}");
+            return UsageError;
+        }
+
+        var checklist = QuarantinePreflightValidator.Validate(
+            plan,
+            metadata,
+            createdAt,
+            options.ManualConfirmationProvided);
+        var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
+            ? QuarantinePreflightChecklistMarkdownSerializer.Serialize(checklist)
+            : QuarantinePreflightChecklistJsonSerializer.Serialize(checklist);
 
         if (!string.IsNullOrWhiteSpace(options.OutputPath))
         {
@@ -426,6 +502,109 @@ public static class CommandLineApp
                 Recursive: FileSystemScanOptions.Default.Recursive,
                 PrivacyMode: ScanReportPrivacyMode.Full,
                 CleanerMlRulePath: null,
+                Error: error);
+        }
+    }
+
+    private sealed record PreflightOptions(
+        string? PlanPath,
+        string? MetadataPath,
+        string Format,
+        string? OutputPath,
+        bool ManualConfirmationProvided,
+        string? Error)
+    {
+        public static PreflightOptions Parse(string[] args)
+        {
+            string? planPath = null;
+            string? metadataPath = null;
+            var format = "json";
+            string? outputPath = null;
+            var manualConfirmationProvided = false;
+
+            for (var index = 0; index < args.Length; index++)
+            {
+                var arg = args[index];
+                switch (arg)
+                {
+                    case "--plan":
+                        if (!TryReadValue(args, ref index, "--plan", out planPath, out var planError))
+                        {
+                            return Invalid(planError);
+                        }
+
+                        break;
+                    case "--metadata":
+                        if (!TryReadValue(args, ref index, "--metadata", out metadataPath, out var metadataError))
+                        {
+                            return Invalid(metadataError);
+                        }
+
+                        break;
+                    case "--format":
+                        if (!TryReadValue(args, ref index, "--format", out format, out var formatError))
+                        {
+                            return Invalid(formatError);
+                        }
+
+                        if (!format.Equals("json", StringComparison.OrdinalIgnoreCase)
+                            && !format.Equals("markdown", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return Invalid("--format must be either 'json' or 'markdown'.");
+                        }
+
+                        break;
+                    case "--output":
+                        if (!TryReadValue(args, ref index, "--output", out outputPath, out var outputError))
+                        {
+                            return Invalid(outputError);
+                        }
+
+                        break;
+                    case "--manual-confirmation":
+                        manualConfirmationProvided = true;
+                        break;
+                    default:
+                        return Invalid($"Unknown option '{arg}'.");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(planPath))
+            {
+                return Invalid("--plan is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(metadataPath))
+            {
+                return Invalid("--metadata is required.");
+            }
+
+            return new PreflightOptions(planPath, metadataPath, format, outputPath, manualConfirmationProvided, Error: null);
+        }
+
+        private static bool TryReadValue(string[] args, ref int index, string option, out string value, out string error)
+        {
+            if (index + 1 >= args.Length || args[index + 1].StartsWith("--", StringComparison.Ordinal))
+            {
+                value = string.Empty;
+                error = $"{option} requires a value.";
+                return false;
+            }
+
+            index++;
+            value = args[index];
+            error = string.Empty;
+            return true;
+        }
+
+        private static PreflightOptions Invalid(string error)
+        {
+            return new PreflightOptions(
+                PlanPath: null,
+                MetadataPath: null,
+                Format: "json",
+                OutputPath: null,
+                ManualConfirmationProvided: false,
                 Error: error);
         }
     }

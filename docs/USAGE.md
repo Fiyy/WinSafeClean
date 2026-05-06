@@ -58,3 +58,13 @@ WinSafeClean 可以显式加载用户提供的 CleanerML 文件或目录顶层 `
 ```
 
 如果输出路径已存在、父目录不存在，或目标位于受保护 Windows 路径，命令会拒绝执行。
+
+## 执行前校验
+
+`preflight` 读取已有的 cleanup plan JSON 和 restore metadata JSON，输出只读 checklist：
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- preflight --plan .\plan.json --metadata .\abcd.restore.json --manual-confirmation --format markdown
+```
+
+该命令不会重新扫描、不会写恢复元数据、不会追加日志、不会创建隔离目录，也不会执行隔离或恢复。`isExecutable=false` 是校验结果，不是命令失败。
