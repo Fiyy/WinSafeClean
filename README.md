@@ -36,7 +36,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 - `WinSafeClean.Cli`：只读 CLI
 - `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action、注册表启动项、卸载注册表、文件 Authenticode 签名和运行进程映像路径关系证据
 - `WinSafeClean.CleanerRules`：CleanerML 安全子集解析器、用户规则文件加载器和 `KnownCleanupRule` evidence provider，只读取规则候选，不执行清理动作
-- `WinSafeClean.Core.Quarantine`：恢复元数据、操作日志和执行前校验模型，当前只提供内存模型与 JSON 序列化，不写文件、不执行隔离
+- `WinSafeClean.Core.Quarantine`：恢复元数据、操作日志、执行前校验和最小隔离执行器；CLI 当前仍不开放真实隔离或恢复命令
 
 常用命令：
 

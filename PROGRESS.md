@@ -174,8 +174,13 @@
 - `preflight` 支持 JSON/Markdown 输出和安全 `--output`
 - `preflight` 不重新扫描、不写元数据、不追加日志、不移动或删除文件
 - 新增 ADR 0025，记录只读 preflight CLI 策略
+- 新增 Core `QuarantineExecutor`
+- 新增 `IQuarantineFileSystem` 和 `SystemQuarantineFileSystem`
+- 执行器通过 preflight 后才写 restore metadata 并移动文件
+- restore metadata 写入失败不会移动源文件，移动失败会删除刚写入的 metadata
+- 新增 ADR 0026，记录最小隔离执行器策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：216 passed
+- 测试通过：224 passed
 
 ## 正在进行
 
@@ -183,7 +188,7 @@
 
 ## 下一步
 
-1. 设计真实隔离执行器的最小安全实现。
+1. 设计 operation log 文件追加与真实隔离 CLI 门禁。
 
 ## 待决策
 

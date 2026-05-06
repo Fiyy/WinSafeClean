@@ -69,6 +69,7 @@
 - Operation log model
 - Preflight checklist
 - Read-only preflight CLI
+- Minimal quarantine executor in Core
 - 回滚命令
 
 完成标准：
