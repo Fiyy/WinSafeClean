@@ -29,6 +29,11 @@ public sealed class SystemQuarantineFileSystem : IQuarantineFileSystem
         writer.Write(contents);
     }
 
+    public void AppendTextFile(string path, string contents)
+    {
+        File.AppendAllText(path, contents);
+    }
+
     public void DeleteFileIfExists(string path)
     {
         if (File.Exists(path))

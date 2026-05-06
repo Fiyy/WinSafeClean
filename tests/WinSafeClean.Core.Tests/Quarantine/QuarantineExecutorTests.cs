@@ -31,6 +31,76 @@ public sealed class QuarantineExecutorTests
     }
 
     [Fact]
+    public void ShouldAppendStartedAndCompletedOperationLogWhenPathIsProvided()
+    {
+        var fileSystem = FakeQuarantineFileSystem.WithFile(SourcePath, "cache");
+        var executor = new QuarantineExecutor(fileSystem);
+
+        var result = executor.Execute(
+            CreatePlan(),
+            CreateMetadata(),
+            new QuarantineExecutionOptions(
+                ManualConfirmationProvided: true,
+                OperationId: "op-001",
+                RunId: "run-001",
+                OperationLogPath: OperationLogPath),
+            DateTimeOffset.UnixEpoch);
+
+        Assert.True(result.Succeeded);
+        var log = fileSystem.ReadFile(OperationLogPath);
+        Assert.Contains(@"""operationType"":""QuarantineStarted""", log);
+        Assert.Contains(@"""operationType"":""QuarantineCompleted""", log);
+    }
+
+    [Fact]
+    public void ShouldNotMoveWhenStartedOperationLogAppendFails()
+    {
+        var fileSystem = FakeQuarantineFileSystem.WithFile(SourcePath, "cache");
+        fileSystem.ThrowOnAppendPath = OperationLogPath;
+        var executor = new QuarantineExecutor(fileSystem);
+
+        var result = executor.Execute(
+            CreatePlan(),
+            CreateMetadata(),
+            new QuarantineExecutionOptions(
+                ManualConfirmationProvided: true,
+                OperationId: "op-001",
+                RunId: "run-001",
+                OperationLogPath: OperationLogPath),
+            DateTimeOffset.UnixEpoch);
+
+        Assert.False(result.Succeeded);
+        Assert.True(fileSystem.FileExists(SourcePath));
+        Assert.False(fileSystem.FileExists(QuarantinePath));
+        Assert.False(fileSystem.FileExists(RestoreMetadataPath));
+        Assert.Contains("operation log", result.ErrorMessage, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ShouldKeepQuarantinedFileWhenCompletedOperationLogAppendFails()
+    {
+        var fileSystem = FakeQuarantineFileSystem.WithFile(SourcePath, "cache");
+        fileSystem.ThrowOnAppendContaining = "QuarantineCompleted";
+        var executor = new QuarantineExecutor(fileSystem);
+
+        var result = executor.Execute(
+            CreatePlan(),
+            CreateMetadata(),
+            new QuarantineExecutionOptions(
+                ManualConfirmationProvided: true,
+                OperationId: "op-001",
+                RunId: "run-001",
+                OperationLogPath: OperationLogPath),
+            DateTimeOffset.UnixEpoch);
+
+        Assert.True(result.Succeeded);
+        Assert.False(fileSystem.FileExists(SourcePath));
+        Assert.True(fileSystem.FileExists(QuarantinePath));
+        Assert.True(fileSystem.FileExists(RestoreMetadataPath));
+        Assert.Contains("operation log", result.WarningMessage, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ShouldNotMoveFileWhenPreflightFails()
     {
         var fileSystem = FakeQuarantineFileSystem.WithFile(SourcePath, "cache");
@@ -189,6 +259,7 @@ public sealed class QuarantineExecutorTests
     private const string SourcePath = @"C:\Users\Alice\AppData\Local\Example\cache.tmp";
     private static readonly string QuarantinePath = Path.Combine(QuarantineRoot, "items", "abcd-cache.tmp");
     private static readonly string RestoreMetadataPath = Path.Combine(QuarantineRoot, "restore", "abcd.restore.json");
+    private static readonly string OperationLogPath = Path.Combine(QuarantineRoot, "logs", "operations.jsonl");
 
     private static CleanupPlan CreatePlan()
     {
@@ -238,6 +309,8 @@ public sealed class QuarantineExecutorTests
 
         public string? ThrowOnWritePath { get; set; }
         public string? ThrowOnMoveSourcePath { get; set; }
+        public string? ThrowOnAppendPath { get; set; }
+        public string? ThrowOnAppendContaining { get; set; }
 
         public static FakeQuarantineFileSystem WithFile(string path, string contents)
         {
@@ -309,6 +382,19 @@ public sealed class QuarantineExecutorTests
         public void DeleteFileIfExists(string path)
         {
             files.Remove(path);
+        }
+
+        public void AppendTextFile(string path, string contents)
+        {
+            if (path.Equals(ThrowOnAppendPath, StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrWhiteSpace(ThrowOnAppendContaining)
+                    && contents.Contains(ThrowOnAppendContaining, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new IOException("Append failed.");
+            }
+
+            files.TryGetValue(path, out var existing);
+            files[path] = existing + contents;
         }
 
         public string ReadFile(string path)

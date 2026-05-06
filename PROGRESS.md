@@ -178,9 +178,11 @@
 - 新增 `IQuarantineFileSystem` 和 `SystemQuarantineFileSystem`
 - 执行器通过 preflight 后才写 restore metadata 并移动文件
 - restore metadata 写入失败不会移动源文件，移动失败会删除刚写入的 metadata
+- 执行器支持可选 operation log JSONL 追加
+- `QuarantineStarted` 日志追加失败会阻止移动，`QuarantineCompleted` 日志追加失败只返回 warning
 - 新增 ADR 0026，记录最小隔离执行器策略
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：224 passed
+- 测试通过：227 passed
 
 ## 正在进行
 

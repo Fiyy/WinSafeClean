@@ -27,11 +27,13 @@ Accepted
 1. 运行 preflight。
 2. 确认 source 是存在的文件，target 和 restore metadata 文件不存在。
 3. 创建隔离目标和 restore metadata 的父目录。
-4. 使用 `CreateNew` 语义写 restore metadata。
-5. 使用不覆盖语义移动 source 到 quarantine target。
-6. 返回内存 operation log。
+4. 如果提供 operation log 路径，先追加 `QuarantineStarted` JSONL 日志；失败则中止且不移动。
+5. 使用 `CreateNew` 语义写 restore metadata。
+6. 使用不覆盖语义移动 source 到 quarantine target。
+7. 如果提供 operation log 路径，追加 `QuarantineCompleted` JSONL 日志。
+8. 返回内存 operation log。
 
-如果 restore metadata 写入失败，source 不移动。如果 move 失败，执行器会删除刚写入的 restore metadata。CLI 仍不接入真实隔离。
+如果 restore metadata 写入失败，source 不移动。如果 move 失败，执行器会删除刚写入的 restore metadata。`QuarantineCompleted` 日志追加失败不会回滚已经完成的隔离，但会在结果中返回 warning。CLI 仍不接入真实隔离。
 
 ## 理由
 
@@ -49,5 +51,5 @@ Accepted
 限制：
 
 - 当前不支持目录隔离。
-- 当前不写 operation log 文件，只在结果中返回内存 log。
+- 当前只支持可选 JSONL operation log 追加，不提供日志轮转或加密。
 - 当前没有 CLI 执行入口，`quarantine` 和 `restore` 仍被拒绝。

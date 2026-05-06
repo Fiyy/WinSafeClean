@@ -73,6 +73,33 @@ public sealed class QuarantineExecutor
         {
             CreateParentDirectory(quarantinePath);
             CreateParentDirectory(restoreMetadataPath);
+            if (!string.IsNullOrWhiteSpace(options.OperationLogPath))
+            {
+                CreateParentDirectory(options.OperationLogPath);
+                var startedEntry = CreateOperationLogEntry(
+                    options,
+                    metadata.RestorePlanId,
+                    timestamp,
+                    QuarantineOperationType.QuarantineStarted,
+                    QuarantineOperationStatus.Succeeded,
+                    sourcePath,
+                    quarantinePath,
+                    restoreMetadataPath,
+                    "Quarantine started.");
+                try
+                {
+                    fileSystem.AppendTextFile(options.OperationLogPath, QuarantineOperationLogJsonLinesSerializer.SerializeEntry(startedEntry));
+                }
+                catch (Exception logException)
+                {
+                    return Failure(
+                        preflightChecklist,
+                        options,
+                        timestamp,
+                        $"Operation log append failed before quarantine; source was not moved. {logException.Message}",
+                        QuarantineOperationStatus.Failed);
+                }
+            }
 
             try
             {
@@ -118,6 +145,7 @@ public sealed class QuarantineExecutor
 
             var log = CreateOperationLog(
                 options,
+                metadata.RestorePlanId,
                 timestamp,
                 QuarantineOperationType.QuarantineCompleted,
                 QuarantineOperationStatus.Succeeded,
@@ -125,11 +153,28 @@ public sealed class QuarantineExecutor
                 quarantinePath,
                 restoreMetadataPath,
                 "Quarantine completed.");
+
+            string? warningMessage = null;
+            if (!string.IsNullOrWhiteSpace(options.OperationLogPath))
+            {
+                try
+                {
+                    fileSystem.AppendTextFile(
+                        options.OperationLogPath,
+                        QuarantineOperationLogJsonLinesSerializer.SerializeEntry(log.Entries[0]));
+                }
+                catch (Exception logException)
+                {
+                    warningMessage = $"Quarantine completed, but operation log append failed. {logException.Message}";
+                }
+            }
+
             return new QuarantineExecutionResult(
                 Succeeded: true,
                 PreflightChecklist: preflightChecklist,
                 OperationLog: log,
-                ErrorMessage: null);
+                ErrorMessage: null,
+                WarningMessage: warningMessage);
         }
         catch (Exception exception)
         {
@@ -155,6 +200,7 @@ public sealed class QuarantineExecutor
     {
         var log = CreateOperationLog(
             options,
+            RestorePlanId: string.Empty,
             timestamp,
             QuarantineOperationType.QuarantineFailed,
             status,
@@ -172,6 +218,7 @@ public sealed class QuarantineExecutor
 
     private static QuarantineOperationLog CreateOperationLog(
         QuarantineExecutionOptions options,
+        string RestorePlanId,
         DateTimeOffset timestamp,
         QuarantineOperationType operationType,
         QuarantineOperationStatus status,
@@ -185,19 +232,42 @@ public sealed class QuarantineExecutor
             CreatedAt: timestamp,
             Entries:
             [
-                new QuarantineOperationLogEntry(
-                    OperationId: options.OperationId,
-                    RunId: options.RunId,
-                    RestorePlanId: string.Empty,
-                    OperationType: operationType,
-                    Status: status,
-                    Timestamp: timestamp,
-                    SourcePath: SourcePath,
-                    TargetPath: TargetPath,
-                    RestoreMetadataPath: RestoreMetadataPath,
-                    IsDryRun: false,
-                    Actor: "WinSafeClean.Core",
-                    Message: message)
+                CreateOperationLogEntry(
+                    options,
+                    RestorePlanId,
+                    timestamp,
+                    operationType,
+                    status,
+                    SourcePath,
+                    TargetPath,
+                    RestoreMetadataPath,
+                    message)
             ]);
+    }
+
+    private static QuarantineOperationLogEntry CreateOperationLogEntry(
+        QuarantineExecutionOptions options,
+        string RestorePlanId,
+        DateTimeOffset timestamp,
+        QuarantineOperationType operationType,
+        QuarantineOperationStatus status,
+        string SourcePath,
+        string? TargetPath,
+        string? RestoreMetadataPath,
+        string message)
+    {
+        return new QuarantineOperationLogEntry(
+            OperationId: options.OperationId,
+            RunId: options.RunId,
+            RestorePlanId: RestorePlanId,
+            OperationType: operationType,
+            Status: status,
+            Timestamp: timestamp,
+            SourcePath: SourcePath,
+            TargetPath: TargetPath,
+            RestoreMetadataPath: RestoreMetadataPath,
+            IsDryRun: false,
+            Actor: "WinSafeClean.Core",
+            Message: message);
     }
 }

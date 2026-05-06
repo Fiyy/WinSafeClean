@@ -12,5 +12,7 @@ public interface IQuarantineFileSystem
 
     void WriteNewTextFile(string path, string contents);
 
+    void AppendTextFile(string path, string contents);
+
     void DeleteFileIfExists(string path);
 }

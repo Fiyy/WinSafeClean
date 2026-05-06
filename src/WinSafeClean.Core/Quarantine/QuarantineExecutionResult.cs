@@ -4,4 +4,5 @@ public sealed record QuarantineExecutionResult(
     bool Succeeded,
     QuarantinePreflightChecklist PreflightChecklist,
     QuarantineOperationLog OperationLog,
-    string? ErrorMessage);
+    string? ErrorMessage,
+    string? WarningMessage = null);
