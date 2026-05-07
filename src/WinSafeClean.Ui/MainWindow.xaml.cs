@@ -3,6 +3,7 @@ using System.Windows;
 using Microsoft.Win32;
 using WinSafeClean.Core.Planning;
 using WinSafeClean.Core.Reporting;
+using WinSafeClean.Ui.Operations;
 using WinSafeClean.Ui.ViewModels;
 
 namespace WinSafeClean.Ui;
@@ -58,6 +59,53 @@ public partial class MainWindow : Window
         }
     }
 
+    private void BuildScan_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            int? maxItems = string.IsNullOrWhiteSpace(ScanMaxItemsBox.Text)
+                ? null
+                : int.Parse(ScanMaxItemsBox.Text);
+            OperationCommandText.Text = FormatCommand(ReadOnlyOperationCommandBuilder.BuildScan(
+                ScanPathBox.Text,
+                ScanRecursiveBox.IsChecked == true,
+                maxItems));
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Scan command could not be built", exception);
+        }
+    }
+
+    private void BuildPlan_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            OperationCommandText.Text = FormatCommand(ReadOnlyOperationCommandBuilder.BuildPlan(
+                PlanPathBox.Text,
+                CleanerMlPathBox.Text));
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Plan command could not be built", exception);
+        }
+    }
+
+    private void BuildPreflight_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            OperationCommandText.Text = FormatCommand(ReadOnlyOperationCommandBuilder.BuildPreflight(
+                PreflightPlanPathBox.Text,
+                PreflightMetadataPathBox.Text,
+                PreflightManualConfirmationBox.IsChecked == true));
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Preflight command could not be built", exception);
+        }
+    }
+
     private static OpenFileDialog CreateJsonOpenFileDialog()
     {
         return new OpenFileDialog
@@ -76,5 +124,18 @@ public partial class MainWindow : Window
             title,
             MessageBoxButton.OK,
             MessageBoxImage.Warning);
+    }
+
+    private static string FormatCommand(IReadOnlyList<string> args)
+    {
+        return ".\\.tools\\dotnet\\dotnet.exe run --project .\\src\\WinSafeClean.Cli -- "
+            + string.Join(" ", args.Select(QuoteIfNeeded));
+    }
+
+    private static string QuoteIfNeeded(string value)
+    {
+        return value.Contains(' ', StringComparison.Ordinal)
+            ? $"\"{value.Replace("\"", "\\\"", StringComparison.Ordinal)}\""
+            : value;
     }
 }

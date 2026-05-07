@@ -209,8 +209,9 @@
 - 将 UI 项目和测试项目加入 solution
 - `ScanReportJsonSerializer` 支持反序列化 scan report JSON
 - WPF UI 新增 scan report 页签，可打开 scan report JSON 并展示风险汇总、类型汇总、原因、阻断理由和 evidence
+- WPF UI 新增只读操作页签，可构建 `scan`、`plan`、`preflight` 命令，不生成真实移动或删除命令
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1 -Restore`
-- 测试通过：252 passed
+- 测试通过：255 passed
 
 ## 正在进行
 
@@ -218,7 +219,7 @@
 
 ## 下一步
 
-1. 为 UI 加入只读 plan/preflight 操作入口，真实移动仍保持 CLI 强确认边界。
+1. 为 WPF UI 增加 preflight checklist 读取和展示。
 
 ## 待决策
 

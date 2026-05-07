@@ -105,6 +105,7 @@
 - Cleanup plan overview view model
 - Scan report risk grouping view model
 - Scan report JSON reader
+- Read-only operation command builder
 
 完成标准：
 

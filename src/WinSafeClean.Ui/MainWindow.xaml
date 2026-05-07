@@ -209,6 +209,61 @@
                     </Border>
                 </Grid>
             </TabItem>
+
+            <TabItem Header="Read-Only Ops">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="360" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
+                        <StackPanel Margin="14">
+                            <TextBlock Text="Scan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBox x:Name="ScanPathBox" Height="30" Margin="0,8,0,8" />
+                            <CheckBox x:Name="ScanRecursiveBox" Content="Recursive" Margin="0,0,0,8" />
+                            <TextBox x:Name="ScanMaxItemsBox" Height="30" Margin="0,0,0,8" />
+                            <Button Content="Build Scan" Height="32" Click="BuildScan_Click" />
+
+                            <Separator Margin="0,18,0,18" />
+
+                            <TextBlock Text="Plan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBox x:Name="PlanPathBox" Height="30" Margin="0,8,0,8" />
+                            <TextBox x:Name="CleanerMlPathBox" Height="30" Margin="0,0,0,8" />
+                            <Button Content="Build Plan" Height="32" Click="BuildPlan_Click" />
+
+                            <Separator Margin="0,18,0,18" />
+
+                            <TextBlock Text="Preflight" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBox x:Name="PreflightPlanPathBox" Height="30" Margin="0,8,0,8" />
+                            <TextBox x:Name="PreflightMetadataPathBox" Height="30" Margin="0,0,0,8" />
+                            <CheckBox x:Name="PreflightManualConfirmationBox" Content="Manual confirmation" Margin="0,0,0,8" />
+                            <Button Content="Build Preflight" Height="32" Click="BuildPreflight_Click" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top"
+                                       Text="Command"
+                                       Margin="14,12,14,8"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="#20242A" />
+                            <TextBox x:Name="OperationCommandText"
+                                     Margin="14"
+                                     AcceptsReturn="True"
+                                     IsReadOnly="True"
+                                     TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto"
+                                     BorderThickness="0"
+                                     Foreground="#20242A"
+                                     Background="#F6F7F9" />
+                        </DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>
