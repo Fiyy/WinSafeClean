@@ -27,6 +27,19 @@ public sealed class QuarantinePreflightChecklistSerializerTests
     }
 
     [Fact]
+    public void ShouldDeserializeChecklistWithReadableEnumValues()
+    {
+        var json = QuarantinePreflightChecklistJsonSerializer.Serialize(CreateChecklist());
+
+        var checklist = QuarantinePreflightChecklistJsonSerializer.Deserialize(json);
+
+        Assert.True(checklist.IsExecutable);
+        var check = Assert.Single(checklist.Checks);
+        Assert.Equal("ManualConfirmation", check.Code);
+        Assert.Equal(QuarantinePreflightCheckStatus.Passed, check.Status);
+    }
+
+    [Fact]
     public void ShouldRenderChecklistMarkdown()
     {
         var checklist = CreateChecklist();

@@ -106,6 +106,7 @@
 - Scan report risk grouping view model
 - Scan report JSON reader
 - Read-only operation command builder
+- Preflight checklist reader
 
 完成标准：
 

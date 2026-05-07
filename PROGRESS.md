@@ -210,8 +210,10 @@
 - `ScanReportJsonSerializer` 支持反序列化 scan report JSON
 - WPF UI 新增 scan report 页签，可打开 scan report JSON 并展示风险汇总、类型汇总、原因、阻断理由和 evidence
 - WPF UI 新增只读操作页签，可构建 `scan`、`plan`、`preflight` 命令，不生成真实移动或删除命令
+- `QuarantinePreflightChecklistJsonSerializer` 支持反序列化 checklist JSON
+- WPF UI 新增 preflight checklist 页签，可打开 checklist JSON 并展示可执行状态、检查状态汇总和检查消息
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1 -Restore`
-- 测试通过：255 passed
+- 测试通过：258 passed
 
 ## 正在进行
 
@@ -219,7 +221,7 @@
 
 ## 下一步
 
-1. 为 WPF UI 增加 preflight checklist 读取和展示。
+1. 为 WPF UI 增加报告/计划/校验结果的可视化状态样式和空状态。
 
 ## 待决策
 

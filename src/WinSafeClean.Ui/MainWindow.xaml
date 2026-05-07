@@ -30,6 +30,12 @@
                         Margin="0,0,8,0"
                         Padding="14,0"
                         Click="OpenScanReport_Click" />
+                <Button Content="Open Preflight"
+                        Width="128"
+                        Height="34"
+                        Margin="0,0,8,0"
+                        Padding="14,0"
+                        Click="OpenPreflight_Click" />
                 <Button Content="Open Plan"
                         Width="116"
                         Height="34"
@@ -126,6 +132,59 @@
                                 <TextBlock Text="{Binding Evidence}" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="#4A515B" />
                             </StackPanel>
                         </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="PreflightTab" Header="Preflight Checklist">
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
+                        <StackPanel Margin="14">
+                            <TextBlock Text="Summary" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBlock Text="{Binding TotalChecks, StringFormat=Checks: {0}}" Margin="0,10,0,6" Foreground="#4A515B" />
+                            <TextBlock Text="{Binding SchemaVersion, StringFormat=Schema: {0}}" Margin="0,0,0,6" Foreground="#4A515B" />
+                            <TextBlock Text="{Binding IsExecutable, StringFormat=Executable: {0}}" Margin="0,0,0,18" Foreground="#4A515B" />
+
+                            <TextBlock Text="Statuses" FontWeight="SemiBold" Foreground="#20242A" />
+                            <ItemsControl ItemsSource="{Binding StatusSummaries}" Margin="0,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel Margin="0,0,0,6">
+                                            <TextBlock Text="{Binding Label}" Foreground="#4A515B" />
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" FontWeight="SemiBold" Foreground="#20242A" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Checks" Margin="14,12,14,8" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <ListBox ItemsSource="{Binding Checks}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="6" MinHeight="58">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="220" />
+                                                <ColumnDefinition Width="110" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Code}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="#20242A" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Status}" VerticalAlignment="Center" Foreground="#4A515B" />
+                                            <TextBlock Grid.Column="2" Text="{Binding Message}" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="#4A515B" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
                     </Border>
                 </Grid>
             </TabItem>

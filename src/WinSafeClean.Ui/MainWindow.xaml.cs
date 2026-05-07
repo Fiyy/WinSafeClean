@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 using WinSafeClean.Core.Planning;
+using WinSafeClean.Core.Quarantine;
 using WinSafeClean.Core.Reporting;
 using WinSafeClean.Ui.Operations;
 using WinSafeClean.Ui.ViewModels;
@@ -14,6 +15,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ScanTab.DataContext = ScanReportOverviewViewModel.Empty;
+        PreflightTab.DataContext = PreflightChecklistOverviewViewModel.Empty;
         PlanTab.DataContext = PlanOverviewViewModel.Empty;
     }
 
@@ -35,6 +37,27 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             ShowLoadError("Scan report could not be loaded", exception);
+        }
+    }
+
+    private void OpenPreflight_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = CreateJsonOpenFileDialog();
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var checklist = QuarantinePreflightChecklistJsonSerializer.Deserialize(File.ReadAllText(dialog.FileName));
+            PreflightTab.DataContext = PreflightChecklistOverviewViewModel.FromChecklist(checklist);
+            PreflightTab.IsSelected = true;
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Preflight checklist could not be loaded", exception);
         }
     }
 

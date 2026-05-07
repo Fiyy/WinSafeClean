@@ -14,6 +14,14 @@ public static class QuarantinePreflightChecklistJsonSerializer
         return JsonSerializer.Serialize(checklist, Options);
     }
 
+    public static QuarantinePreflightChecklist Deserialize(string json)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
+
+        return JsonSerializer.Deserialize<QuarantinePreflightChecklist>(json, Options)
+            ?? throw new InvalidOperationException("Preflight checklist JSON did not contain a checklist.");
+    }
+
     private static JsonSerializerOptions CreateOptions()
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
