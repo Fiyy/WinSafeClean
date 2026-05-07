@@ -34,7 +34,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 
 - `WinSafeClean.Core`：只读扫描、风险、报告和 evidence 基础模型
 - `WinSafeClean.Cli`：默认只读 CLI，包含带强确认的文件隔离和恢复命令
-- `WinSafeClean.Ui`：WPF UI 脚手架，可读取 cleanup plan JSON 并展示动作、风险、原因和隔离预览
+- `WinSafeClean.Ui`：WPF UI 脚手架，可读取 scan report 和 cleanup plan JSON，并展示风险、动作、证据、原因和隔离预览
 - `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action、注册表启动项、卸载注册表、文件 Authenticode 签名和运行进程映像路径关系证据
 - `WinSafeClean.CleanerRules`：CleanerML 安全子集解析器、用户规则文件加载器和 `KnownCleanupRule` evidence provider，只读取规则候选，不执行清理动作
 - `WinSafeClean.Core.Quarantine`：恢复元数据、内容 hash、操作日志、执行前校验、最小隔离执行器和最小恢复执行器

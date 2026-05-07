@@ -14,6 +14,14 @@ public static class ScanReportJsonSerializer
         return JsonSerializer.Serialize(report, Options);
     }
 
+    public static ScanReport Deserialize(string json)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
+
+        return JsonSerializer.Deserialize<ScanReport>(json, Options)
+            ?? throw new InvalidOperationException("Scan report JSON did not contain a report.");
+    }
+
     private static JsonSerializerOptions CreateOptions()
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)

@@ -103,6 +103,8 @@
 - 清理计划预览
 - WPF shell
 - Cleanup plan overview view model
+- Scan report risk grouping view model
+- Scan report JSON reader
 
 完成标准：
 

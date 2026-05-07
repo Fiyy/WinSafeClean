@@ -207,8 +207,10 @@
 - 新增 cleanup plan overview view model，展示总数、动作汇总、风险汇总、原因和隔离预览路径
 - 新增 WPF shell，可打开 cleanup plan JSON 并展示计划条目和详情
 - 将 UI 项目和测试项目加入 solution
+- `ScanReportJsonSerializer` 支持反序列化 scan report JSON
+- WPF UI 新增 scan report 页签，可打开 scan report JSON 并展示风险汇总、类型汇总、原因、阻断理由和 evidence
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1 -Restore`
-- 测试通过：249 passed
+- 测试通过：252 passed
 
 ## 正在进行
 
@@ -216,8 +218,7 @@
 
 ## 下一步
 
-1. 为 WPF UI 增加 scan report 读取和风险分组视图。
-2. 为 UI 加入只读 plan/preflight 操作入口，真实移动仍保持 CLI 强确认边界。
+1. 为 UI 加入只读 plan/preflight 操作入口，真实移动仍保持 CLI 强确认边界。
 
 ## 待决策
 

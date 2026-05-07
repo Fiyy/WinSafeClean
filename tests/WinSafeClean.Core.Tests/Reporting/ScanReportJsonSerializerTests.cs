@@ -71,4 +71,44 @@ public sealed class ScanReportJsonSerializerTests
         Assert.Equal("Full", document.RootElement.GetProperty("privacyMode").GetString());
         Assert.Equal(0, document.RootElement.GetProperty("items").GetArrayLength());
     }
+
+    [Fact]
+    public void ShouldDeserializeScanReportJsonWithReadableEnumValues()
+    {
+        var report = new ScanReport(
+            SchemaVersion: "1.3",
+            CreatedAt: DateTimeOffset.UnixEpoch,
+            Items:
+            [
+                new ScanReportItem(
+                    Path: @"C:\Temp\cache.tmp",
+                    ItemKind: ScanReportItemKind.File,
+                    SizeBytes: 5,
+                    LastWriteTimeUtc: DateTimeOffset.UnixEpoch,
+                    Evidence:
+                    [
+                        new EvidenceRecord(
+                            Type: EvidenceType.KnownCleanupRule,
+                            Source: "CleanerML: example.cache",
+                            Confidence: 0.6,
+                            Message: "Known cache candidate.")
+                    ],
+                    Risk: new RiskAssessment(
+                        Level: RiskLevel.LowRisk,
+                        Confidence: 0.7,
+                        SuggestedAction: SuggestedAction.ReportOnly,
+                        Reasons: ["Known cleanup rule matched."],
+                        Blockers: []))
+            ]);
+
+        var json = ScanReportJsonSerializer.Serialize(report);
+
+        var deserialized = ScanReportJsonSerializer.Deserialize(json);
+
+        Assert.Equal("1.3", deserialized.SchemaVersion);
+        var item = Assert.Single(deserialized.Items);
+        Assert.Equal(ScanReportItemKind.File, item.ItemKind);
+        Assert.Equal(RiskLevel.LowRisk, item.Risk.Level);
+        Assert.Equal(EvidenceType.KnownCleanupRule, Assert.Single(item.Evidence).Type);
+    }
 }
