@@ -202,16 +202,22 @@
 - 新增 ADR 0030，决定 Phase 3 暂缓目录隔离和目录恢复，只保留文件级执行闭环
 - 新增 ADR 0031，决定 Phase 4 UI 使用 WPF，MVP 暂不引入 SQLite 扫描历史或 PowerShell 模块入口
 - 更新路线图和实现框架，标记 Phase 3 文件级闭环完成并同步 WPF UI 方向
-- 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：247 passed
+- 新增 `WinSafeClean.Ui` WPF 项目
+- 新增 `WinSafeClean.Ui.Tests`
+- 新增 cleanup plan overview view model，展示总数、动作汇总、风险汇总、原因和隔离预览路径
+- 新增 WPF shell，可打开 cleanup plan JSON 并展示计划条目和详情
+- 将 UI 项目和测试项目加入 solution
+- 验证命令：`pwsh -NoProfile -File scripts\test.ps1 -Restore`
+- 测试通过：249 passed
 
 ## 正在进行
 
-- Phase 3 文件级清理计划、隔离和恢复已形成闭环
+- Phase 4 WPF UI
 
 ## 下一步
 
-1. 启动 Phase 4 WPF UI 设计与脚手架。
+1. 为 WPF UI 增加 scan report 读取和风险分组视图。
+2. 为 UI 加入只读 plan/preflight 操作入口，真实移动仍保持 CLI 强确认边界。
 
 ## 待决策
 
