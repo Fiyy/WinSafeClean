@@ -5,6 +5,7 @@ namespace WinSafeClean.Core.Quarantine;
 public sealed class QuarantineExecutor
 {
     private const string OperationLogSchemaVersion = "1.0";
+    private const string RestoreMetadataSchemaVersionWithContentHash = "1.1";
     private readonly IQuarantineFileSystem fileSystem;
 
     public QuarantineExecutor()
@@ -101,9 +102,31 @@ public sealed class QuarantineExecutor
                 }
             }
 
+            string sourceContentHash;
             try
             {
-                fileSystem.WriteNewTextFile(restoreMetadataPath, RestoreMetadataJsonSerializer.Serialize(metadata));
+                sourceContentHash = fileSystem.ComputeSha256Hash(sourcePath);
+            }
+            catch (Exception hashException)
+            {
+                return Failure(
+                    preflightChecklist,
+                    options,
+                    timestamp,
+                    $"Source content hash failed; source was not moved. {hashException.Message}",
+                    QuarantineOperationStatus.Failed);
+            }
+
+            var metadataWithHash = metadata with
+            {
+                SchemaVersion = RestoreMetadataSchemaVersionWithContentHash,
+                ContentHashAlgorithm = "SHA256",
+                ContentHash = sourceContentHash
+            };
+
+            try
+            {
+                fileSystem.WriteNewTextFile(restoreMetadataPath, RestoreMetadataJsonSerializer.Serialize(metadataWithHash));
             }
             catch (Exception metadataException)
             {

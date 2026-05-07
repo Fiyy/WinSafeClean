@@ -714,6 +714,10 @@ public sealed class CommandLineAppTests
         Assert.False(File.Exists(sourcePath));
         Assert.True(File.Exists(metadata.QuarantinePath));
         Assert.True(File.Exists(metadata.RestoreMetadataPath));
+        var writtenMetadata = RestoreMetadataJsonSerializer.Deserialize(File.ReadAllText(metadata.RestoreMetadataPath));
+        Assert.Equal("1.1", writtenMetadata.SchemaVersion);
+        Assert.Equal("SHA256", writtenMetadata.ContentHashAlgorithm);
+        Assert.False(string.IsNullOrWhiteSpace(writtenMetadata.ContentHash));
 
         using var document = JsonDocument.Parse(stdout.ToString());
         Assert.True(document.RootElement.GetProperty("succeeded").GetBoolean());
@@ -750,6 +754,194 @@ public sealed class CommandLineAppTests
         var log = File.ReadAllText(operationLogPath);
         Assert.Contains("QuarantineStarted", log);
         Assert.Contains("QuarantineCompleted", log);
+    }
+
+    [Fact]
+    public void RestoreShouldRequireExplicitDangerConfirmation()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        var metadata = CreateRestoreMetadata(System.IO.Path.Combine(sandbox.RootPath, "cache.tmp"), quarantineRoot);
+        sandbox.WriteFile(Path.GetRelativePath(sandbox.RootPath, metadata.QuarantinePath), "cache");
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(metadata));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["restore", "--metadata", metadataFile.Path, "--manual-confirmation"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("i-understand", stderr.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(metadata.QuarantinePath));
+    }
+
+    [Fact]
+    public void RestoreShouldMoveFileWithExplicitConfirmation()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var originalPath = System.IO.Path.Combine(sandbox.RootPath, "cache.tmp");
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        var metadata = CreateRestoreMetadata(originalPath, quarantineRoot);
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(metadata.QuarantinePath)!);
+        File.WriteAllText(metadata.QuarantinePath, "cache");
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(metadata));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            [
+                "restore",
+                "--metadata", metadataFile.Path,
+                "--manual-confirmation",
+                "--i-understand-this-moves-files"
+            ],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.True(File.Exists(originalPath));
+        Assert.False(File.Exists(metadata.QuarantinePath));
+        Assert.Equal("cache", File.ReadAllText(originalPath));
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        Assert.True(document.RootElement.GetProperty("succeeded").GetBoolean());
+    }
+
+    [Fact]
+    public void RestoreShouldRejectRedactedMetadataWithoutMovingFile()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var originalPath = System.IO.Path.Combine(sandbox.RootPath, "cache.tmp");
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        var metadata = CreateRestoreMetadata(originalPath, quarantineRoot, redacted: true);
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(metadata.QuarantinePath)!);
+        File.WriteAllText(metadata.QuarantinePath, "cache");
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(metadata));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            [
+                "restore",
+                "--metadata", metadataFile.Path,
+                "--manual-confirmation",
+                "--i-understand-this-moves-files"
+            ],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(1, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.False(File.Exists(originalPath));
+        Assert.True(File.Exists(metadata.QuarantinePath));
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        Assert.False(document.RootElement.GetProperty("succeeded").GetBoolean());
+        Assert.Contains("redacted", document.RootElement.GetProperty("errorMessage").GetString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void RestoreShouldRejectLegacyMetadataWithoutContentHashByDefault()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var originalPath = System.IO.Path.Combine(sandbox.RootPath, "cache.tmp");
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        var metadata = CreateRestoreMetadata(originalPath, quarantineRoot, includeContentHash: false);
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(metadata.QuarantinePath)!);
+        File.WriteAllText(metadata.QuarantinePath, "cache");
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(metadata));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            [
+                "restore",
+                "--metadata", metadataFile.Path,
+                "--manual-confirmation",
+                "--i-understand-this-moves-files"
+            ],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(1, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.False(File.Exists(originalPath));
+        Assert.True(File.Exists(metadata.QuarantinePath));
+
+        using var document = JsonDocument.Parse(stdout.ToString());
+        Assert.False(document.RootElement.GetProperty("succeeded").GetBoolean());
+        Assert.Contains("legacy", document.RootElement.GetProperty("errorMessage").GetString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void RestoreShouldAllowLegacyMetadataWithoutContentHashWhenExplicitlyRequested()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var originalPath = System.IO.Path.Combine(sandbox.RootPath, "cache.tmp");
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        var metadata = CreateRestoreMetadata(originalPath, quarantineRoot, includeContentHash: false);
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(metadata.QuarantinePath)!);
+        File.WriteAllText(metadata.QuarantinePath, "cache");
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(metadata));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            [
+                "restore",
+                "--metadata", metadataFile.Path,
+                "--manual-confirmation",
+                "--i-understand-this-moves-files",
+                "--allow-legacy-metadata-without-hash"
+            ],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.True(File.Exists(originalPath));
+        Assert.False(File.Exists(metadata.QuarantinePath));
+    }
+
+    [Fact]
+    public void RestoreShouldAppendOperationLogWhenRequested()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var originalPath = System.IO.Path.Combine(sandbox.RootPath, "cache.tmp");
+        var quarantineRoot = sandbox.CreateDirectory("quarantine");
+        var metadata = CreateRestoreMetadata(originalPath, quarantineRoot);
+        var operationLogPath = System.IO.Path.Combine(quarantineRoot, "logs", "operations.jsonl");
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(metadata.QuarantinePath)!);
+        File.WriteAllText(metadata.QuarantinePath, "cache");
+        using var metadataFile = TemporaryFile.Create(RestoreMetadataJsonSerializer.Serialize(metadata));
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            [
+                "restore",
+                "--metadata", metadataFile.Path,
+                "--manual-confirmation",
+                "--i-understand-this-moves-files",
+                "--operation-log", operationLogPath
+            ],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.True(File.Exists(operationLogPath));
+        var log = File.ReadAllText(operationLogPath);
+        Assert.Contains("RestoreStarted", log);
+        Assert.Contains("RestoreCompleted", log);
     }
 
     [Fact]
@@ -1158,7 +1350,6 @@ public sealed class CommandLineAppTests
     [Theory]
     [InlineData("delete")]
     [InlineData("clean")]
-    [InlineData("restore")]
     public void ShouldRejectExecutableCommandsDuringReadOnlyPhase(string command)
     {
         using var stdout = new StringWriter();
@@ -1308,10 +1499,14 @@ public sealed class CommandLineAppTests
         return CreateRestoreMetadata(@"C:\Users\Alice\AppData\Local\Example\cache.tmp", quarantineRoot);
     }
 
-    private static RestoreMetadata CreateRestoreMetadata(string sourcePath, string quarantineRoot)
+    private static RestoreMetadata CreateRestoreMetadata(
+        string sourcePath,
+        string quarantineRoot,
+        bool redacted = false,
+        bool includeContentHash = true)
     {
         return new RestoreMetadata(
-            SchemaVersion: "1.0",
+            SchemaVersion: includeContentHash ? "1.1" : "1.0",
             CreatedAt: DateTimeOffset.UnixEpoch,
             CleanupPlanSchemaVersion: "0.2",
             RestorePlanId: "abcd",
@@ -1323,6 +1518,8 @@ public sealed class CommandLineAppTests
             Reasons: ["Known cleanup rule matched; manual review required before quarantine."],
             Warnings: ["Quarantine preview only; no file operation has been executed."],
             RequiresManualConfirmation: true,
-            Redacted: false);
+            Redacted: redacted,
+            ContentHashAlgorithm: includeContentHash ? "SHA256" : null,
+            ContentHash: includeContentHash ? "5e1ecee06a7fc06f305ae5c12acfe7a7f67b8ece7af76932ed3afab00c3c6921" : null);
     }
 }

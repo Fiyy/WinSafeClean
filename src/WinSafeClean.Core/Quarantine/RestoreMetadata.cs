@@ -16,4 +16,6 @@ public sealed record RestoreMetadata(
     IReadOnlyList<string> Reasons,
     IReadOnlyList<string> Warnings,
     bool RequiresManualConfirmation,
-    bool Redacted);
+    bool Redacted,
+    string? ContentHashAlgorithm = null,
+    string? ContentHash = null);

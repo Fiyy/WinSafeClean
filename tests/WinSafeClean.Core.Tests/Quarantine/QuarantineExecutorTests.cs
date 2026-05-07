@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using WinSafeClean.Core.Planning;
 using WinSafeClean.Core.Quarantine;
 using WinSafeClean.Core.Risk;
@@ -28,6 +30,28 @@ public sealed class QuarantineExecutorTests
         Assert.True(fileSystem.FileExists(RestoreMetadataPath));
         Assert.Contains(@"""restorePlanId"": ""abcd""", fileSystem.ReadFile(RestoreMetadataPath));
         Assert.Contains(result.OperationLog.Entries, entry => entry.OperationType == QuarantineOperationType.QuarantineCompleted);
+    }
+
+    [Fact]
+    public void ShouldWriteSourceContentHashIntoRestoreMetadata()
+    {
+        var fileSystem = FakeQuarantineFileSystem.WithFile(SourcePath, "cache");
+        var executor = new QuarantineExecutor(fileSystem);
+
+        var result = executor.Execute(
+            CreatePlan(),
+            CreateMetadata(),
+            new QuarantineExecutionOptions(
+                ManualConfirmationProvided: true,
+                OperationId: "op-001",
+                RunId: "run-001"),
+            DateTimeOffset.UnixEpoch);
+
+        Assert.True(result.Succeeded);
+        var metadata = RestoreMetadataJsonSerializer.Deserialize(fileSystem.ReadFile(RestoreMetadataPath));
+        Assert.Equal("1.1", metadata.SchemaVersion);
+        Assert.Equal("SHA256", metadata.ContentHashAlgorithm);
+        Assert.Equal(ComputeSha256Hex("cache"), metadata.ContentHash);
     }
 
     [Fact]
@@ -384,6 +408,16 @@ public sealed class QuarantineExecutorTests
             files.Remove(path);
         }
 
+        public string ComputeSha256Hash(string path)
+        {
+            if (!files.TryGetValue(path, out var contents))
+            {
+                throw new FileNotFoundException("Missing source.", path);
+            }
+
+            return ComputeSha256Hex(contents);
+        }
+
         public void AppendTextFile(string path, string contents)
         {
             if (path.Equals(ThrowOnAppendPath, StringComparison.OrdinalIgnoreCase)
@@ -401,5 +435,11 @@ public sealed class QuarantineExecutorTests
         {
             return files[path];
         }
+    }
+
+    private static string ComputeSha256Hex(string contents)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(contents));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 }

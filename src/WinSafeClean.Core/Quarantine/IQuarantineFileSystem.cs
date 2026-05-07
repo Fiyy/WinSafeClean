@@ -15,4 +15,6 @@ public interface IQuarantineFileSystem
     void AppendTextFile(string path, string contents);
 
     void DeleteFileIfExists(string path);
+
+    string ComputeSha256Hash(string path);
 }

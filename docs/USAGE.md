@@ -1,6 +1,6 @@
 # 使用示例
 
-WinSafeClean 当前仍是只读工具。`scan` 输出扫描报告，`plan` 输出只读清理计划预览；两者都不会删除、隔离、修复或修改注册表。
+WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantine` 和 `restore` 是带强确认的真实文件移动命令；项目仍不提供删除、清理、修复或注册表修改命令。
 
 ## 扫描
 
@@ -81,6 +81,31 @@ WinSafeClean 可以显式加载用户提供的 CleanerML 文件或目录顶层 `
 
 - 执行前会重新运行 preflight checklist。
 - 不通过 preflight 不会移动文件。
+- 写出的 restore metadata schema 为 `1.1`，包含源文件 SHA256 内容 hash。
 - 只支持文件隔离，不支持目录隔离。
 - 不覆盖已有隔离目标或 restore metadata。
-- `delete`、`clean` 和 `restore` 仍未开放。
+- `delete` 和 `clean` 仍未开放。
+
+## 恢复
+
+`restore` 是真实写操作，会把隔离文件移回 restore metadata 记录的原始路径。必须同时提供人工确认和危险操作确认：
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- restore --metadata .\abcd.restore.json --manual-confirmation --i-understand-this-moves-files --operation-log .\operations.jsonl
+```
+
+旧版 metadata 缺少内容 hash 时，需要额外确认：
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- restore --metadata .\legacy.restore.json --manual-confirmation --i-understand-this-moves-files --allow-legacy-metadata-without-hash
+```
+
+安全边界：
+
+- 只接受 full-fidelity restore metadata，拒绝 redacted metadata。
+- metadata 带 SHA256 内容 hash 时，恢复前必须与隔离文件当前内容匹配。
+- metadata 缺少内容 hash 时默认拒绝恢复，除非显式传入 `--allow-legacy-metadata-without-hash`。
+- 原始路径已经存在时不会覆盖。
+- 隔离文件缺失时不会创建占位文件。
+- 只支持文件恢复，不支持目录恢复。
+- `--operation-log` 只追加 JSONL，不会覆盖已有日志。

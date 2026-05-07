@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 namespace WinSafeClean.Core.Quarantine;
 
 public sealed class SystemQuarantineFileSystem : IQuarantineFileSystem
@@ -40,5 +42,11 @@ public sealed class SystemQuarantineFileSystem : IQuarantineFileSystem
         {
             File.Delete(path);
         }
+    }
+
+    public string ComputeSha256Hash(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
     }
 }

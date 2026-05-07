@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-阶段：3 - 只读清理计划
+阶段：3 - 清理计划、隔离和恢复
 
-日期：2026-05-06
+日期：2026-05-08
 
 ## 已完成
 
@@ -184,20 +184,35 @@
 - CLI 新增真实 `quarantine` 命令，必须双重确认才会移动文件
 - `quarantine` 执行前会重新运行 preflight，并可追加 operation log JSONL
 - 新增 ADR 0027，记录带强确认的 quarantine CLI 策略
+- 新增 Core `RestoreExecutor`
+- 新增 `RestoreExecutionOptions`、`RestoreExecutionResult` 和 JSON/Markdown serializer
+- restore 执行器会拒绝 redacted metadata、缺失确认、缺失隔离文件、目录恢复和已有原始路径覆盖
+- restore 执行器支持可选 operation log JSONL 追加
+- CLI 新增真实 `restore` 命令，必须双重确认才会移动文件
+- `restore` 可将隔离文件移回 restore metadata 记录的原始路径，并拒绝 redacted metadata
+- 补充 Core restore 执行器测试，覆盖 operation log started/completed 追加失败的安全行为
+- 补充 CLI restore 端到端测试，覆盖强确认、真实恢复、operation log 和 redacted metadata 拒绝
+- 新增 ADR 0028，记录带强确认的 restore CLI 策略
+- 更新 README 和使用示例，明确 `quarantine` / `restore` 是带强确认的文件移动命令，`delete` / `clean` 仍不开放
+- restore metadata schema 新增 `1.1` fixture，记录 `contentHashAlgorithm` 和 `contentHash`
+- `quarantine` 执行器会在写 restore metadata 前计算源文件 SHA256，失败则不移动源文件
+- `restore` 执行器会在 metadata 带 SHA256 时校验隔离文件内容，hash 不匹配则拒绝恢复
+- 新增 ADR 0029，记录 restore metadata 内容 hash 校验策略
+- 缺少内容 hash 的旧 restore metadata 默认拒绝恢复，必须显式传入 `--allow-legacy-metadata-without-hash` 才允许 legacy 恢复
+- 新增 ADR 0030，决定 Phase 3 暂缓目录隔离和目录恢复，只保留文件级执行闭环
+- 新增 ADR 0031，决定 Phase 4 UI 使用 WPF，MVP 暂不引入 SQLite 扫描历史或 PowerShell 模块入口
+- 更新路线图和实现框架，标记 Phase 3 文件级闭环完成并同步 WPF UI 方向
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：229 passed
+- 测试通过：247 passed
 
 ## 正在进行
 
-- Phase 3 清理计划、隔离和恢复
+- Phase 3 文件级清理计划、隔离和恢复已形成闭环
 
 ## 下一步
 
-1. 设计 restore CLI 和回滚命令。
+1. 启动 Phase 4 WPF UI 设计与脚手架。
 
 ## 待决策
 
-- UI 使用 WPF 还是 WinUI 3。
-- 是否兼容 BleachBit CleanerML 作为规则输入。
-- 是否在 MVP 使用 SQLite 保存扫描历史。
-- 是否提供 PowerShell 模块入口。
+- 暂无。

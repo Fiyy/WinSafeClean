@@ -18,6 +18,22 @@ public sealed class RestoreMetadataSchemaFixtureTests
     }
 
     [Fact]
+    public void ShouldMatchVersion11JsonFixtureWithContentHash()
+    {
+        var metadata = CreateMetadata() with
+        {
+            SchemaVersion = "1.1",
+            ContentHashAlgorithm = "SHA256",
+            ContentHash = "5e1ecee06a7fc06f305ae5c12acfe7a7f67b8ece7af76932ed3afab00c3c6921"
+        };
+
+        var json = RestoreMetadataJsonSerializer.Serialize(metadata);
+        var expected = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Quarantine", "fixtures", "restore-metadata-v1.1.json"));
+
+        Assert.Equal(NormalizeLineEndings(expected), NormalizeLineEndings(json));
+    }
+
+    [Fact]
     public void ShouldDeserializeRestoreMetadataJsonWithReadableEnumValues()
     {
         var json = RestoreMetadataJsonSerializer.Serialize(CreateMetadata());
@@ -28,6 +44,24 @@ public sealed class RestoreMetadataSchemaFixtureTests
         Assert.Equal(RiskLevel.LowRisk, metadata.RiskLevel);
         Assert.Equal(CleanupPlanAction.ReviewForQuarantine, metadata.PlanAction);
     }
+
+    [Fact]
+    public void ShouldDeserializeRestoreMetadataJsonWithContentHash()
+    {
+        var json = RestoreMetadataJsonSerializer.Serialize(CreateMetadata() with
+        {
+            SchemaVersion = "1.1",
+            ContentHashAlgorithm = "SHA256",
+            ContentHash = "5e1ecee06a7fc06f305ae5c12acfe7a7f67b8ece7af76932ed3afab00c3c6921"
+        });
+
+        var metadata = RestoreMetadataJsonSerializer.Deserialize(json);
+
+        Assert.Equal("1.1", metadata.SchemaVersion);
+        Assert.Equal("SHA256", metadata.ContentHashAlgorithm);
+        Assert.Equal("5e1ecee06a7fc06f305ae5c12acfe7a7f67b8ece7af76932ed3afab00c3c6921", metadata.ContentHash);
+    }
+
 
     [Fact]
     public void ShouldRejectInvalidRestoreMetadataJson()

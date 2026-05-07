@@ -15,8 +15,8 @@ public static class CommandLineApp
     private const int OperationFailed = 1;
     private const int UsageError = 2;
     private const int Cancelled = 130;
-    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>] OR quarantine --plan <FILE> --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--operation-log <FILE>] [--format json|markdown] [--output <FILE>]";
-    private static readonly string[] ExecutableCommands = ["delete", "clean", "restore"];
+    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>] OR quarantine --plan <FILE> --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--operation-log <FILE>] [--format json|markdown] [--output <FILE>] OR restore --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--allow-legacy-metadata-without-hash] [--operation-log <FILE>] [--format json|markdown] [--output <FILE>]";
+    private static readonly string[] ExecutableCommands = ["delete", "clean"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
     public static int Run(
@@ -47,7 +47,8 @@ public static class CommandLineApp
         if (!command.Equals("scan", StringComparison.OrdinalIgnoreCase)
             && !command.Equals("plan", StringComparison.OrdinalIgnoreCase)
             && !command.Equals("preflight", StringComparison.OrdinalIgnoreCase)
-            && !command.Equals("quarantine", StringComparison.OrdinalIgnoreCase))
+            && !command.Equals("quarantine", StringComparison.OrdinalIgnoreCase)
+            && !command.Equals("restore", StringComparison.OrdinalIgnoreCase))
         {
             stderr.WriteLine($"Unknown command '{command}'. {Usage}");
             return UsageError;
@@ -72,6 +73,11 @@ public static class CommandLineApp
             if (command.Equals("quarantine", StringComparison.OrdinalIgnoreCase))
             {
                 return RunQuarantine(args[1..], stdout, stderr, createdAt, cancellationToken);
+            }
+
+            if (command.Equals("restore", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunRestore(args[1..], stdout, stderr, createdAt, cancellationToken);
             }
 
             return command.Equals("plan", StringComparison.OrdinalIgnoreCase)
@@ -335,6 +341,96 @@ public static class CommandLineApp
         var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
             ? QuarantineExecutionResultMarkdownSerializer.Serialize(result)
             : QuarantineExecutionResultJsonSerializer.Serialize(result);
+
+        if (!string.IsNullOrWhiteSpace(options.OutputPath))
+        {
+            var outputValidationError = ValidateOutputPath(options.OutputPath);
+            if (!string.IsNullOrWhiteSpace(outputValidationError))
+            {
+                stderr.WriteLine(outputValidationError);
+                return UsageError;
+            }
+
+            using var stream = new FileStream(options.OutputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            using var writer = new StreamWriter(stream);
+            writer.Write(rendered);
+        }
+        else
+        {
+            stdout.Write(rendered);
+        }
+
+        return result.Succeeded ? Success : OperationFailed;
+    }
+
+    private static int RunRestore(
+        string[] args,
+        TextWriter stdout,
+        TextWriter stderr,
+        DateTimeOffset createdAt,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var options = RestoreOptions.Parse(args);
+        if (!string.IsNullOrWhiteSpace(options.Error))
+        {
+            stderr.WriteLine(options.Error);
+            return UsageError;
+        }
+
+        if (!options.ManualConfirmationProvided)
+        {
+            stderr.WriteLine("restore requires --manual-confirmation.");
+            return UsageError;
+        }
+
+        if (!options.UnderstandsFileMove)
+        {
+            stderr.WriteLine("restore requires --i-understand-this-moves-files.");
+            return UsageError;
+        }
+
+        if (!File.Exists(options.MetadataPath))
+        {
+            stderr.WriteLine("--metadata must point to an existing restore metadata JSON file.");
+            return UsageError;
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.OperationLogPath))
+        {
+            var operationLogValidationError = ValidateAppendPath(options.OperationLogPath);
+            if (!string.IsNullOrWhiteSpace(operationLogValidationError))
+            {
+                stderr.WriteLine(operationLogValidationError);
+                return UsageError;
+            }
+        }
+
+        RestoreMetadata metadata;
+        try
+        {
+            metadata = RestoreMetadataJsonSerializer.Deserialize(File.ReadAllText(options.MetadataPath));
+        }
+        catch (Exception exception)
+        {
+            stderr.WriteLine($"restore input could not be read: {exception.Message}");
+            return UsageError;
+        }
+
+        var result = new RestoreExecutor().Execute(
+            metadata,
+            new RestoreExecutionOptions(
+                ManualConfirmationProvided: options.ManualConfirmationProvided,
+                OperationId: Guid.NewGuid().ToString("N"),
+                RunId: Guid.NewGuid().ToString("N"),
+                OperationLogPath: options.OperationLogPath,
+                AllowLegacyMetadataWithoutContentHash: options.AllowLegacyMetadataWithoutContentHash),
+            createdAt);
+
+        var rendered = options.Format.Equals("markdown", StringComparison.OrdinalIgnoreCase)
+            ? RestoreExecutionResultMarkdownSerializer.Serialize(result)
+            : RestoreExecutionResultJsonSerializer.Serialize(result);
 
         if (!string.IsNullOrWhiteSpace(options.OutputPath))
         {
@@ -853,6 +949,124 @@ public static class CommandLineApp
                 OperationLogPath: null,
                 ManualConfirmationProvided: false,
                 UnderstandsFileMove: false,
+                Error: error);
+        }
+    }
+
+    private sealed record RestoreOptions(
+        string? MetadataPath,
+        string Format,
+        string? OutputPath,
+        string? OperationLogPath,
+        bool ManualConfirmationProvided,
+        bool UnderstandsFileMove,
+        bool AllowLegacyMetadataWithoutContentHash,
+        string? Error)
+    {
+        public static RestoreOptions Parse(string[] args)
+        {
+            string? metadataPath = null;
+            var format = "json";
+            string? outputPath = null;
+            string? operationLogPath = null;
+            var manualConfirmationProvided = false;
+            var understandsFileMove = false;
+            var allowLegacyMetadataWithoutContentHash = false;
+
+            for (var index = 0; index < args.Length; index++)
+            {
+                var arg = args[index];
+                switch (arg)
+                {
+                    case "--metadata":
+                        if (!TryReadValue(args, ref index, "--metadata", out metadataPath, out var metadataError))
+                        {
+                            return Invalid(metadataError);
+                        }
+
+                        break;
+                    case "--format":
+                        if (!TryReadValue(args, ref index, "--format", out format, out var formatError))
+                        {
+                            return Invalid(formatError);
+                        }
+
+                        if (!format.Equals("json", StringComparison.OrdinalIgnoreCase)
+                            && !format.Equals("markdown", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return Invalid("--format must be either 'json' or 'markdown'.");
+                        }
+
+                        break;
+                    case "--output":
+                        if (!TryReadValue(args, ref index, "--output", out outputPath, out var outputError))
+                        {
+                            return Invalid(outputError);
+                        }
+
+                        break;
+                    case "--operation-log":
+                        if (!TryReadValue(args, ref index, "--operation-log", out operationLogPath, out var operationLogError))
+                        {
+                            return Invalid(operationLogError);
+                        }
+
+                        break;
+                    case "--manual-confirmation":
+                        manualConfirmationProvided = true;
+                        break;
+                    case "--i-understand-this-moves-files":
+                        understandsFileMove = true;
+                        break;
+                    case "--allow-legacy-metadata-without-hash":
+                        allowLegacyMetadataWithoutContentHash = true;
+                        break;
+                    default:
+                        return Invalid($"Unknown option '{arg}'.");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(metadataPath))
+            {
+                return Invalid("--metadata is required.");
+            }
+
+            return new RestoreOptions(
+                metadataPath,
+                format,
+                outputPath,
+                operationLogPath,
+                manualConfirmationProvided,
+                understandsFileMove,
+                allowLegacyMetadataWithoutContentHash,
+                Error: null);
+        }
+
+        private static bool TryReadValue(string[] args, ref int index, string option, out string value, out string error)
+        {
+            if (index + 1 >= args.Length || args[index + 1].StartsWith("--", StringComparison.Ordinal))
+            {
+                value = string.Empty;
+                error = $"{option} requires a value.";
+                return false;
+            }
+
+            index++;
+            value = args[index];
+            error = string.Empty;
+            return true;
+        }
+
+        private static RestoreOptions Invalid(string error)
+        {
+            return new RestoreOptions(
+                MetadataPath: null,
+                Format: "json",
+                OutputPath: null,
+                OperationLogPath: null,
+                ManualConfirmationProvided: false,
+                UnderstandsFileMove: false,
+                AllowLegacyMetadataWithoutContentHash: false,
                 Error: error);
         }
     }

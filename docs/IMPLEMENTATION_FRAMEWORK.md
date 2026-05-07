@@ -85,10 +85,11 @@ WinSafeClean
 - Keep
 - ReportOnly
 - SuggestWindowsTool
+- ReviewForQuarantine
 - Quarantine
 - Delete
 
-MVP 只允许生成 `Keep`、`ReportOnly`、`SuggestWindowsTool`，不执行真实删除。
+当前 Phase 3 计划只生成 `Keep`、`ReportOnly` 和 `ReviewForQuarantine` 语义。`plan` 本身仍只读；真实文件移动只能通过带强确认的 `quarantine` 和 `restore` 命令执行。`Delete` 仍不开放，目录隔离和目录恢复暂缓。
 
 ### Reporting
 
