@@ -33,6 +33,13 @@ public sealed class PlanOverviewViewModelTests
         Assert.Equal(@"C:\Quarantine\restore\abcd.restore.json", item.RestoreMetadataPath);
     }
 
+    [Fact]
+    public void EmptyPlanOverviewShouldExposeEmptyState()
+    {
+        Assert.False(PlanOverviewViewModel.Empty.HasItems);
+        Assert.Equal("No cleanup plan loaded.", PlanOverviewViewModel.Empty.EmptyStateMessage);
+    }
+
     private static CleanupPlan CreatePlan()
     {
         return new CleanupPlan(

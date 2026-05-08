@@ -107,6 +107,8 @@
 - Scan report JSON reader
 - Read-only operation command builder
 - Preflight checklist reader
+- UI empty states
+- Risk and preflight status visual cues
 
 完成标准：
 

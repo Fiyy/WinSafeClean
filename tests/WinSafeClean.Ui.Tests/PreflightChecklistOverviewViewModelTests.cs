@@ -27,6 +27,13 @@ public sealed class PreflightChecklistOverviewViewModelTests
         Assert.Contains("required", item.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void EmptyPreflightOverviewShouldExposeEmptyState()
+    {
+        Assert.False(PreflightChecklistOverviewViewModel.Empty.HasChecks);
+        Assert.Equal("No preflight checklist loaded.", PreflightChecklistOverviewViewModel.Empty.EmptyStateMessage);
+    }
+
     private static QuarantinePreflightChecklist CreateChecklist()
     {
         return new QuarantinePreflightChecklist(

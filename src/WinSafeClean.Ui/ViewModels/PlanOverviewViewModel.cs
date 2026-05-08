@@ -18,6 +18,10 @@ public sealed class PlanOverviewViewModel
 
     public int TotalItems { get; }
 
+    public bool HasItems => TotalItems > 0;
+
+    public string EmptyStateMessage => "No cleanup plan loaded.";
+
     public IReadOnlyList<SummaryItemViewModel> ActionSummaries { get; }
 
     public IReadOnlyList<SummaryItemViewModel> RiskSummaries { get; }

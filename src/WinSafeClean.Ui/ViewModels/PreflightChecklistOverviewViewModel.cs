@@ -24,6 +24,10 @@ public sealed class PreflightChecklistOverviewViewModel
 
     public int TotalChecks { get; }
 
+    public bool HasChecks => TotalChecks > 0;
+
+    public string EmptyStateMessage => "No preflight checklist loaded.";
+
     public IReadOnlyList<SummaryItemViewModel> StatusSummaries { get; }
 
     public IReadOnlyList<PreflightCheckItemViewModel> Checks { get; }

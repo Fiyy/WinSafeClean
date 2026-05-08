@@ -32,6 +32,13 @@ public sealed class ScanReportOverviewViewModelTests
         Assert.Contains("CleanerML", item.Evidence);
     }
 
+    [Fact]
+    public void EmptyScanOverviewShouldExposeEmptyState()
+    {
+        Assert.False(ScanReportOverviewViewModel.Empty.HasItems);
+        Assert.Equal("No scan report loaded.", ScanReportOverviewViewModel.Empty.EmptyStateMessage);
+    }
+
     private static ScanReport CreateReport()
     {
         return new ScanReport(

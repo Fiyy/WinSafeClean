@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-阶段：3 - 清理计划、隔离和恢复
+阶段：4 - WPF UI
 
 日期：2026-05-08
 
@@ -212,8 +212,10 @@
 - WPF UI 新增只读操作页签，可构建 `scan`、`plan`、`preflight` 命令，不生成真实移动或删除命令
 - `QuarantinePreflightChecklistJsonSerializer` 支持反序列化 checklist JSON
 - WPF UI 新增 preflight checklist 页签，可打开 checklist JSON 并展示可执行状态、检查状态汇总和检查消息
-- 验证命令：`pwsh -NoProfile -File scripts\test.ps1 -Restore`
-- 测试通过：258 passed
+- WPF UI 新增 scan report、cleanup plan 和 preflight checklist 空状态
+- WPF UI 新增风险等级和 preflight 检查状态的可视化文本提示
+- 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
+- 测试通过：261 passed
 
 ## 正在进行
 
@@ -221,7 +223,7 @@
 
 ## 下一步
 
-1. 为 WPF UI 增加报告/计划/校验结果的可视化状态样式和空状态。
+1. 补充 WPF scan report 的空间占用展示和用户可读大小格式。
 
 ## 待决策
 

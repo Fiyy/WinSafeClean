@@ -22,6 +22,10 @@ public sealed class ScanReportOverviewViewModel
 
     public int TotalItems { get; }
 
+    public bool HasItems => TotalItems > 0;
+
+    public string EmptyStateMessage => "No scan report loaded.";
+
     public IReadOnlyList<SummaryItemViewModel> RiskSummaries { get; }
 
     public IReadOnlyList<SummaryItemViewModel> ItemKindSummaries { get; }
