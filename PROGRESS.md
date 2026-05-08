@@ -247,17 +247,19 @@
 - 推送 `main` 分支和 `v0.1.0` 标签到 GitHub
 - 创建 GitHub `v0.1.0` draft release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
 - 验证 GitHub draft release 绑定 `v0.1.0` 标签且三项附件上传完成
+- 公开发布 GitHub `v0.1.0` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.1.0
+- 验证 GitHub `v0.1.0` release `isDraft=false`，三项附件 URL 已切换到 `/download/v0.1.0/`
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 额外验证：WPF UI hidden startup smoke
 - 测试通过：271 passed
 
 ## 正在进行
 
-- GitHub `v0.1.0` draft release 已创建，等待最终人工审阅后公开发布
+- GitHub `v0.1.0` 已公开发布
 
 ## 下一步
 
-1. 人工审阅 GitHub draft release，确认后公开发布，或继续进入更完整的交互式 UI 工作流。
+1. 继续进入更完整的交互式 UI 工作流，或规划下一版发布内容。
 
 ## 待决策
 
