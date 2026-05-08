@@ -243,6 +243,7 @@
 - 验证 `scripts\publish.ps1 -SkipTests -CreateArchive -WhatIf`，确认 dry run 覆盖发布、打包和 release 目录创建目标
 - 验证 `scripts\publish.ps1 -SkipTests -CreateArchive`，确认生成 CLI/UI ZIP 包和 `SHA256SUMS.txt`
 - 检查 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools` 或本地报告
+- 新增 `docs/releases/v0.1.0.md`，记录首个本地发布候选的能力、安全边界、验证结果和已知限制
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 额外验证：WPF UI hidden startup smoke
 - 测试通过：271 passed
