@@ -10,7 +10,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 2. 它和哪些程序、系统组件、服务、计划任务、启动项或注册表记录有关？
 3. 删除、隔离或交给系统工具清理是否会影响 Windows 或应用程序正常运行？
 
-当前项目处于 Phase 4：WPF UI。CLI 默认不做真实删除；真实文件移动只通过带强确认的 `quarantine` 和 `restore` 命令开放。
+当前项目处于 Phase 4：WPF UI MVP 已完成。CLI 默认不做真实删除；真实文件移动只通过带强确认的 `quarantine` 和 `restore` 命令开放。
 
 ## 核心方向
 

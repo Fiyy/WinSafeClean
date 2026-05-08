@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-阶段：4 - WPF UI
+阶段：4 - WPF UI MVP 完成
 
 日期：2026-05-08
 
@@ -220,16 +220,18 @@
 - WPF UI scan report、cleanup plan 和 preflight checklist 列表新增列标题，空状态时隐藏标题行
 - WPF UI scan report 和 cleanup plan 详情面板新增未选择条目的空状态
 - README 和 USAGE 补充 WPF UI 启动、报告加载和只读操作边界说明
+- WPF UI 隐藏窗口启动 smoke 验证通过：应用启动后保持运行，随后结束测试进程
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
+- 额外验证：WPF UI hidden startup smoke
 - 测试通过：269 passed
 
 ## 正在进行
 
-- Phase 4 WPF UI
+- 无，Phase 4 WPF UI MVP 已完成
 
 ## 下一步
 
-1. 梳理 Phase 4 WPF UI 剩余 MVP 缺口，决定是否进入手动 smoke 验证或打包发布准备。
+1. 暂无明确未完成 MVP 任务；后续可进入打包、发布准备或更完整的交互式 UI 工作流。
 
 ## 待决策
 

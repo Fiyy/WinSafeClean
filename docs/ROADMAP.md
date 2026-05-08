@@ -92,7 +92,7 @@
 
 目标：使用 WPF 提供普通用户能理解的界面。
 
-状态：脚手架进行中
+状态：WPF MVP shell 完成
 
 交付物：
 
@@ -110,6 +110,7 @@
 - UI empty states
 - Risk and preflight status visual cues
 - Read-only operation input validation feedback
+- WPF startup smoke verification
 
 完成标准：
 
