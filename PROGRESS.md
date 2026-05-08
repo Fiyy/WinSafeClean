@@ -4,7 +4,7 @@
 
 阶段：5 - 发布准备，本地发布、版本元数据和归档基线完成
 
-日期：2026-05-08
+日期：2026-05-09
 
 ## 已完成
 
@@ -244,17 +244,20 @@
 - 验证 `scripts\publish.ps1 -SkipTests -CreateArchive`，确认生成 CLI/UI ZIP 包和 `SHA256SUMS.txt`
 - 检查 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools` 或本地报告
 - 新增 `docs/releases/v0.1.0.md`，记录首个本地发布候选的能力、安全边界、验证结果和已知限制
+- 推送 `main` 分支和 `v0.1.0` 标签到 GitHub
+- 创建 GitHub `v0.1.0` draft release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
+- 验证 GitHub draft release 绑定 `v0.1.0` 标签且三项附件上传完成
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 额外验证：WPF UI hidden startup smoke
 - 测试通过：271 passed
 
 ## 正在进行
 
-- 无，Phase 5 本地发布、版本元数据和归档基线已完成
+- GitHub `v0.1.0` draft release 已创建，等待最终人工审阅后公开发布
 
 ## 下一步
 
-1. 暂无明确未完成发布基线任务；后续可准备第一个版本标签或进一步实现交互式 UI 工作流。
+1. 人工审阅 GitHub draft release，确认后公开发布，或继续进入更完整的交互式 UI 工作流。
 
 ## 待决策
 

@@ -71,6 +71,31 @@ Inspect release output before publishing externally:
 - No test assemblies are included.
 - No restore metadata, operation logs, scan reports, private paths, or user data are included.
 
+## GitHub Draft Release
+
+Create a draft release after local validation:
+
+```powershell
+git push origin main
+git push origin v0.1.0
+gh release create v0.1.0 `
+  artifacts\release\WinSafeClean.Cli-0.1.0-win-x64.zip `
+  artifacts\release\WinSafeClean.Ui-0.1.0-win-x64.zip `
+  artifacts\release\SHA256SUMS.txt `
+  --repo Fiyy/WinSafeClean `
+  --title "WinSafeClean v0.1.0" `
+  --notes-file docs\releases\v0.1.0.md `
+  --draft
+```
+
+Verify:
+
+```powershell
+gh release view v0.1.0 --repo Fiyy/WinSafeClean --json tagName,name,isDraft,assets
+```
+
+Keep the release as a draft until a human has reviewed the safety boundary, known limitations, artifacts, and checksum manifest.
+
 ## Known Limitations To Carry Into Release Notes
 
 - No real deletion command is available.
