@@ -23,6 +23,12 @@ Verify:
 
 - `artifacts\publish\WinSafeClean.Cli\WinSafeClean.Cli.exe` exists.
 - `artifacts\publish\WinSafeClean.Ui\WinSafeClean.Ui.exe` exists.
+- Published CLI reports a version:
+
+```powershell
+.\artifacts\publish\WinSafeClean.Cli\WinSafeClean.Cli.exe --version
+```
+
 - Published CLI can run a read-only smoke command:
 
 ```powershell

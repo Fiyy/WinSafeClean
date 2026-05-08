@@ -122,7 +122,7 @@
 
 目标：建立可重复、本地优先、不会执行清理动作的发布流程。
 
-状态：本地发布基线完成
+状态：本地发布基线和版本元数据完成
 
 交付物：
 
@@ -132,6 +132,8 @@
 - Publish smoke verification
 - Release checklist
 - Release notes template
+- Version metadata
+- CLI version command
 
 完成标准：
 

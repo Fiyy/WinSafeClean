@@ -1,3 +1,4 @@
+using System.Reflection;
 using WinSafeClean.Core.Evidence;
 using WinSafeClean.Core.FileInventory;
 using WinSafeClean.Core.Planning;
@@ -15,7 +16,7 @@ public static class CommandLineApp
     private const int OperationFailed = 1;
     private const int UsageError = 2;
     private const int Cancelled = 130;
-    private const string Usage = "Use: scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>] OR quarantine --plan <FILE> --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--operation-log <FILE>] [--format json|markdown] [--output <FILE>] OR restore --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--allow-legacy-metadata-without-hash] [--operation-log <FILE>] [--format json|markdown] [--output <FILE>]";
+    private const string Usage = "Use: --version OR scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>] OR quarantine --plan <FILE> --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--operation-log <FILE>] [--format json|markdown] [--output <FILE>] OR restore --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--allow-legacy-metadata-without-hash] [--operation-log <FILE>] [--format json|markdown] [--output <FILE>]";
     private static readonly string[] ExecutableCommands = ["delete", "clean"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
@@ -38,6 +39,13 @@ public static class CommandLineApp
         }
 
         var command = args[0];
+        if (command.Equals("--version", StringComparison.OrdinalIgnoreCase)
+            || command.Equals("version", StringComparison.OrdinalIgnoreCase))
+        {
+            stdout.WriteLine($"WinSafeClean {GetProductVersion()}");
+            return Success;
+        }
+
         if (ExecutableCommands.Contains(command, StringComparer.OrdinalIgnoreCase))
         {
             stderr.WriteLine($"The '{command}' command is not available during the read-only MVP phase.");
@@ -469,6 +477,16 @@ public static class CommandLineApp
     public static IFileEvidenceProvider CreateDefaultEvidenceProvider()
     {
         return new CompositeFileEvidenceProvider(WindowsEvidenceProviderFactory.CreateDefaultProviders());
+    }
+
+    private static string GetProductVersion()
+    {
+        var assembly = typeof(CommandLineApp).Assembly;
+        return assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion
+            ?? assembly.GetName().Version?.ToString()
+            ?? "unknown";
     }
 
     private static bool TryCreateEvidenceProvider(

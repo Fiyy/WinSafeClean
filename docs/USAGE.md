@@ -42,6 +42,12 @@ pwsh -NoProfile -File .\scripts\publish.ps1 -Restore
 
 ## 扫描
 
+查看版本：
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- --version
+```
+
 ```powershell
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Temp --format markdown
 ```

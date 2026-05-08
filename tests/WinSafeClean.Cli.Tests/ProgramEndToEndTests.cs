@@ -8,6 +8,35 @@ namespace WinSafeClean.Cli.Tests;
 public sealed class ProgramEndToEndTests
 {
     [Fact]
+    public async Task ProgramShouldWriteVersion()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var executablePath = Path.Combine(AppContext.BaseDirectory, "WinSafeClean.Cli.exe");
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = executablePath,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false
+        };
+        startInfo.ArgumentList.Add("--version");
+
+        using var process = Process.Start(startInfo)!;
+        var stdoutTask = process.StandardOutput.ReadToEndAsync(timeout.Token);
+        var stderrTask = process.StandardError.ReadToEndAsync(timeout.Token);
+
+        await process.WaitForExitAsync(timeout.Token);
+        var stdout = await stdoutTask;
+        var stderr = await stderrTask;
+
+        Assert.Equal(0, process.ExitCode);
+        Assert.Equal(string.Empty, stderr);
+        Assert.StartsWith("WinSafeClean 0.1.0", stdout, StringComparison.Ordinal);
+        Assert.EndsWith(Environment.NewLine, stdout, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task ProgramShouldRunScanThroughDefaultCompositionRoot()
     {
         using var temp = TemporaryFile.Create("hello");

@@ -11,6 +11,20 @@ namespace WinSafeClean.Cli.Tests;
 public sealed class CommandLineAppTests
 {
     [Fact]
+    public void ShouldWriteVersion()
+    {
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(["--version"], stdout, stderr, DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        Assert.StartsWith("WinSafeClean 0.1.0", stdout.ToString(), StringComparison.Ordinal);
+        Assert.EndsWith(Environment.NewLine, stdout.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ScanShouldWriteJsonReportToStdout()
     {
         using var temp = TemporaryFile.Create("hello");

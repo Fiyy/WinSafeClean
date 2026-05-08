@@ -37,6 +37,7 @@
 - `pwsh -NoProfile -File .\scripts\test.ps1 -Restore`
 - `pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -WhatIf`
 - `pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests`
+- Published CLI `--version`.
 - Published CLI read-only smoke.
 - Published WPF UI startup smoke.
 

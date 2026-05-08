@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-阶段：5 - 发布准备，本地发布基线完成
+阶段：5 - 发布准备，本地发布基线和版本元数据完成
 
 日期：2026-05-08
 
@@ -231,13 +231,19 @@
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 新增 `docs/RELEASE_CHECKLIST.md`，记录发布前测试、发布、smoke、安全和文档门禁
 - 新增 `docs/RELEASE_NOTES_TEMPLATE.md`，记录版本说明模板和必须保留的安全边界
+- 新增 `Directory.Build.props`，统一产品版本元数据为 `0.1.0`
+- CLI 新增只读 `--version` / `version` 输出，包含产品版本和构建源版本
+- 补充 CLI 单元测试和 Program 端到端测试覆盖 `--version`
+- 重新发布后验证发布版 CLI `--version` 成功
+- 重新发布后验证发布版 CLI 只读 scan smoke 成功
+- 重新发布后验证发布版 WPF UI hidden startup smoke 成功
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 额外验证：WPF UI hidden startup smoke
-- 测试通过：269 passed
+- 测试通过：271 passed
 
 ## 正在进行
 
-- 无，Phase 5 本地发布基线已完成
+- 无，Phase 5 本地发布基线和版本元数据已完成
 
 ## 下一步
 
