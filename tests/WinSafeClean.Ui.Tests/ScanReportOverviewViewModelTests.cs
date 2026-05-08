@@ -63,6 +63,7 @@ public sealed class ScanReportOverviewViewModelTests
     {
         Assert.False(ScanReportOverviewViewModel.Empty.HasItems);
         Assert.Equal("No scan report loaded.", ScanReportOverviewViewModel.Empty.EmptyStateMessage);
+        Assert.Equal("Select a scan item to view details.", ScanReportOverviewViewModel.Empty.SelectionEmptyStateMessage);
     }
 
     private static ScanReport CreateReport()

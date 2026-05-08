@@ -38,6 +38,7 @@ public sealed class PlanOverviewViewModelTests
     {
         Assert.False(PlanOverviewViewModel.Empty.HasItems);
         Assert.Equal("No cleanup plan loaded.", PlanOverviewViewModel.Empty.EmptyStateMessage);
+        Assert.Equal("Select a cleanup plan item to view details.", PlanOverviewViewModel.Empty.SelectionEmptyStateMessage);
     }
 
     private static CleanupPlan CreatePlan()

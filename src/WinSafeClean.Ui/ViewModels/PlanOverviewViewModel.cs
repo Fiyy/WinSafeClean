@@ -22,6 +22,8 @@ public sealed class PlanOverviewViewModel
 
     public string EmptyStateMessage => "No cleanup plan loaded.";
 
+    public string SelectionEmptyStateMessage => "Select a cleanup plan item to view details.";
+
     public IReadOnlyList<SummaryItemViewModel> ActionSummaries { get; }
 
     public IReadOnlyList<SummaryItemViewModel> RiskSummaries { get; }

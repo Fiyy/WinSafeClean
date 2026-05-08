@@ -32,6 +32,8 @@ public sealed class ScanReportOverviewViewModel
 
     public string EmptyStateMessage => "No scan report loaded.";
 
+    public string SelectionEmptyStateMessage => "Select a scan item to view details.";
+
     public IReadOnlyList<SummaryItemViewModel> RiskSummaries { get; }
 
     public IReadOnlyList<SummaryItemViewModel> ItemKindSummaries { get; }

@@ -218,6 +218,7 @@
 - WPF UI scan report 详情面板新增条目大小和最后修改时间展示
 - WPF UI 只读操作页签新增输入 ToolTip 提示和页签内参数校验反馈
 - WPF UI scan report、cleanup plan 和 preflight checklist 列表新增列标题，空状态时隐藏标题行
+- WPF UI scan report 和 cleanup plan 详情面板新增未选择条目的空状态
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 测试通过：269 passed
 
@@ -227,7 +228,7 @@
 
 ## 下一步
 
-1. 补充 WPF scan report 和 cleanup plan 详情面板的未选择空状态。
+1. 补充 README 和 USAGE 中的 WPF UI 启动与报告加载说明。
 
 ## 待决策
 
