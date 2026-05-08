@@ -50,6 +50,7 @@ public sealed class ScanReportOverviewViewModel
                 ItemKind: item.ItemKind.ToString(),
                 SizeBytes: item.SizeBytes,
                 SizeDisplay: ByteSizeFormatter.Format(item.SizeBytes),
+                LastWriteTimeDisplay: UtcTimestampFormatter.Format(item.LastWriteTimeUtc),
                 RiskLevel: item.Risk.Level.ToString(),
                 SuggestedAction: item.Risk.SuggestedAction.ToString(),
                 Reasons: string.Join(Environment.NewLine, item.Risk.Reasons),

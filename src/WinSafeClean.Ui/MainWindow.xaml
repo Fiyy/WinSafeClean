@@ -207,6 +207,10 @@
                             <StackPanel Margin="14" DataContext="{Binding ElementName=ScanItemsList, Path=SelectedItem}">
                                 <TextBlock Text="Details" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                                 <TextBlock Text="{Binding Path}" Margin="0,12,0,14" TextWrapping="Wrap" Foreground="#20242A" />
+                                <TextBlock Text="Size" FontWeight="SemiBold" Foreground="#20242A" />
+                                <TextBlock Text="{Binding SizeDisplay}" Margin="0,8,0,14" TextWrapping="Wrap" Foreground="#4A515B" />
+                                <TextBlock Text="Last Modified" FontWeight="SemiBold" Foreground="#20242A" />
+                                <TextBlock Text="{Binding LastWriteTimeDisplay}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                 <TextBlock Text="Reasons" FontWeight="SemiBold" Foreground="#20242A" />
                                 <TextBlock Text="{Binding Reasons}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                 <TextBlock Text="Blockers" FontWeight="SemiBold" Foreground="#20242A" />

@@ -34,6 +34,18 @@ public sealed class ScanReportOverviewViewModelTests
     }
 
     [Fact]
+    public void ShouldExposeReadableLastWriteTimeForDetails()
+    {
+        var viewModel = ScanReportOverviewViewModel.FromReport(CreateReport());
+
+        var cache = Assert.Single(viewModel.Items.Where(item => item.Path == @"C:\Temp\cache.tmp"));
+        var unknown = Assert.Single(viewModel.Items.Where(item => item.Path == @"C:\Temp\unknown.bin"));
+
+        Assert.Equal("1970-01-01 00:00:00 UTC", cache.LastWriteTimeDisplay);
+        Assert.Equal("-", unknown.LastWriteTimeDisplay);
+    }
+
+    [Fact]
     public void ShouldExposeEvidenceAndReasonsForReportItems()
     {
         var viewModel = ScanReportOverviewViewModel.FromReport(CreateReport());

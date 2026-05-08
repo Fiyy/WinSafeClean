@@ -215,8 +215,9 @@
 - WPF UI 新增 scan report、cleanup plan 和 preflight checklist 空状态
 - WPF UI 新增风险等级和 preflight 检查状态的可视化文本提示
 - WPF UI scan report 新增总大小和条目大小的用户可读展示
+- WPF UI scan report 详情面板新增条目大小和最后修改时间展示
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：262 passed
+- 测试通过：263 passed
 
 ## 正在进行
 
@@ -224,7 +225,7 @@
 
 ## 下一步
 
-1. 补充 WPF scan report 详情面板中的大小和修改时间上下文。
+1. 补充 WPF 只读操作页签的输入占位提示和参数校验反馈。
 
 ## 待决策
 
