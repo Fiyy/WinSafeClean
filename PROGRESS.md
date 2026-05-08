@@ -216,8 +216,9 @@
 - WPF UI 新增风险等级和 preflight 检查状态的可视化文本提示
 - WPF UI scan report 新增总大小和条目大小的用户可读展示
 - WPF UI scan report 详情面板新增条目大小和最后修改时间展示
+- WPF UI 只读操作页签新增输入 ToolTip 提示和页签内参数校验反馈
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
-- 测试通过：263 passed
+- 测试通过：269 passed
 
 ## 正在进行
 
@@ -225,7 +226,7 @@
 
 ## 下一步
 
-1. 补充 WPF 只读操作页签的输入占位提示和参数校验反馈。
+1. 补充 WPF 列表列标题，提升 scan report、cleanup plan 和 preflight checklist 的可扫描性。
 
 ## 待决策
 

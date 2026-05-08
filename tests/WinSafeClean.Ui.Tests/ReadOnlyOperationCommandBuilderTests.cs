@@ -12,6 +12,27 @@ public sealed class ReadOnlyOperationCommandBuilderTests
         Assert.Equal(["scan", "--path", @"C:\Temp", "--recursive", "--max-items", "200"], args);
     }
 
+    [Theory]
+    [InlineData("", null)]
+    [InlineData("  ", null)]
+    [InlineData("200", 200)]
+    public void ShouldParseOptionalMaxItems(string value, int? expected)
+    {
+        Assert.Equal(expected, ReadOnlyOperationCommandBuilder.ParseMaxItems(value));
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("many")]
+    public void ShouldRejectInvalidMaxItemsWithReadableMessage(string value)
+    {
+        var exception = Assert.Throws<ArgumentException>(
+            () => ReadOnlyOperationCommandBuilder.ParseMaxItems(value));
+
+        Assert.Equal("Max items must be a positive integer.", exception.Message);
+    }
+
     [Fact]
     public void ShouldBuildPlanArgumentsWithCleanerMl()
     {

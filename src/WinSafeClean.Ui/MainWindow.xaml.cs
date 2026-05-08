@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Media;
 using Microsoft.Win32;
 using WinSafeClean.Core.Planning;
 using WinSafeClean.Core.Quarantine;
@@ -86,17 +87,17 @@ public partial class MainWindow : Window
     {
         try
         {
-            int? maxItems = string.IsNullOrWhiteSpace(ScanMaxItemsBox.Text)
-                ? null
-                : int.Parse(ScanMaxItemsBox.Text);
+            int? maxItems = ReadOnlyOperationCommandBuilder.ParseMaxItems(ScanMaxItemsBox.Text);
             OperationCommandText.Text = FormatCommand(ReadOnlyOperationCommandBuilder.BuildScan(
                 ScanPathBox.Text,
                 ScanRecursiveBox.IsChecked == true,
                 maxItems));
+            ShowOperationStatus("Scan command built.", isError: false);
         }
         catch (Exception exception)
         {
-            ShowLoadError("Scan command could not be built", exception);
+            OperationCommandText.Text = string.Empty;
+            ShowOperationStatus(exception.Message, isError: true);
         }
     }
 
@@ -107,10 +108,12 @@ public partial class MainWindow : Window
             OperationCommandText.Text = FormatCommand(ReadOnlyOperationCommandBuilder.BuildPlan(
                 PlanPathBox.Text,
                 CleanerMlPathBox.Text));
+            ShowOperationStatus("Plan command built.", isError: false);
         }
         catch (Exception exception)
         {
-            ShowLoadError("Plan command could not be built", exception);
+            OperationCommandText.Text = string.Empty;
+            ShowOperationStatus(exception.Message, isError: true);
         }
     }
 
@@ -122,10 +125,12 @@ public partial class MainWindow : Window
                 PreflightPlanPathBox.Text,
                 PreflightMetadataPathBox.Text,
                 PreflightManualConfirmationBox.IsChecked == true));
+            ShowOperationStatus("Preflight command built.", isError: false);
         }
         catch (Exception exception)
         {
-            ShowLoadError("Preflight command could not be built", exception);
+            OperationCommandText.Text = string.Empty;
+            ShowOperationStatus(exception.Message, isError: true);
         }
     }
 
@@ -147,6 +152,14 @@ public partial class MainWindow : Window
             title,
             MessageBoxButton.OK,
             MessageBoxImage.Warning);
+    }
+
+    private void ShowOperationStatus(string message, bool isError)
+    {
+        OperationStatusText.Text = message;
+        OperationStatusText.Foreground = isError
+            ? new SolidColorBrush(Color.FromRgb(0xA5, 0x1D, 0x2D))
+            : new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57));
     }
 
     private static string FormatCommand(IReadOnlyList<string> args)

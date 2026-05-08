@@ -64,6 +64,12 @@
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
+
+        <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -415,23 +421,23 @@
                     <Border Grid.Column="0" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
                         <StackPanel Margin="14">
                             <TextBlock Text="Scan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
-                            <TextBox x:Name="ScanPathBox" Height="30" Margin="0,8,0,8" />
+                            <TextBox x:Name="ScanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for scan" Margin="0,8,0,8" />
                             <CheckBox x:Name="ScanRecursiveBox" Content="Recursive" Margin="0,0,0,8" />
-                            <TextBox x:Name="ScanMaxItemsBox" Height="30" Margin="0,0,0,8" />
+                            <TextBox x:Name="ScanMaxItemsBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional positive item limit" Margin="0,0,0,8" />
                             <Button Content="Build Scan" Height="32" Click="BuildScan_Click" />
 
                             <Separator Margin="0,18,0,18" />
 
                             <TextBlock Text="Plan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
-                            <TextBox x:Name="PlanPathBox" Height="30" Margin="0,8,0,8" />
-                            <TextBox x:Name="CleanerMlPathBox" Height="30" Margin="0,0,0,8" />
+                            <TextBox x:Name="PlanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for plan" Margin="0,8,0,8" />
+                            <TextBox x:Name="CleanerMlPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional CleanerML file or directory" Margin="0,0,0,8" />
                             <Button Content="Build Plan" Height="32" Click="BuildPlan_Click" />
 
                             <Separator Margin="0,18,0,18" />
 
                             <TextBlock Text="Preflight" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
-                            <TextBox x:Name="PreflightPlanPathBox" Height="30" Margin="0,8,0,8" />
-                            <TextBox x:Name="PreflightMetadataPathBox" Height="30" Margin="0,0,0,8" />
+                            <TextBox x:Name="PreflightPlanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Cleanup plan JSON path" Margin="0,8,0,8" />
+                            <TextBox x:Name="PreflightMetadataPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Restore metadata JSON path" Margin="0,0,0,8" />
                             <CheckBox x:Name="PreflightManualConfirmationBox" Content="Manual confirmation" Margin="0,0,0,8" />
                             <Button Content="Build Preflight" Height="32" Click="BuildPreflight_Click" />
                         </StackPanel>
@@ -445,6 +451,11 @@
                                        FontSize="14"
                                        FontWeight="SemiBold"
                                        Foreground="#20242A" />
+                            <TextBlock x:Name="OperationStatusText"
+                                       DockPanel.Dock="Top"
+                                       Margin="14,0,14,8"
+                                       TextWrapping="Wrap"
+                                       Foreground="#5B6470" />
                             <TextBox x:Name="OperationCommandText"
                                      Margin="14"
                                      AcceptsReturn="True"

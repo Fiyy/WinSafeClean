@@ -109,6 +109,7 @@
 - Preflight checklist reader
 - UI empty states
 - Risk and preflight status visual cues
+- Read-only operation input validation feedback
 
 完成标准：
 

@@ -1,7 +1,24 @@
+using System.Globalization;
+
 namespace WinSafeClean.Ui.Operations;
 
 public static class ReadOnlyOperationCommandBuilder
 {
+    public static int? ParseMaxItems(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var maxItems) || maxItems <= 0)
+        {
+            throw new ArgumentException("Max items must be a positive integer.");
+        }
+
+        return maxItems;
+    }
+
     public static IReadOnlyList<string> BuildScan(
         string path,
         bool recursive = false,
