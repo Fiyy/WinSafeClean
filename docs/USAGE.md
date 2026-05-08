@@ -2,6 +2,23 @@
 
 WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantine` 和 `restore` 是带强确认的真实文件移动命令；项目仍不提供删除、清理、修复或注册表修改命令。
 
+## WPF UI
+
+启动 UI：
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Ui
+```
+
+当前 UI 支持：
+
+- 打开 scan report JSON，查看大小、风险、类型、原因、阻断理由和 evidence。
+- 打开 cleanup plan JSON，查看动作、风险、原因和只读隔离预览路径。
+- 打开 preflight checklist JSON，查看可执行状态、检查状态汇总和检查消息。
+- 构建 `scan`、`plan` 和 `preflight` 命令文本，便于复制到终端执行。
+
+UI 不会执行命令，不会移动或删除文件，也不会构建 `quarantine`、`restore`、`delete` 或 `clean` 命令。
+
 ## 扫描
 
 ```powershell

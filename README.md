@@ -46,6 +46,14 @@ pwsh -File .\scripts\bootstrap-dotnet.ps1
 pwsh -File .\scripts\test.ps1 -Restore
 ```
 
+## WPF UI
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Ui
+```
+
+当前 WPF UI 可打开 CLI 生成的 scan report、preflight checklist 和 cleanup plan JSON，展示大小、风险、动作、证据、原因、检查项和隔离预览。UI 的 Read-Only Ops 页签只构建 `scan`、`plan` 和 `preflight` 命令文本，不执行命令，也不生成 `quarantine`、`restore`、`delete` 或 `clean` 命令。
+
 ## CLI
 
 CLI 默认是只读报告器；`scan`、`plan` 和 `preflight` 不执行清理、删除、隔离或修复。`quarantine` 和 `restore` 是唯二会移动文件的命令，必须同时提供 `--manual-confirmation` 和 `--i-understand-this-moves-files`。

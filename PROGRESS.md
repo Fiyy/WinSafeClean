@@ -219,6 +219,7 @@
 - WPF UI 只读操作页签新增输入 ToolTip 提示和页签内参数校验反馈
 - WPF UI scan report、cleanup plan 和 preflight checklist 列表新增列标题，空状态时隐藏标题行
 - WPF UI scan report 和 cleanup plan 详情面板新增未选择条目的空状态
+- README 和 USAGE 补充 WPF UI 启动、报告加载和只读操作边界说明
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 测试通过：269 passed
 
@@ -228,7 +229,7 @@
 
 ## 下一步
 
-1. 补充 README 和 USAGE 中的 WPF UI 启动与报告加载说明。
+1. 梳理 Phase 4 WPF UI 剩余 MVP 缺口，决定是否进入手动 smoke 验证或打包发布准备。
 
 ## 待决策
 
