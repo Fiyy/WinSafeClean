@@ -136,6 +136,8 @@ Core 已包含只读 `CleanupPlan` 草案模型，可把扫描报告转换为 `K
 - [使用示例](docs/USAGE.md)
 - [调研摘要](docs/RESEARCH_SUMMARY.md)
 - [路线图](docs/ROADMAP.md)
+- [发布检查清单](docs/RELEASE_CHECKLIST.md)
+- [版本说明模板](docs/RELEASE_NOTES_TEMPLATE.md)
 - [质量门禁](docs/QUALITY_GATES.md)
 - [任务模板](docs/TASK_TEMPLATE.md)
 - [项目进度](PROGRESS.md)

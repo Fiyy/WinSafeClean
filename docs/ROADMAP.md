@@ -130,6 +130,8 @@
 - Ignored publish artifacts
 - Publish safety boundary ADR
 - Publish smoke verification
+- Release checklist
+- Release notes template
 
 完成标准：
 

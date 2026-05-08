@@ -229,6 +229,8 @@
 - 验证 `scripts\publish.ps1 -SkipTests`，确认 CLI 和 WPF UI 发布到 `artifacts\publish`
 - 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
 - 验证发布版 WPF UI hidden startup smoke 成功
+- 新增 `docs/RELEASE_CHECKLIST.md`，记录发布前测试、发布、smoke、安全和文档门禁
+- 新增 `docs/RELEASE_NOTES_TEMPLATE.md`，记录版本说明模板和必须保留的安全边界
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 额外验证：WPF UI hidden startup smoke
 - 测试通过：269 passed
@@ -239,7 +241,7 @@
 
 ## 下一步
 
-1. 补充发布检查清单和版本说明模板。
+1. 暂无明确未完成发布基线任务；后续可准备第一个版本标签或进一步实现交互式 UI 工作流。
 
 ## 待决策
 
