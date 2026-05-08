@@ -7,12 +7,14 @@ public sealed class ScanReportOverviewViewModel
     private ScanReportOverviewViewModel(
         string schemaVersion,
         int totalItems,
+        long totalSizeBytes,
         IReadOnlyList<SummaryItemViewModel> riskSummaries,
         IReadOnlyList<SummaryItemViewModel> itemKindSummaries,
         IReadOnlyList<ScanReportOverviewItemViewModel> items)
     {
         SchemaVersion = schemaVersion;
         TotalItems = totalItems;
+        TotalSizeBytes = totalSizeBytes;
         RiskSummaries = riskSummaries;
         ItemKindSummaries = itemKindSummaries;
         Items = items;
@@ -21,6 +23,10 @@ public sealed class ScanReportOverviewViewModel
     public string SchemaVersion { get; }
 
     public int TotalItems { get; }
+
+    public long TotalSizeBytes { get; }
+
+    public string TotalSizeDisplay => ByteSizeFormatter.Format(TotalSizeBytes);
 
     public bool HasItems => TotalItems > 0;
 
@@ -32,7 +38,7 @@ public sealed class ScanReportOverviewViewModel
 
     public IReadOnlyList<ScanReportOverviewItemViewModel> Items { get; }
 
-    public static ScanReportOverviewViewModel Empty { get; } = new("n/a", 0, [], [], []);
+    public static ScanReportOverviewViewModel Empty { get; } = new("n/a", 0, 0, [], [], []);
 
     public static ScanReportOverviewViewModel FromReport(ScanReport report)
     {
@@ -43,6 +49,7 @@ public sealed class ScanReportOverviewViewModel
                 Path: item.Path,
                 ItemKind: item.ItemKind.ToString(),
                 SizeBytes: item.SizeBytes,
+                SizeDisplay: ByteSizeFormatter.Format(item.SizeBytes),
                 RiskLevel: item.Risk.Level.ToString(),
                 SuggestedAction: item.Risk.SuggestedAction.ToString(),
                 Reasons: string.Join(Environment.NewLine, item.Risk.Reasons),
@@ -55,6 +62,7 @@ public sealed class ScanReportOverviewViewModel
         return new ScanReportOverviewViewModel(
             schemaVersion: report.SchemaVersion,
             totalItems: items.Count,
+            totalSizeBytes: items.Sum(item => item.SizeBytes),
             riskSummaries: CreateSummary(items.Select(item => item.RiskLevel)),
             itemKindSummaries: CreateSummary(items.Select(item => item.ItemKind)),
             items: items);

@@ -4,6 +4,7 @@ public sealed record ScanReportOverviewItemViewModel(
     string Path,
     string ItemKind,
     long SizeBytes,
+    string SizeDisplay,
     string RiskLevel,
     string SuggestedAction,
     string Reasons,

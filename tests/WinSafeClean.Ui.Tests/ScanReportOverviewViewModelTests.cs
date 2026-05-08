@@ -20,6 +20,20 @@ public sealed class ScanReportOverviewViewModelTests
     }
 
     [Fact]
+    public void ShouldExposeReadableSizeSummaries()
+    {
+        var viewModel = ScanReportOverviewViewModel.FromReport(CreateReport());
+
+        Assert.Equal(10_487_296, viewModel.TotalSizeBytes);
+        Assert.Equal("10.0 MB", viewModel.TotalSizeDisplay);
+
+        var item = Assert.Single(viewModel.Items.Where(item => item.Path == @"C:\Temp\cache.tmp"));
+
+        Assert.Equal(1536, item.SizeBytes);
+        Assert.Equal("1.5 KB", item.SizeDisplay);
+    }
+
+    [Fact]
     public void ShouldExposeEvidenceAndReasonsForReportItems()
     {
         var viewModel = ScanReportOverviewViewModel.FromReport(CreateReport());
@@ -56,7 +70,7 @@ public sealed class ScanReportOverviewViewModelTests
                 new ScanReportItem(
                     Path: @"C:\Temp\cache.tmp",
                     ItemKind: ScanReportItemKind.File,
-                    SizeBytes: 5,
+                    SizeBytes: 1536,
                     LastWriteTimeUtc: DateTimeOffset.UnixEpoch,
                     Evidence:
                     [
@@ -75,7 +89,7 @@ public sealed class ScanReportOverviewViewModelTests
                 new ScanReportItem(
                     Path: @"C:\Temp\unknown.bin",
                     ItemKind: ScanReportItemKind.File,
-                    SizeBytes: 10,
+                    SizeBytes: 10_485_760,
                     LastWriteTimeUtc: null,
                     Evidence: [],
                     Risk: RiskAssessment.Unknown("Unknown file."))
