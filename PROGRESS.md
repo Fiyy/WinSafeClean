@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-阶段：5 - 发布准备，本地发布基线和版本元数据完成
+阶段：5 - 发布准备，本地发布、版本元数据和归档基线完成
 
 日期：2026-05-08
 
@@ -237,13 +237,19 @@
 - 重新发布后验证发布版 CLI `--version` 成功
 - 重新发布后验证发布版 CLI 只读 scan smoke 成功
 - 重新发布后验证发布版 WPF UI hidden startup smoke 成功
+- `scripts\publish.ps1` 新增可选 `-CreateArchive` 和 `-PackageRoot`
+- 发布脚本传入 `-CreateArchive` 时生成 CLI/UI ZIP 包和 `SHA256SUMS.txt`
+- ADR 0032、README、USAGE、RELEASE_CHECKLIST 和 RELEASE_NOTES_TEMPLATE 同步记录发布打包边界
+- 验证 `scripts\publish.ps1 -SkipTests -CreateArchive -WhatIf`，确认 dry run 覆盖发布、打包和 release 目录创建目标
+- 验证 `scripts\publish.ps1 -SkipTests -CreateArchive`，确认生成 CLI/UI ZIP 包和 `SHA256SUMS.txt`
+- 检查 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools` 或本地报告
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 额外验证：WPF UI hidden startup smoke
 - 测试通过：271 passed
 
 ## 正在进行
 
-- 无，Phase 5 本地发布基线和版本元数据已完成
+- 无，Phase 5 本地发布、版本元数据和归档基线已完成
 
 ## 下一步
 

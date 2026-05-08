@@ -8,7 +8,11 @@ param(
 
     [string]$OutputRoot,
 
+    [string]$PackageRoot,
+
     [switch]$SelfContained,
+
+    [switch]$CreateArchive,
 
     [switch]$SkipTests,
 
@@ -26,10 +30,29 @@ if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
     $OutputRoot = Join-Path $repoRoot "artifacts\publish"
 }
 
+if ([string]::IsNullOrWhiteSpace($PackageRoot)) {
+    $PackageRoot = Join-Path $repoRoot "artifacts\release"
+}
+
 function Get-FullPath {
     param([string]$Path)
 
     return [System.IO.Path]::GetFullPath($Path)
+}
+
+function Get-ReleaseVersion {
+    $propsPath = Join-Path $repoRoot "Directory.Build.props"
+    if (-not (Test-Path $propsPath)) {
+        return "0.0.0"
+    }
+
+    [xml]$props = Get-Content -Raw $propsPath
+    $version = $props.Project.PropertyGroup.VersionPrefix | Select-Object -First 1
+    if ([string]::IsNullOrWhiteSpace($version)) {
+        return "0.0.0"
+    }
+
+    return $version
 }
 
 function Test-IsPathInside {
@@ -67,6 +90,9 @@ if (-not (Test-Path $dotnet)) {
 }
 
 Assert-SafeOutputRoot $OutputRoot
+if ($CreateArchive) {
+    Assert-SafeOutputRoot $PackageRoot
+}
 
 if (-not $SkipTests) {
     if ($Restore) {
@@ -117,3 +143,39 @@ foreach ($project in $projects) {
 }
 
 Write-Host "Publish output root: $OutputRoot"
+
+if ($CreateArchive) {
+    $releaseVersion = Get-ReleaseVersion
+    $archivePaths = @()
+
+    if ($PSCmdlet.ShouldProcess($PackageRoot, "create release package directory")) {
+        New-Item -ItemType Directory -Force -Path $PackageRoot | Out-Null
+    }
+
+    foreach ($project in $projects) {
+        $source = Join-Path $OutputRoot $project.Name
+        if (-not $WhatIfPreference -and -not (Test-Path $source)) {
+            throw "Publish output is missing for $($project.Name)."
+        }
+
+        $archivePath = Join-Path $PackageRoot "$($project.Name)-$releaseVersion-$Runtime.zip"
+        if ($PSCmdlet.ShouldProcess($archivePath, "create release archive")) {
+            Compress-Archive -Path (Join-Path $source "*") -DestinationPath $archivePath -Force
+            $archivePaths += $archivePath
+        }
+    }
+
+    $manifestPath = Join-Path $PackageRoot "SHA256SUMS.txt"
+    if ($archivePaths.Count -gt 0 -and $PSCmdlet.ShouldProcess($manifestPath, "write checksum manifest")) {
+        $hashLines = $archivePaths |
+            Sort-Object |
+            ForEach-Object {
+                $hash = Get-FileHash -Algorithm SHA256 -LiteralPath $_
+                "$($hash.Hash.ToLowerInvariant())  $(Split-Path -Leaf $_)"
+            }
+
+        Set-Content -LiteralPath $manifestPath -Value $hashLines -Encoding UTF8
+    }
+
+    Write-Host "Release package root: $PackageRoot"
+}

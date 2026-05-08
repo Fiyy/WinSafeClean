@@ -10,7 +10,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 2. 它和哪些程序、系统组件、服务、计划任务、启动项或注册表记录有关？
 3. 删除、隔离或交给系统工具清理是否会影响 Windows 或应用程序正常运行？
 
-当前项目处于 Phase 5：发布准备，本地发布基线和版本元数据已完成。CLI 默认不做真实删除；真实文件移动只通过带强确认的 `quarantine` 和 `restore` 命令开放。
+当前项目处于 Phase 5：发布准备，本地发布、版本元数据和归档基线已完成。CLI 默认不做真实删除；真实文件移动只通过带强确认的 `quarantine` 和 `restore` 命令开放。
 
 ## 核心方向
 
@@ -62,6 +62,14 @@ pwsh -NoProfile -File .\scripts\publish.ps1 -Restore
 ```
 
 发布脚本默认先运行测试，再把 CLI 和 WPF UI 发布到 `artifacts\publish`。脚本只执行 `dotnet test` / `dotnet publish`，不会运行生成的程序，不会请求管理员权限，也不会执行任何扫描、隔离、恢复、删除或清理命令。
+
+需要本地 ZIP 包和校验清单时：
+
+```powershell
+pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -CreateArchive
+```
+
+`-CreateArchive` 会在 `artifacts\release` 下生成 CLI/UI ZIP 包和 `SHA256SUMS.txt`，仍不会运行发布产物。
 
 ## CLI
 

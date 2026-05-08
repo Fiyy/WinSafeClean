@@ -19,6 +19,7 @@ The script:
 - Publishes both projects to `artifacts/publish` by default.
 - Runs the existing test script before publishing unless `-SkipTests` is explicitly passed.
 - Supports `Release` / `Debug`, `win-x64` / `win-arm64`, and framework-dependent or self-contained output.
+- Optionally creates ZIP archives and `SHA256SUMS.txt` under `artifacts/release` when `-CreateArchive` is passed.
 - Does not run the generated binaries.
 - Does not request elevation.
 - Does not call `scan`, `plan`, `preflight`, `quarantine`, `restore`, `delete`, or `clean`.
@@ -27,4 +28,4 @@ The script:
 
 ## Consequences
 
-Release preparation is now reproducible from the repository while keeping publishing separate from cleanup execution. A future installer, signing flow, or release archive can build on this script, but must keep the same boundary: packaging may compile and copy files, not perform cleanup actions or privilege escalation.
+Release preparation is now reproducible from the repository while keeping publishing separate from cleanup execution. A future installer or signing flow can build on this script, but must keep the same boundary: packaging may compile, archive, and hash files, not perform cleanup actions or privilege escalation.

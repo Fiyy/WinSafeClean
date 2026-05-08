@@ -23,6 +23,7 @@ UI 不会执行命令，不会移动或删除文件，也不会构建 `quarantin
 
 ```powershell
 pwsh -NoProfile -File .\scripts\publish.ps1 -Restore
+pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -CreateArchive
 ```
 
 默认输出：
@@ -30,13 +31,21 @@ pwsh -NoProfile -File .\scripts\publish.ps1 -Restore
 - `artifacts\publish\WinSafeClean.Cli`
 - `artifacts\publish\WinSafeClean.Ui`
 
+传入 `-CreateArchive` 后额外输出：
+
+- `artifacts\release\WinSafeClean.Cli-<VERSION>-<RUNTIME>.zip`
+- `artifacts\release\WinSafeClean.Ui-<VERSION>-<RUNTIME>.zip`
+- `artifacts\release\SHA256SUMS.txt`
+
 可选参数：
 
 - `-Runtime win-x64|win-arm64`
 - `-Configuration Release|Debug`
 - `-SelfContained`
+- `-CreateArchive`
 - `-SkipTests`
 - `-OutputRoot <PATH>`
+- `-PackageRoot <PATH>`
 
 发布脚本只运行测试和 `dotnet publish`，不会运行发布后的程序，不会请求管理员权限，也不会执行扫描、隔离、恢复、删除或清理命令。`OutputRoot` 不能位于 Windows 目录、源码目录、测试目录、文档目录或 `.tools` 工具链目录内。
 

@@ -16,13 +16,16 @@ Run:
 ```powershell
 pwsh -NoProfile -File .\scripts\test.ps1 -Restore
 pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -WhatIf
-pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests
+pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -CreateArchive
 ```
 
 Verify:
 
 - `artifacts\publish\WinSafeClean.Cli\WinSafeClean.Cli.exe` exists.
 - `artifacts\publish\WinSafeClean.Ui\WinSafeClean.Ui.exe` exists.
+- `artifacts\release\WinSafeClean.Cli-<VERSION>-<RUNTIME>.zip` exists.
+- `artifacts\release\WinSafeClean.Ui-<VERSION>-<RUNTIME>.zip` exists.
+- `artifacts\release\SHA256SUMS.txt` contains both archives.
 - Published CLI reports a version:
 
 ```powershell
@@ -45,6 +48,7 @@ Confirm the release process does not:
 - Expose `delete` or `clean`.
 - Request administrator elevation.
 - Write outside `artifacts\publish` except normal build outputs under ignored `bin` / `obj`.
+- Write release archives outside `artifacts\release` unless `-PackageRoot` was intentionally set to another safe path.
 - Include `.tools`, `bin`, `obj`, `TestResults`, or unrelated local files in release artifacts.
 - Change risk levels without matching tests and documentation.
 

@@ -36,7 +36,8 @@
 
 - `pwsh -NoProfile -File .\scripts\test.ps1 -Restore`
 - `pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -WhatIf`
-- `pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests`
+- `pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -CreateArchive`
+- `artifacts\release\SHA256SUMS.txt`
 - Published CLI `--version`.
 - Published CLI read-only smoke.
 - Published WPF UI startup smoke.
