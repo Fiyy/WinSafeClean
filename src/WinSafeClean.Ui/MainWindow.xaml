@@ -70,6 +70,13 @@
             <Setter Property="Padding" Value="8,0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
+
+        <Style x:Key="ColumnHeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#5B6470" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -159,7 +166,36 @@
                                        FontWeight="SemiBold"
                                        Foreground="#20242A" />
                             <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0" Margin="12,0,12,4">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="130" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Path" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                    <TextBlock Grid.Column="1" Text="Size" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                    <TextBlock Grid.Column="2" Text="Kind" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                    <TextBlock Grid.Column="3" Text="Risk" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                    <TextBlock Grid.Column="4" Text="Action" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                </Grid>
                             <ListBox x:Name="ScanItemsList"
+                                     Grid.Row="1"
                                      ItemsSource="{Binding Items}"
                                      BorderThickness="0"
                                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
@@ -192,7 +228,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock Text="{Binding EmptyStateMessage}">
+                            <TextBlock Grid.Row="1" Text="{Binding EmptyStateMessage}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -262,7 +298,31 @@
                         <DockPanel>
                             <TextBlock DockPanel.Dock="Top" Text="Checks" Margin="14,12,14,8" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <Grid>
-                            <ListBox ItemsSource="{Binding Checks}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0" Margin="12,0,12,4">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasChecks}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220" />
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Code" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                    <TextBlock Grid.Column="1" Text="Status" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                    <TextBlock Grid.Column="2" Text="Message" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                </Grid>
+                            <ListBox Grid.Row="1" ItemsSource="{Binding Checks}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <ListBox.Style>
                                     <Style TargetType="ListBox">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -288,7 +348,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock Text="{Binding EmptyStateMessage}">
+                            <TextBlock Grid.Row="1" Text="{Binding EmptyStateMessage}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -351,7 +411,31 @@
                         <DockPanel>
                             <TextBlock DockPanel.Dock="Top" Text="Plan Items" Margin="14,12,14,8" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <Grid>
-                            <ListBox x:Name="PlanItemsList" ItemsSource="{Binding Items}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0" Margin="12,0,12,4">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition Width="130" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Path" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                    <TextBlock Grid.Column="1" Text="Action" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                    <TextBlock Grid.Column="2" Text="Risk" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                </Grid>
+                            <ListBox x:Name="PlanItemsList" Grid.Row="1" ItemsSource="{Binding Items}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <ListBox.Style>
                                     <Style TargetType="ListBox">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -377,7 +461,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock Text="{Binding EmptyStateMessage}">
+                            <TextBlock Grid.Row="1" Text="{Binding EmptyStateMessage}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
                                         <Setter Property="Visibility" Value="Visible" />
