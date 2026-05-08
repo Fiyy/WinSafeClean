@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-阶段：4 - WPF UI MVP 完成
+阶段：5 - 发布准备，本地发布基线完成
 
 日期：2026-05-08
 
@@ -221,17 +221,25 @@
 - WPF UI scan report 和 cleanup plan 详情面板新增未选择条目的空状态
 - README 和 USAGE 补充 WPF UI 启动、报告加载和只读操作边界说明
 - WPF UI 隐藏窗口启动 smoke 验证通过：应用启动后保持运行，随后结束测试进程
+- 新增 `scripts/publish.ps1`，可本地发布 CLI 和 WPF UI 到 `artifacts\publish`
+- `.gitignore` 新增 `artifacts/`，避免提交发布产物
+- 新增 ADR 0032，记录本地发布脚本边界：不运行产物、不请求提权、不执行扫描/隔离/恢复/删除/清理命令
+- README 和 USAGE 补充本地发布命令与安全边界
+- 验证 `scripts\publish.ps1 -SkipTests -WhatIf`，确认 dry run 只报告 `dotnet publish` 目标
+- 验证 `scripts\publish.ps1 -SkipTests`，确认 CLI 和 WPF UI 发布到 `artifacts\publish`
+- 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
+- 验证发布版 WPF UI hidden startup smoke 成功
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
 - 额外验证：WPF UI hidden startup smoke
 - 测试通过：269 passed
 
 ## 正在进行
 
-- 无，Phase 4 WPF UI MVP 已完成
+- 无，Phase 5 本地发布基线已完成
 
 ## 下一步
 
-1. 暂无明确未完成 MVP 任务；后续可进入打包、发布准备或更完整的交互式 UI 工作流。
+1. 补充发布检查清单和版本说明模板。
 
 ## 待决策
 

@@ -117,3 +117,23 @@
 - 用户能先理解再操作
 - 危险操作需要明确确认
 - 不用营销式风险文案
+
+## Phase 5 - 发布准备
+
+目标：建立可重复、本地优先、不会执行清理动作的发布流程。
+
+状态：本地发布基线完成
+
+交付物：
+
+- Local publish script
+- Ignored publish artifacts
+- Publish safety boundary ADR
+- Publish smoke verification
+
+完成标准：
+
+- 发布流程默认先跑测试
+- 发布流程不运行生成程序
+- 发布流程不请求管理员权限
+- 发布流程不执行扫描、隔离、恢复、删除或清理命令

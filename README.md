@@ -10,7 +10,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 2. 它和哪些程序、系统组件、服务、计划任务、启动项或注册表记录有关？
 3. 删除、隔离或交给系统工具清理是否会影响 Windows 或应用程序正常运行？
 
-当前项目处于 Phase 4：WPF UI MVP 已完成。CLI 默认不做真实删除；真实文件移动只通过带强确认的 `quarantine` 和 `restore` 命令开放。
+当前项目处于 Phase 5：发布准备，本地发布基线已完成。CLI 默认不做真实删除；真实文件移动只通过带强确认的 `quarantine` 和 `restore` 命令开放。
 
 ## 核心方向
 
@@ -44,6 +44,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 ```powershell
 pwsh -File .\scripts\bootstrap-dotnet.ps1
 pwsh -File .\scripts\test.ps1 -Restore
+pwsh -File .\scripts\publish.ps1 -Restore
 ```
 
 ## WPF UI
@@ -53,6 +54,14 @@ pwsh -File .\scripts\test.ps1 -Restore
 ```
 
 当前 WPF UI 可打开 CLI 生成的 scan report、preflight checklist 和 cleanup plan JSON，展示大小、风险、动作、证据、原因、检查项和隔离预览。UI 的 Read-Only Ops 页签只构建 `scan`、`plan` 和 `preflight` 命令文本，不执行命令，也不生成 `quarantine`、`restore`、`delete` 或 `clean` 命令。
+
+## 本地发布
+
+```powershell
+pwsh -NoProfile -File .\scripts\publish.ps1 -Restore
+```
+
+发布脚本默认先运行测试，再把 CLI 和 WPF UI 发布到 `artifacts\publish`。脚本只执行 `dotnet test` / `dotnet publish`，不会运行生成的程序，不会请求管理员权限，也不会执行任何扫描、隔离、恢复、删除或清理命令。
 
 ## CLI
 

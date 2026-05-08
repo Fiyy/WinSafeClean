@@ -5,10 +5,10 @@
 bin/
 obj/
 TestResults/
+artifacts/
 
 # User and IDE files
 .vs/
 .vscode/
 *.user
 *.suo
-

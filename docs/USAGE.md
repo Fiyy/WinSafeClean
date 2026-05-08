@@ -19,6 +19,27 @@ WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantin
 
 UI 不会执行命令，不会移动或删除文件，也不会构建 `quarantine`、`restore`、`delete` 或 `clean` 命令。
 
+## 本地发布
+
+```powershell
+pwsh -NoProfile -File .\scripts\publish.ps1 -Restore
+```
+
+默认输出：
+
+- `artifacts\publish\WinSafeClean.Cli`
+- `artifacts\publish\WinSafeClean.Ui`
+
+可选参数：
+
+- `-Runtime win-x64|win-arm64`
+- `-Configuration Release|Debug`
+- `-SelfContained`
+- `-SkipTests`
+- `-OutputRoot <PATH>`
+
+发布脚本只运行测试和 `dotnet publish`，不会运行发布后的程序，不会请求管理员权限，也不会执行扫描、隔离、恢复、删除或清理命令。`OutputRoot` 不能位于 Windows 目录、源码目录、测试目录、文档目录或 `.tools` 工具链目录内。
+
 ## 扫描
 
 ```powershell
