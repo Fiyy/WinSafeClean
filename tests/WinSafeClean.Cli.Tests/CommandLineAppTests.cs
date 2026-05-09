@@ -20,7 +20,7 @@ public sealed class CommandLineAppTests
 
         Assert.Equal(0, exitCode);
         Assert.Equal(string.Empty, stderr.ToString());
-        Assert.StartsWith("WinSafeClean 0.1.0", stdout.ToString(), StringComparison.Ordinal);
+        Assert.StartsWith("WinSafeClean 0.2.0", stdout.ToString(), StringComparison.Ordinal);
         Assert.EndsWith(Environment.NewLine, stdout.ToString(), StringComparison.Ordinal);
     }
 
@@ -1046,6 +1046,31 @@ public sealed class CommandLineAppTests
         var items = document.RootElement.GetProperty("items");
         Assert.Contains(items.EnumerateArray(), item => item.GetProperty("path").GetString() == nestedDirectory);
         Assert.Contains(items.EnumerateArray(), item => item.GetProperty("path").GetString() == hidden);
+    }
+
+    [Fact]
+    public void ScanShouldCalculateDirectorySizesWhenRequested()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var nestedDirectory = sandbox.CreateDirectory("nested");
+        sandbox.WriteFile(Path.Combine("nested", "alpha.bin"), "alpha");
+        sandbox.WriteFile(Path.Combine("nested", "child", "beta.bin"), "beta");
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = CommandLineApp.Run(
+            ["scan", "--path", sandbox.RootPath, "--directory-sizes"],
+            stdout,
+            stderr,
+            DateTimeOffset.UnixEpoch);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        using var document = JsonDocument.Parse(stdout.ToString());
+        var item = Assert.Single(document.RootElement.GetProperty("items").EnumerateArray());
+        Assert.Equal(nestedDirectory, item.GetProperty("path").GetString());
+        Assert.Equal("Directory", item.GetProperty("itemKind").GetString());
+        Assert.Equal(9, item.GetProperty("sizeBytes").GetInt64());
     }
 
     [Fact]

@@ -8,6 +8,7 @@ public sealed record ScanReportOverviewItemViewModel(
     string LastWriteTimeDisplay,
     string RiskLevel,
     string SuggestedAction,
+    string SpaceUseHint,
     string Reasons,
     string Blockers,
     string Evidence);

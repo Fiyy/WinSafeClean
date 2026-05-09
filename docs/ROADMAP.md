@@ -51,7 +51,11 @@
 - 服务引用扫描
 - 计划任务引用扫描
 - 启动项扫描
+- PATH 环境变量引用扫描
+- 快捷方式引用扫描
+- 文件关联引用扫描
 - 卸载注册表扫描
+- Microsoft Store 包归属扫描
 - 运行进程引用扫描
 - 文件签名读取
 
@@ -110,6 +114,11 @@
 - UI empty states
 - Risk and preflight status visual cues
 - Read-only operation input validation feedback
+- Expanded Read-Only Ops command options for format, privacy, output files, recursion, item limits, and CleanerML
+- Constrained UI runner for read-only `scan`, `plan`, and `preflight` commands with JSON auto-load
+- Size-first scan report ordering and Largest Items summary
+- Opt-in directory size calculation for scan and plan reports
+- WPF Top Directories summary and display-only space use hints
 - WPF startup smoke verification
 
 完成标准：

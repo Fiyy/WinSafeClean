@@ -77,21 +77,21 @@ Create a draft release after local validation:
 
 ```powershell
 git push origin main
-git push origin v0.1.0
-gh release create v0.1.0 `
-  artifacts\release\WinSafeClean.Cli-0.1.0-win-x64.zip `
-  artifacts\release\WinSafeClean.Ui-0.1.0-win-x64.zip `
+git push origin v<VERSION>
+gh release create v<VERSION> `
+  artifacts\release\WinSafeClean.Cli-<VERSION>-win-x64.zip `
+  artifacts\release\WinSafeClean.Ui-<VERSION>-win-x64.zip `
   artifacts\release\SHA256SUMS.txt `
   --repo Fiyy/WinSafeClean `
-  --title "WinSafeClean v0.1.0" `
-  --notes-file docs\releases\v0.1.0.md `
+  --title "WinSafeClean v<VERSION>" `
+  --notes-file docs\releases\v<VERSION>.md `
   --draft
 ```
 
 Verify:
 
 ```powershell
-gh release view v0.1.0 --repo Fiyy/WinSafeClean --json tagName,name,isDraft,assets
+gh release view v<VERSION> --repo Fiyy/WinSafeClean --json tagName,name,isDraft,assets
 ```
 
 Keep the release as a draft until a human has reviewed the safety boundary, known limitations, artifacts, and checksum manifest.

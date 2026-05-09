@@ -71,6 +71,12 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
 
+        <Style x:Key="InputComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
         <Style x:Key="ColumnHeaderTextStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="#5B6470" />
             <Setter Property="FontSize" Value="12" />
@@ -151,6 +157,80 @@
                                             <TextBlock Text="{Binding Label}" Foreground="#4A515B" />
                                             <TextBlock DockPanel.Dock="Right" Text="{Binding Count}" FontWeight="SemiBold" Foreground="#20242A" />
                                         </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="Largest" FontWeight="SemiBold" Foreground="#20242A" Margin="0,18,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasLargestItems}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <ItemsControl ItemsSource="{Binding LargestItems}" Margin="0,8,0,0">
+                                <ItemsControl.Style>
+                                    <Style TargetType="ItemsControl">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasLargestItems}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ItemsControl.Style>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="76" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Path}" TextTrimming="CharacterEllipsis" Foreground="#4A515B" />
+                                            <TextBlock Grid.Column="1" Text="{Binding SizeDisplay}" TextAlignment="Right" FontWeight="SemiBold" Foreground="#20242A" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="Top Directories" FontWeight="SemiBold" Foreground="#20242A" Margin="0,18,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasLargestDirectories}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <ItemsControl ItemsSource="{Binding LargestDirectories}" Margin="0,8,0,0">
+                                <ItemsControl.Style>
+                                    <Style TargetType="ItemsControl">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasLargestDirectories}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ItemsControl.Style>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="76" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Path}" TextTrimming="CharacterEllipsis" Foreground="#4A515B" />
+                                            <TextBlock Grid.Column="1" Text="{Binding SizeDisplay}" TextAlignment="Right" FontWeight="SemiBold" Foreground="#20242A" />
+                                        </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -264,6 +344,8 @@
                                     <TextBlock Text="{Binding SizeDisplay}" Margin="0,8,0,14" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Last Modified" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding LastWriteTimeDisplay}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
+                                    <TextBlock Text="Space Use" FontWeight="SemiBold" Foreground="#20242A" />
+                                    <TextBlock Text="{Binding SpaceUseHint}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Reasons" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding Reasons}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Blockers" FontWeight="SemiBold" Foreground="#20242A" />
@@ -551,28 +633,82 @@
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Column="0" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="14">
                             <TextBlock Text="Scan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <TextBox x:Name="ScanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for scan" Margin="0,8,0,8" />
+                            <TextBox x:Name="ScanOutputPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional output file path" Margin="0,0,0,8" />
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock DockPanel.Dock="Left" Text="Format" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
+                                <ComboBox x:Name="ScanFormatBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
+                                    <ComboBoxItem Content="json" />
+                                    <ComboBoxItem Content="markdown" />
+                                </ComboBox>
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock DockPanel.Dock="Left" Text="Privacy" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
+                                <ComboBox x:Name="ScanPrivacyBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
+                                    <ComboBoxItem Content="full" />
+                                    <ComboBoxItem Content="redacted" />
+                                </ComboBox>
+                            </DockPanel>
                             <CheckBox x:Name="ScanRecursiveBox" Content="Recursive" Margin="0,0,0,8" />
+                            <CheckBox x:Name="ScanDirectorySizesBox" Content="Directory sizes" Margin="0,0,0,8" />
                             <TextBox x:Name="ScanMaxItemsBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional positive item limit" Margin="0,0,0,8" />
-                            <Button Content="Build Scan" Height="32" Click="BuildScan_Click" />
+                            <TextBox x:Name="ScanCleanerMlPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional CleanerML file or directory" Margin="0,0,0,8" />
+                            <UniformGrid Columns="2" Margin="0,0,0,0">
+                                <Button Content="Build Scan" Height="32" Margin="0,0,4,0" Click="BuildScan_Click" />
+                                <Button Content="Run Scan" Height="32" Margin="4,0,0,0" Click="RunScan_Click" />
+                            </UniformGrid>
 
                             <Separator Margin="0,18,0,18" />
 
                             <TextBlock Text="Plan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <TextBox x:Name="PlanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for plan" Margin="0,8,0,8" />
-                            <TextBox x:Name="CleanerMlPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional CleanerML file or directory" Margin="0,0,0,8" />
-                            <Button Content="Build Plan" Height="32" Click="BuildPlan_Click" />
+                            <TextBox x:Name="PlanOutputPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional output file path" Margin="0,0,0,8" />
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock DockPanel.Dock="Left" Text="Format" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
+                                <ComboBox x:Name="PlanFormatBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
+                                    <ComboBoxItem Content="json" />
+                                    <ComboBoxItem Content="markdown" />
+                                </ComboBox>
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock DockPanel.Dock="Left" Text="Privacy" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
+                                <ComboBox x:Name="PlanPrivacyBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
+                                    <ComboBoxItem Content="full" />
+                                    <ComboBoxItem Content="redacted" />
+                                </ComboBox>
+                            </DockPanel>
+                            <CheckBox x:Name="PlanRecursiveBox" Content="Recursive" Margin="0,0,0,8" />
+                            <CheckBox x:Name="PlanDirectorySizesBox" Content="Directory sizes" Margin="0,0,0,8" />
+                            <TextBox x:Name="PlanMaxItemsBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional positive item limit" Margin="0,0,0,8" />
+                            <TextBox x:Name="PlanCleanerMlPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional CleanerML file or directory" Margin="0,0,0,8" />
+                            <UniformGrid Columns="2" Margin="0,0,0,0">
+                                <Button Content="Build Plan" Height="32" Margin="0,0,4,0" Click="BuildPlan_Click" />
+                                <Button Content="Run Plan" Height="32" Margin="4,0,0,0" Click="RunPlan_Click" />
+                            </UniformGrid>
 
                             <Separator Margin="0,18,0,18" />
 
                             <TextBlock Text="Preflight" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <TextBox x:Name="PreflightPlanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Cleanup plan JSON path" Margin="0,8,0,8" />
                             <TextBox x:Name="PreflightMetadataPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Restore metadata JSON path" Margin="0,0,0,8" />
+                            <TextBox x:Name="PreflightOutputPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional output file path" Margin="0,0,0,8" />
+                            <DockPanel Margin="0,0,0,8">
+                                <TextBlock DockPanel.Dock="Left" Text="Format" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
+                                <ComboBox x:Name="PreflightFormatBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
+                                    <ComboBoxItem Content="json" />
+                                    <ComboBoxItem Content="markdown" />
+                                </ComboBox>
+                            </DockPanel>
                             <CheckBox x:Name="PreflightManualConfirmationBox" Content="Manual confirmation" Margin="0,0,0,8" />
-                            <Button Content="Build Preflight" Height="32" Click="BuildPreflight_Click" />
+                            <UniformGrid Columns="2" Margin="0,0,0,0">
+                                <Button Content="Build Preflight" Height="32" Margin="0,0,4,0" Click="BuildPreflight_Click" />
+                                <Button Content="Run Preflight" Height="32" Margin="4,0,0,0" Click="RunPreflight_Click" />
+                            </UniformGrid>
                         </StackPanel>
+                        </ScrollViewer>
                     </Border>
 
                     <Border Grid.Column="2" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">

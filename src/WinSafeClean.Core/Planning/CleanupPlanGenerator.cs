@@ -14,7 +14,11 @@ public static class CleanupPlanGenerator
         EvidenceType.StartupReference,
         EvidenceType.UninstallRegistryReference,
         EvidenceType.RunningProcessReference,
-        EvidenceType.InstalledApplication
+        EvidenceType.PathEnvironmentReference,
+        EvidenceType.ShortcutReference,
+        EvidenceType.FileAssociationReference,
+        EvidenceType.InstalledApplication,
+        EvidenceType.MicrosoftStorePackage
     ];
 
     public static CleanupPlan Generate(ScanReport report, DateTimeOffset createdAt, string? quarantineRoot = null)

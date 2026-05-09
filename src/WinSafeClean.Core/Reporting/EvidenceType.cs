@@ -10,6 +10,7 @@ public enum EvidenceType
     RunningProcessReference,
     PathEnvironmentReference,
     ShortcutReference,
+    FileAssociationReference,
     FileSignature,
     InstalledApplication,
     MicrosoftStorePackage,

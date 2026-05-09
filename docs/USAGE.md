@@ -13,11 +13,14 @@ WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantin
 当前 UI 支持：
 
 - 打开 scan report JSON，查看大小、风险、类型、原因、阻断理由和 evidence。
+- scan report 会按大小优先展示条目，并在 Summary 中列出 Largest items 和 Top directories。
+- scan report 详情会显示空间用途提示，用于解释常见路径模式；这些提示不会改变风险等级或建议动作。
 - 打开 cleanup plan JSON，查看动作、风险、原因和只读隔离预览路径。
 - 打开 preflight checklist JSON，查看可执行状态、检查状态汇总和检查消息。
-- 构建 `scan`、`plan` 和 `preflight` 命令文本，便于复制到终端执行。
+- 构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持格式、隐私、输出文件、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数。
+- JSON 输出成功后自动加载回对应页签；Markdown 输出只写入文件，不自动解析。
 
-UI 不会执行命令，不会移动或删除文件，也不会构建 `quarantine`、`restore`、`delete` 或 `clean` 命令。
+UI 运行只读命令时必须填写输出路径，并复用 CLI 的输出保护规则。UI 不会移动或删除文件，也不会构建或运行 `quarantine`、`restore`、`delete` 或 `clean` 命令。
 
 ## 本地发布
 
@@ -67,11 +70,21 @@ pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -CreateArchive
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Temp --recursive --max-items 200
 ```
 
+目录大小统计也需要显式开启：
+
+```powershell
+.\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Temp --directory-sizes
+```
+
+`--directory-sizes` 会只读统计目录项可达子文件大小，跳过 reparse point、junction、symlink 和受保护 Windows 目录。遇到访问、路径长度、IO 或安全策略问题时，报告会保留已知大小并添加谨慎原因。
+
 分享报告前建议使用 redacted 模式：
 
 ```powershell
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Cli -- scan --path C:\Temp --privacy redacted --output .\scan-redacted.json
 ```
+
+通过 `src\WinSafeClean.Cli\Program.cs` 启动 CLI 时，scan 和 plan 报告会默认收集 Windows 关系证据：服务、计划任务、启动项、PATH 环境变量、快捷方式、文件关联、卸载注册表、Microsoft Store 包归属、文件签名和运行进程引用。PATH、快捷方式、文件关联和 Store 包归属命中只用于解释引用或归属关系；它们会提高谨慎程度，不能让条目变成可清理候选。
 
 ## 只读计划
 

@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-阶段：5 - 发布准备，本地发布、版本元数据和归档基线完成
+阶段：5 - 发布后 UI 工作流完善
 
-日期：2026-05-09
+日期：2026-05-10
 
 ## 已完成
 
@@ -249,17 +249,62 @@
 - 验证 GitHub draft release 绑定 `v0.1.0` 标签且三项附件上传完成
 - 公开发布 GitHub `v0.1.0` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.1.0
 - 验证 GitHub `v0.1.0` release `isDraft=false`，三项附件 URL 已切换到 `/download/v0.1.0/`
-- 验证命令：`pwsh -NoProfile -File scripts\test.ps1`
+- 新增 ADR 0033，记录 WPF Read-Only Ops 扩展命令选项但仍不执行命令的安全边界
+- `ReadOnlyOperationCommandBuilder` 新增 scan、plan 和 preflight 选项模型
+- WPF UI Read-Only Ops 支持为 `scan` / `plan` 构建格式、隐私、输出文件、递归、数量限制和 CleanerML 参数
+- WPF UI Read-Only Ops 支持为 `preflight` 构建格式、输出文件和人工确认参数
+- WPF UI Read-Only Ops 左侧输入区支持滚动，避免小窗口下参数输入被挤出
+- 新增 ADR 0034，记录 WPF UI 只读执行器安全边界
+- 新增 `ReadOnlyOperationRunner`，仅允许 UI 执行 `scan`、`plan` 和 `preflight`
+- UI 只读执行器拒绝 `quarantine`、`restore`、`delete`、`clean` 以及可执行清理选项
+- WPF UI Read-Only Ops 新增 Run Scan、Run Plan 和 Run Preflight 按钮
+- WPF UI 运行只读命令前要求填写输出路径，成功生成 JSON 后自动加载对应页签
+- WPF UI scan report 条目改为按大小优先排序
+- WPF UI scan report Summary 新增 Largest Items 列表
+- 新增 ADR 0035，记录显式开启的目录大小统计策略
+- `FileSystemScanOptions` 新增 `IncludeDirectorySizes`
+- CLI `scan` / `plan` 新增只读 `--directory-sizes` 参数
+- 目录大小统计会跳过 reparse point 和受保护 Windows 目录，并在部分失败时添加谨慎原因
+- WPF UI Read-Only Ops 新增 Directory sizes 选项，可为 `scan` / `plan` 构建并运行 `--directory-sizes`
+- 新增 ADR 0036，记录 WPF 空间用途提示不影响风险评级或建议动作
+- WPF UI scan report Summary 新增 Top Directories 列表
+- WPF UI scan report 详情新增 Space Use 提示，用于解释 protected、temp、cache、logs、crash dumps 和 downloads 等常见路径模式
+- 新增 ADR 0037，记录 PATH 环境变量 evidence provider 的只读边界和保守计划策略
+- 实现 `PathEnvironmentEvidenceProvider`，只读收集 Process、User 和 Machine PATH 引用证据
+- 默认 Windows evidence provider factory 接入 PATH 环境变量 evidence provider
+- `CleanupPlanGenerator` 将 `PathEnvironmentReference` 视为保守引用证据，阻止相关项进入隔离候选
+- 新增 ADR 0038，记录 Windows 快捷方式 evidence provider 的只读边界和保守计划策略
+- 实现 `ShortcutEvidenceProvider`，只读收集 Desktop 和 Start Menu 常见位置 `.lnk` 目标引用证据
+- 默认 Windows evidence provider factory 接入快捷方式 evidence provider
+- `CleanupPlanGenerator` 将 `ShortcutReference` 视为保守引用证据，阻止相关项进入隔离候选
+- 新增 ADR 0039，记录 Windows 文件关联 evidence provider 的只读注册表边界和保守计划策略
+- `EvidenceType` 新增 `FileAssociationReference`
+- 实现 `FileAssociationEvidenceProvider`，只读收集 HKCU/HKLM `Software\Classes` 文件关联命令引用证据
+- 默认 Windows evidence provider factory 接入文件关联 evidence provider
+- `CleanupPlanGenerator` 将 `FileAssociationReference` 视为保守引用证据，阻止相关项进入隔离候选
+- 新增 ADR 0040，记录 Microsoft Store 包归属 evidence provider 的只读目录枚举边界和保守计划策略
+- 实现 `MicrosoftStorePackageEvidenceProvider`，只读收集 `%ProgramFiles%\WindowsApps` 和 `%LocalAppData%\Packages` 顶层包根归属证据
+- 默认 Windows evidence provider factory 接入 Microsoft Store 包归属 evidence provider
+- `CleanupPlanGenerator` 将 `MicrosoftStorePackage` 视为已安装应用归属证据，阻止相关项进入隔离候选
+- 版本元数据更新为 `0.2.0`
+- 新增 `docs/releases/v0.2.0.md`，记录发布后增强候选的能力、安全边界、验证结果和已知限制
+- 验证 `scripts\publish.ps1 -SkipTests -CreateArchive -WhatIf`，确认 dry run 覆盖 v0.2.0 发布和打包目标
+- 验证 `scripts\publish.ps1 -SkipTests -CreateArchive`，确认生成 v0.2.0 CLI/UI ZIP 包和 `SHA256SUMS.txt`
+- 验证发布版 CLI `--version` 输出 `WinSafeClean 0.2.0+...`
+- 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 检查 v0.2.0 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果或本地报告
+- 验证命令：`pwsh -NoProfile -File scripts\test.ps1 -Restore`
 - 额外验证：WPF UI hidden startup smoke
-- 测试通过：271 passed
+- 测试通过：315 passed
 
 ## 正在进行
 
-- GitHub `v0.1.0` 已公开发布
+- 发布后增强候选已本地打包为 v0.2.0，等待提交、打标签和 GitHub draft release
 
 ## 下一步
 
-1. 继续进入更完整的交互式 UI 工作流，或规划下一版发布内容。
+1. 提交当前 v0.2.0 候选变更，推送分支和标签，并创建 GitHub draft release。
 
 ## 待决策
 

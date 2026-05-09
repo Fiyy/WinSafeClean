@@ -72,7 +72,7 @@ public static class FileSystemScanner
 
             return entries
                 .OrderBy(entry => entry, StringComparer.OrdinalIgnoreCase)
-                .Select(entry => CreateItem(entry, fileSystem))
+                .Select(entry => CreateItem(entry, fileSystem, options))
                 .ToList();
         }
         catch (UnauthorizedAccessException)
@@ -105,6 +105,7 @@ public static class FileSystemScanner
             fileSystem,
             items,
             options.CancellationToken,
+            options.IncludeDirectorySizes,
             addEnumerationFailureItem: true);
         return items;
     }
@@ -115,6 +116,7 @@ public static class FileSystemScanner
         IFileSystem fileSystem,
         List<ScanReportItem> items,
         CancellationToken cancellationToken,
+        bool includeDirectorySizes,
         bool addEnumerationFailureItem)
     {
         IReadOnlyList<string> entries;
@@ -154,7 +156,14 @@ public static class FileSystemScanner
                 return;
             }
 
-            var item = CreateItem(entry, fileSystem);
+            var item = CreateItem(
+                entry,
+                fileSystem,
+                new FileSystemScanOptions(
+                    maxItems,
+                    Recursive: true,
+                    CancellationToken: cancellationToken,
+                    IncludeDirectorySizes: includeDirectorySizes));
             items.Add(item);
 
             if (item.ItemKind != ScanReportItemKind.Directory
@@ -170,6 +179,7 @@ public static class FileSystemScanner
                 fileSystem,
                 items,
                 cancellationToken,
+                includeDirectorySizes,
                 addEnumerationFailureItem: false);
         }
     }
@@ -258,7 +268,7 @@ public static class FileSystemScanner
         }
     }
 
-    private static ScanReportItem CreateItem(string path, IFileSystem fileSystem)
+    private static ScanReportItem CreateItem(string path, IFileSystem fileSystem, FileSystemScanOptions options)
     {
         if (fileSystem.FileExists(path))
         {
@@ -267,20 +277,139 @@ public static class FileSystemScanner
 
         if (fileSystem.DirectoryExists(path))
         {
-            return CreateDirectoryItem(path, fileSystem);
+            return CreateDirectoryItem(path, fileSystem, options);
         }
 
         return CreateUnknownItem(path, "Path disappeared during scan.");
     }
 
-    private static ScanReportItem CreateDirectoryItem(string path, IFileSystem fileSystem)
+    private static ScanReportItem CreateDirectoryItem(string path, IFileSystem fileSystem, FileSystemScanOptions options)
     {
+        var risk = PathRiskClassifier.Assess(path);
+        var sizeBytes = 0L;
+
+        if (options.IncludeDirectorySizes
+            && risk.Level != RiskLevel.Blocked
+            && !TryIsReparsePoint(path, fileSystem))
+        {
+            var directorySize = CalculateDirectorySize(path, fileSystem, options.CancellationToken);
+            sizeBytes = directorySize.SizeBytes;
+            if (!string.IsNullOrWhiteSpace(directorySize.Warning))
+            {
+                risk = AddReason(risk, directorySize.Warning);
+            }
+        }
+
         return new ScanReportItem(
             Path: path,
             ItemKind: ScanReportItemKind.Directory,
-            SizeBytes: 0,
+            SizeBytes: sizeBytes,
             LastWriteTimeUtc: TryGetLastWriteTimeUtc(() => fileSystem.GetDirectoryLastWriteTimeUtc(path)),
-            Risk: PathRiskClassifier.Assess(path));
+            Risk: risk);
+    }
+
+    private static DirectorySizeResult CalculateDirectorySize(
+        string path,
+        IFileSystem fileSystem,
+        CancellationToken cancellationToken)
+    {
+        var pending = new Stack<string>();
+        pending.Push(path);
+        long sizeBytes = 0;
+
+        while (pending.Count > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var directory = pending.Pop();
+
+            IReadOnlyList<string> entries;
+            try
+            {
+                entries = fileSystem.EnumerateFileSystemEntries(directory).ToList();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return new DirectorySizeResult(sizeBytes, "Directory size could not be fully calculated because access was denied.");
+            }
+            catch (PathTooLongException)
+            {
+                return new DirectorySizeResult(sizeBytes, "Directory size could not be fully calculated because a path was too long.");
+            }
+            catch (IOException)
+            {
+                return new DirectorySizeResult(sizeBytes, "Directory size could not be fully calculated because a directory could not be enumerated.");
+            }
+            catch (System.Security.SecurityException)
+            {
+                return new DirectorySizeResult(sizeBytes, "Directory size could not be fully calculated because access was blocked by security policy.");
+            }
+
+            foreach (var entry in entries)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (fileSystem.FileExists(entry))
+                {
+                    var fileSize = TryGetFileLengthForDirectorySize(entry, fileSystem, out var warning);
+                    sizeBytes += fileSize;
+                    if (!string.IsNullOrWhiteSpace(warning))
+                    {
+                        return new DirectorySizeResult(sizeBytes, warning);
+                    }
+
+                    continue;
+                }
+
+                if (!fileSystem.DirectoryExists(entry)
+                    || TryIsReparsePoint(entry, fileSystem)
+                    || PathRiskClassifier.Assess(entry).Level == RiskLevel.Blocked)
+                {
+                    continue;
+                }
+
+                pending.Push(entry);
+            }
+        }
+
+        return new DirectorySizeResult(sizeBytes, Warning: null);
+    }
+
+    private static long TryGetFileLengthForDirectorySize(string path, IFileSystem fileSystem, out string? warning)
+    {
+        try
+        {
+            warning = null;
+            return fileSystem.GetFileLength(path);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            warning = "Directory size could not be fully calculated because file access was denied.";
+            return 0;
+        }
+        catch (PathTooLongException)
+        {
+            warning = "Directory size could not be fully calculated because a file path was too long.";
+            return 0;
+        }
+        catch (IOException)
+        {
+            warning = "Directory size could not be fully calculated because file metadata could not be read.";
+            return 0;
+        }
+        catch (System.Security.SecurityException)
+        {
+            warning = "Directory size could not be fully calculated because file access was blocked by security policy.";
+            return 0;
+        }
+    }
+
+    private static RiskAssessment AddReason(RiskAssessment risk, string reason)
+    {
+        return risk with
+        {
+            Reasons = risk.Reasons.Concat([reason]).ToArray(),
+            Confidence = Math.Min(risk.Confidence, 0.2)
+        };
     }
 
     private static ScanReportItem CreateFileItem(string path, IFileSystem fileSystem)
@@ -392,4 +521,6 @@ public static class FileSystemScanner
             return true;
         }
     }
+
+    private sealed record DirectorySizeResult(long SizeBytes, string? Warning);
 }

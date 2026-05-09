@@ -16,7 +16,7 @@ public static class CommandLineApp
     private const int OperationFailed = 1;
     private const int UsageError = 2;
     private const int Cancelled = 130;
-    private const string Usage = "Use: --version OR scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>] OR quarantine --plan <FILE> --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--operation-log <FILE>] [--format json|markdown] [--output <FILE>] OR restore --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--allow-legacy-metadata-without-hash] [--operation-log <FILE>] [--format json|markdown] [--output <FILE>]";
+    private const string Usage = "Use: --version OR scan|plan --path <PATH> [--format json|markdown] [--privacy full|redacted] [--output <FILE>] [--max-items <N>] [--recursive|--no-recursive] [--directory-sizes] [--cleanerml <FILE_OR_DIR>] OR preflight --plan <FILE> --metadata <FILE> [--manual-confirmation] [--format json|markdown] [--output <FILE>] OR quarantine --plan <FILE> --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--operation-log <FILE>] [--format json|markdown] [--output <FILE>] OR restore --metadata <FILE> --manual-confirmation --i-understand-this-moves-files [--allow-legacy-metadata-without-hash] [--operation-log <FILE>] [--format json|markdown] [--output <FILE>]";
     private static readonly string[] ExecutableCommands = ["delete", "clean"];
     private static readonly string[] ExecutableOptions = ["--delete", "--fix", "--quarantine", "--clean"];
 
@@ -469,7 +469,11 @@ public static class CommandLineApp
     {
         return ScanReportGenerator.Generate(
             options.Path!,
-            new FileSystemScanOptions(options.MaxItems, options.Recursive, cancellationToken),
+            new FileSystemScanOptions(
+                options.MaxItems,
+                options.Recursive,
+                cancellationToken,
+                options.IncludeDirectorySizes),
             createdAt,
             evidenceProvider);
     }
@@ -600,6 +604,7 @@ public static class CommandLineApp
         bool Recursive,
         ScanReportPrivacyMode PrivacyMode,
         string? CleanerMlRulePath,
+        bool IncludeDirectorySizes,
         string? Error)
     {
         public static ScanOptions Parse(string[] args)
@@ -611,6 +616,7 @@ public static class CommandLineApp
             var recursive = FileSystemScanOptions.Default.Recursive;
             var privacyMode = ScanReportPrivacyMode.Full;
             string? cleanerMlRulePath = null;
+            var includeDirectorySizes = FileSystemScanOptions.Default.IncludeDirectorySizes;
 
             for (var index = 0; index < args.Length; index++)
             {
@@ -681,6 +687,9 @@ public static class CommandLineApp
                     case "--recursive":
                         recursive = true;
                         break;
+                    case "--directory-sizes":
+                        includeDirectorySizes = true;
+                        break;
                     default:
                         return Invalid($"Unknown option '{arg}'.");
                 }
@@ -691,7 +700,7 @@ public static class CommandLineApp
                 return Invalid("--path is required.");
             }
 
-            return new ScanOptions(path, format, outputPath, maxItems, recursive, privacyMode, cleanerMlRulePath, Error: null);
+            return new ScanOptions(path, format, outputPath, maxItems, recursive, privacyMode, cleanerMlRulePath, includeDirectorySizes, Error: null);
         }
 
         private static bool TryParsePrivacyMode(string value, out ScanReportPrivacyMode privacyMode)
@@ -737,6 +746,7 @@ public static class CommandLineApp
                 Recursive: FileSystemScanOptions.Default.Recursive,
                 PrivacyMode: ScanReportPrivacyMode.Full,
                 CleanerMlRulePath: null,
+                IncludeDirectorySizes: FileSystemScanOptions.Default.IncludeDirectorySizes,
                 Error: error);
         }
     }

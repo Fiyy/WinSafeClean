@@ -11,7 +11,11 @@ public static class WindowsEvidenceProviderFactory
             new ServiceEvidenceProvider(),
             new ScheduledTaskEvidenceProvider(),
             new StartupEntryEvidenceProvider(),
+            new PathEnvironmentEvidenceProvider(),
+            new ShortcutEvidenceProvider(),
+            new FileAssociationEvidenceProvider(),
             new UninstallRegistryEvidenceProvider(),
+            new MicrosoftStorePackageEvidenceProvider(),
             new FileSignatureEvidenceProvider(),
             new RunningProcessEvidenceProvider()
         ];

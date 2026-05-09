@@ -53,6 +53,24 @@ public sealed class FileSystemScannerTests
     }
 
     [Fact]
+    public void ShouldCalculateDirectorySizeWhenExplicitlyRequested()
+    {
+        using var sandbox = TemporarySandbox.Create();
+        var nestedDirectory = sandbox.CreateDirectory("nested");
+        sandbox.WriteFile(Path.Combine("nested", "alpha.bin"), "alpha");
+        sandbox.WriteFile(Path.Combine("nested", "child", "beta.bin"), "beta");
+
+        var items = FileSystemScanner.Scan(
+            sandbox.RootPath,
+            new FileSystemScanOptions(MaxItems: 100, IncludeDirectorySizes: true));
+
+        var item = Assert.Single(items);
+        Assert.Equal(nestedDirectory, item.Path);
+        Assert.Equal(ScanReportItemKind.Directory, item.ItemKind);
+        Assert.Equal(9, item.SizeBytes);
+    }
+
+    [Fact]
     public void ShouldScanNestedChildrenWhenRecursive()
     {
         using var sandbox = TemporarySandbox.Create();

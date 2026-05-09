@@ -15,7 +15,11 @@ public sealed class WindowsEvidenceProviderFactoryTests
             provider => Assert.IsType<ServiceEvidenceProvider>(provider),
             provider => Assert.IsType<ScheduledTaskEvidenceProvider>(provider),
             provider => Assert.IsType<StartupEntryEvidenceProvider>(provider),
+            provider => Assert.IsType<PathEnvironmentEvidenceProvider>(provider),
+            provider => Assert.IsType<ShortcutEvidenceProvider>(provider),
+            provider => Assert.IsType<FileAssociationEvidenceProvider>(provider),
             provider => Assert.IsType<UninstallRegistryEvidenceProvider>(provider),
+            provider => Assert.IsType<MicrosoftStorePackageEvidenceProvider>(provider),
             provider => Assert.IsType<FileSignatureEvidenceProvider>(provider),
             provider => Assert.IsType<RunningProcessEvidenceProvider>(provider));
     }
