@@ -294,17 +294,21 @@
 - 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 检查 v0.2.0 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果或本地报告
+- 提交 v0.2.0 候选变更：`be3a4f0`
+- 推送 `main` 分支和 `v0.2.0` 标签到 GitHub
+- 创建 GitHub `v0.2.0` draft release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
+- 验证 GitHub `v0.2.0` draft release `isDraft=true`，三项附件上传完成；draft 附件 URL 当前使用 GitHub `untagged-*` 临时路径
 - 验证命令：`pwsh -NoProfile -File scripts\test.ps1 -Restore`
 - 额外验证：WPF UI hidden startup smoke
 - 测试通过：315 passed
 
 ## 正在进行
 
-- 发布后增强候选已本地打包为 v0.2.0，等待提交、打标签和 GitHub draft release
+- v0.2.0 draft release 已创建，等待人工复核后公开发布
 
 ## 下一步
 
-1. 提交当前 v0.2.0 候选变更，推送分支和标签，并创建 GitHub draft release。
+1. 复核 GitHub `v0.2.0` draft release 的安全边界、附件和校验清单，然后公开发布。
 
 ## 待决策
 
