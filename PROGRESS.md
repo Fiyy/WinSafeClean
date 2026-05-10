@@ -339,16 +339,26 @@
 - 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 已启动包含列表筛选排序的本地发布版 WPF UI，进程号 18520
+- 新增 ADR 0044，记录 WPF 本地最近 JSON 文档历史的隐私边界
+- 新增 `RecentDocumentHistory` 和 `RecentDocumentHistoryStore`，只保存文档类型、路径和时间戳
+- WPF UI 顶部新增 Recent 文档选择、Open Recent 和 Clear 控件
+- WPF UI 成功打开或生成 scan report、cleanup plan、preflight checklist JSON 后会更新本地最近文档历史
+- README 同步记录最近文档历史只保存本地路径和可清空能力
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：339 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 已启动包含最近文档历史的本地发布版 WPF UI，进程号 31444
 
 ## 正在进行
 
-- WPF Scan / Plan 结果列表筛选排序已完成，等待本地体验复核
+- WPF 最近文档历史已完成，等待本地体验复核
 
 ## 下一步
 
 1. 设计 UI 级 guarded quarantine / restore 方案，先补 ADR 和测试，再决定是否开放执行入口。
-2. 增加最近报告/计划历史，减少用户反复选择 JSON 文件。
-3. 补充结果导出/复制能力，便于用户保存筛选后的复核结果。
+2. 补充结果导出/复制能力，便于用户保存筛选后的复核结果。
+3. 设计可选隐私模式提示，提醒用户分享报告前使用 redacted 输出。
 
 ## 待决策
 

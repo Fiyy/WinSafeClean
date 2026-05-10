@@ -17,6 +17,7 @@ public partial class MainWindow : Window
 {
     private readonly ReadOnlyOperationRunnerOptions _operationRunnerOptions;
     private readonly ReadOnlyOperationRunner _operationRunner;
+    private readonly RecentDocumentHistoryStore _recentDocumentHistoryStore;
     private CleanupPlan? _currentPlan;
     private string? _currentPlanPath;
     private bool _scanCompleted;
@@ -24,21 +25,24 @@ public partial class MainWindow : Window
     private bool _preflightCompleted;
 
     public MainWindow()
-        : this(CreateDefaultRunnerOptions(), processRunner: null)
+        : this(CreateDefaultRunnerOptions(), processRunner: null, recentDocumentHistoryStore: null)
     {
     }
 
     internal MainWindow(
         ReadOnlyOperationRunnerOptions operationRunnerOptions,
-        IReadOnlyOperationProcessRunner? processRunner)
+        IReadOnlyOperationProcessRunner? processRunner,
+        RecentDocumentHistoryStore? recentDocumentHistoryStore = null)
     {
         _operationRunnerOptions = operationRunnerOptions;
         _operationRunner = new ReadOnlyOperationRunner(operationRunnerOptions, processRunner);
+        _recentDocumentHistoryStore = recentDocumentHistoryStore ?? RecentDocumentHistoryStore.CreateDefault();
 
         InitializeComponent();
         ScanTab.DataContext = ScanReportOverviewViewModel.Empty;
         PreflightTab.DataContext = PreflightChecklistOverviewViewModel.Empty;
         PlanTab.DataContext = PlanOverviewViewModel.Empty;
+        RefreshRecentDocuments();
         UpdateWorkflowState();
     }
 
@@ -60,6 +64,65 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             ShowLoadError("Scan report could not be loaded", exception);
+        }
+    }
+
+    private void RecentDocumentsBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        OpenRecentButton.IsEnabled = RecentDocumentsBox.SelectedItem is RecentDocumentEntry;
+    }
+
+    private void OpenRecent_Click(object sender, RoutedEventArgs e)
+    {
+        if (RecentDocumentsBox.SelectedItem is not RecentDocumentEntry entry)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!File.Exists(entry.Path))
+            {
+                _recentDocumentHistoryStore.Remove(entry);
+                RefreshRecentDocuments();
+                ShowLoadError("Recent file could not be loaded", new FileNotFoundException("Recent file no longer exists.", entry.Path));
+                return;
+            }
+
+            switch (entry.Kind)
+            {
+                case RecentDocumentKind.ScanReport:
+                    LoadScanReport(entry.Path);
+                    _scanCompleted = !string.IsNullOrWhiteSpace(ScanPathBox.Text);
+                    break;
+                case RecentDocumentKind.CleanupPlan:
+                    LoadPlan(entry.Path);
+                    PreflightPlanPathBox.Text = entry.Path;
+                    EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
+                    break;
+                case RecentDocumentKind.PreflightChecklist:
+                    LoadPreflightChecklist(entry.Path);
+                    break;
+            }
+
+            UpdateWorkflowState();
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Recent file could not be loaded", exception);
+        }
+    }
+
+    private void ClearRecent_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _recentDocumentHistoryStore.Clear();
+            RefreshRecentDocuments();
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Recent files could not be cleared", exception);
         }
     }
 
@@ -759,6 +822,7 @@ public partial class MainWindow : Window
         ScanTab.DataContext = ScanReportOverviewViewModel.FromReport(report);
         ScanTab.IsSelected = true;
         ApplyScanListView();
+        RememberRecentDocument(RecentDocumentKind.ScanReport, path);
     }
 
     private void LoadPlan(string path)
@@ -771,6 +835,7 @@ public partial class MainWindow : Window
         PlanTab.DataContext = PlanOverviewViewModel.FromPlan(plan);
         PlanTab.IsSelected = true;
         ApplyPlanListView();
+        RememberRecentDocument(RecentDocumentKind.CleanupPlan, path);
     }
 
     private void LoadPreflightChecklist(string path)
@@ -779,6 +844,7 @@ public partial class MainWindow : Window
         _preflightCompleted = true;
         PreflightTab.DataContext = PreflightChecklistOverviewViewModel.FromChecklist(checklist);
         PreflightTab.IsSelected = true;
+        RememberRecentDocument(RecentDocumentKind.PreflightChecklist, path);
     }
 
     private static string GetSelectedComboBoxText(ComboBox comboBox)
@@ -941,6 +1007,42 @@ public partial class MainWindow : Window
         return value.Contains(' ', StringComparison.Ordinal)
             ? $"\"{value.Replace("\"", "\\\"", StringComparison.Ordinal)}\""
             : value;
+    }
+
+    private void RememberRecentDocument(RecentDocumentKind kind, string path)
+    {
+        try
+        {
+            _recentDocumentHistoryStore.Add(kind, ResolveOperationPath(path), DateTimeOffset.Now);
+            RefreshRecentDocuments();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            // Recent history is a convenience feature; report loading remains the primary action.
+        }
+    }
+
+    private void RefreshRecentDocuments()
+    {
+        if (RecentDocumentsBox is null)
+        {
+            return;
+        }
+
+        IReadOnlyList<RecentDocumentEntry> entries;
+        try
+        {
+            entries = _recentDocumentHistoryStore.Load();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            entries = [];
+        }
+
+        RecentDocumentsBox.ItemsSource = entries;
+        RecentDocumentsBox.SelectedIndex = entries.Count > 0 ? 0 : -1;
+        OpenRecentButton.IsEnabled = entries.Count > 0;
+        ClearRecentButton.IsEnabled = entries.Count > 0;
     }
 
     private static ReadOnlyOperationRunnerOptions CreateDefaultRunnerOptions()
