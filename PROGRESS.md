@@ -298,17 +298,32 @@
 - 推送 `main` 分支和 `v0.2.0` 标签到 GitHub
 - 创建 GitHub `v0.2.0` draft release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
 - 验证 GitHub `v0.2.0` draft release `isDraft=true`，三项附件上传完成；draft 附件 URL 当前使用 GitHub `untagged-*` 临时路径
-- 验证命令：`pwsh -NoProfile -File scripts\test.ps1 -Restore`
-- 额外验证：WPF UI hidden startup smoke
-- 测试通过：315 passed
+- 新增 ADR 0041，记录 WPF Read-Only Ops 路径选择器、自动输出路径和扫描到 Plan 工作流提示的安全边界
+- WPF UI Read-Only Ops 为 scan、plan、preflight 输入补充文件/文件夹选择器和输出 Save 选择器
+- WPF UI Read-Only Ops 选择目标路径后会自动建议不覆盖现有文件的 JSON 输出路径
+- WPF UI 扫描成功后会自动准备 Plan 输入，Plan 成功后会自动准备 Preflight plan 输入
+- WPF UI Cleanup Plan 详情新增 Prepare Preflight，可为选中的隔离候选项生成 preflight restore metadata 输入文件并预填 Preflight
+- 新增 `PlanPreflightPreparation`，从已加载 cleanup plan 和选中项生成对应 restore metadata，且不写入最终隔离目录 restore path
+- README 同步记录 Read-Only Ops 路径选择器、自动输出路径、扫描后 Plan 准备和 Plan 候选项到 Preflight 准备能力
+- 版本元数据更新为 `0.2.1`
+- 新增 `docs/releases/v0.2.1.md`，记录 WPF Read-Only Ops UX 补丁版能力、安全边界、验证结果和已知限制
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：321 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests -CreateArchive`
+- 验证发布版 CLI `--version` 输出 `WinSafeClean 0.2.1+...`
+- 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 检查 v0.2.1 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果或本地报告
 
 ## 正在进行
 
-- v0.2.0 draft release 已创建，等待人工复核后公开发布
+- 准备提交、打标并创建 GitHub `v0.2.1` release
 
 ## 下一步
 
-1. 复核 GitHub `v0.2.0` draft release 的安全边界、附件和校验清单，然后公开发布。
+1. 提交 `v0.2.1` 变更并推送 `main`。
+2. 创建并推送 `v0.2.1` 标签。
+3. 创建 GitHub `v0.2.1` release 并上传 CLI/UI ZIP 包和 `SHA256SUMS.txt`。
 
 ## 待决策
 

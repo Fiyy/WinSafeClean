@@ -34,7 +34,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 
 - `WinSafeClean.Core`：只读扫描、风险、报告和 evidence 基础模型
 - `WinSafeClean.Cli`：默认只读 CLI，包含带强确认的文件隔离和恢复命令
-- `WinSafeClean.Ui`：WPF UI 脚手架，可读取 scan report、preflight checklist 和 cleanup plan JSON，并展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项、隔离预览、空状态和状态提示；Read-Only Ops 可构建并运行 `scan`、`plan` 和 `preflight` 只读命令，把 JSON 输出自动加载回界面
+- `WinSafeClean.Ui`：WPF UI 脚手架，可读取 scan report、preflight checklist 和 cleanup plan JSON，并展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项、隔离预览、空状态和状态提示；Read-Only Ops 可通过文件/文件夹选择器构建并运行 `scan`、`plan` 和 `preflight` 只读命令，把 JSON 输出自动加载回界面，并可从选中的 cleanup plan 候选项准备 preflight metadata 输入
 - `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action、注册表启动项、PATH 环境变量、快捷方式、文件关联、卸载注册表、Microsoft Store 包归属、文件 Authenticode 签名和运行进程映像路径关系证据
 - `WinSafeClean.CleanerRules`：CleanerML 安全子集解析器、用户规则文件加载器和 `KnownCleanupRule` evidence provider，只读取规则候选，不执行清理动作
 - `WinSafeClean.Core.Quarantine`：恢复元数据、内容 hash、操作日志、执行前校验、最小隔离执行器和最小恢复执行器
@@ -53,7 +53,7 @@ pwsh -File .\scripts\publish.ps1 -Restore
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Ui
 ```
 
-当前 WPF UI 可打开 CLI 生成的 scan report、preflight checklist 和 cleanup plan JSON，展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项和隔离预览。Scan report 条目按大小优先排序，Summary 会列出 Largest items 和 Top directories。空间用途提示只解释常见路径模式，不改变风险等级或建议动作。UI 的 Read-Only Ops 页签可构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持格式、隐私、输出文件、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数；运行时必须填写输出文件，JSON 输出成功后会自动加载回对应页签。UI 不生成或运行 `quarantine`、`restore`、`delete` 或 `clean` 命令。
+当前 WPF UI 可打开 CLI 生成的 scan report、preflight checklist 和 cleanup plan JSON，展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项和隔离预览。Scan report 条目按大小优先排序，Summary 会列出 Largest items 和 Top directories。空间用途提示只解释常见路径模式，不改变风险等级或建议动作。UI 的 Read-Only Ops 页签可构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持文件/文件夹选择器、自动建议 JSON 输出路径、扫描后准备 Plan 输入、从选中的 cleanup plan 候选项生成 preflight restore metadata 输入、格式、隐私、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数；运行时必须填写输出文件，JSON 输出成功后会自动加载回对应页签。UI 不生成或运行 `quarantine`、`restore`、`delete` 或 `clean` 命令。
 
 ## 本地发布
 
@@ -152,6 +152,7 @@ Core 已包含只读 `CleanupPlan` 草案模型，可把扫描报告转换为 `K
 - [版本说明模板](docs/RELEASE_NOTES_TEMPLATE.md)
 - [v0.1.0 版本说明](docs/releases/v0.1.0.md)
 - [v0.2.0 版本说明](docs/releases/v0.2.0.md)
+- [v0.2.1 版本说明](docs/releases/v0.2.1.md)
 - [质量门禁](docs/QUALITY_GATES.md)
 - [任务模板](docs/TASK_TEMPLATE.md)
 - [项目进度](PROGRESS.md)

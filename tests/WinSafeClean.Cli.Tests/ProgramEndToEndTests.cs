@@ -32,7 +32,7 @@ public sealed class ProgramEndToEndTests
 
         Assert.Equal(0, process.ExitCode);
         Assert.Equal(string.Empty, stderr);
-        Assert.StartsWith("WinSafeClean 0.2.0", stdout, StringComparison.Ordinal);
+        Assert.StartsWith("WinSafeClean 0.2.1", stdout, StringComparison.Ordinal);
         Assert.EndsWith(Environment.NewLine, stdout, StringComparison.Ordinal);
     }
 

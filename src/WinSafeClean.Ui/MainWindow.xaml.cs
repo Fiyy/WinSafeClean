@@ -15,6 +15,8 @@ public partial class MainWindow : Window
 {
     private readonly ReadOnlyOperationRunnerOptions _operationRunnerOptions;
     private readonly ReadOnlyOperationRunner _operationRunner;
+    private CleanupPlan? _currentPlan;
+    private string? _currentPlanPath;
 
     public MainWindow()
         : this(CreateDefaultRunnerOptions(), processRunner: null)
@@ -87,13 +89,165 @@ public partial class MainWindow : Window
 
         try
         {
-            var plan = CleanupPlanJsonSerializer.Deserialize(File.ReadAllText(dialog.FileName));
-            PlanTab.DataContext = PlanOverviewViewModel.FromPlan(plan);
-            PlanTab.IsSelected = true;
+            LoadPlan(dialog.FileName);
+            PreflightPlanPathBox.Text = dialog.FileName;
+            EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
         }
         catch (Exception exception)
         {
             ShowLoadError("Plan could not be loaded", exception);
+        }
+    }
+
+    private void BrowseScanFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (TryChooseFolder("Select scan folder", ScanPathBox))
+        {
+            EnsureSuggestedOutputPath(ScanOutputPathBox, "scan");
+        }
+    }
+
+    private void BrowseScanFile_Click(object sender, RoutedEventArgs e)
+    {
+        if (TryChooseFile("Select scan file", "All files (*.*)|*.*", ScanPathBox))
+        {
+            EnsureSuggestedOutputPath(ScanOutputPathBox, "scan");
+        }
+    }
+
+    private void BrowseScanOutput_Click(object sender, RoutedEventArgs e)
+    {
+        TryChooseOutputFile("Save scan report", "scan", ScanOutputPathBox);
+    }
+
+    private void BrowseScanCleanerMlFolder_Click(object sender, RoutedEventArgs e)
+    {
+        TryChooseFolder("Select CleanerML folder", ScanCleanerMlPathBox);
+    }
+
+    private void BrowseScanCleanerMlFile_Click(object sender, RoutedEventArgs e)
+    {
+        TryChooseFile("Select CleanerML file", "CleanerML or JSON files (*.xml;*.json)|*.xml;*.json|All files (*.*)|*.*", ScanCleanerMlPathBox);
+    }
+
+    private void BrowsePlanFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (TryChooseFolder("Select plan target folder", PlanPathBox))
+        {
+            EnsureSuggestedOutputPath(PlanOutputPathBox, "plan");
+        }
+    }
+
+    private void BrowsePlanFile_Click(object sender, RoutedEventArgs e)
+    {
+        if (TryChooseFile("Select plan target file", "All files (*.*)|*.*", PlanPathBox))
+        {
+            EnsureSuggestedOutputPath(PlanOutputPathBox, "plan");
+        }
+    }
+
+    private void BrowsePlanOutput_Click(object sender, RoutedEventArgs e)
+    {
+        TryChooseOutputFile("Save cleanup plan", "plan", PlanOutputPathBox);
+    }
+
+    private void BrowsePlanCleanerMlFolder_Click(object sender, RoutedEventArgs e)
+    {
+        TryChooseFolder("Select CleanerML folder", PlanCleanerMlPathBox);
+    }
+
+    private void BrowsePlanCleanerMlFile_Click(object sender, RoutedEventArgs e)
+    {
+        TryChooseFile("Select CleanerML file", "CleanerML or JSON files (*.xml;*.json)|*.xml;*.json|All files (*.*)|*.*", PlanCleanerMlPathBox);
+    }
+
+    private void BrowsePreflightPlan_Click(object sender, RoutedEventArgs e)
+    {
+        if (TryChooseFile("Select cleanup plan JSON", "JSON files (*.json)|*.json|All files (*.*)|*.*", PreflightPlanPathBox))
+        {
+            EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
+        }
+    }
+
+    private void BrowsePreflightMetadata_Click(object sender, RoutedEventArgs e)
+    {
+        if (TryChooseFile("Select restore metadata JSON", "JSON files (*.json)|*.json|All files (*.*)|*.*", PreflightMetadataPathBox))
+        {
+            EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
+        }
+    }
+
+    private void BrowsePreflightOutput_Click(object sender, RoutedEventArgs e)
+    {
+        TryChooseOutputFile("Save preflight checklist", "preflight", PreflightOutputPathBox);
+    }
+
+    private void UseScanForPlan_Click(object sender, RoutedEventArgs e)
+    {
+        if (PreparePlanFromScan())
+        {
+            ShowOperationStatus("Plan inputs are ready. Run Plan to review cleanup candidates.", isError: false);
+            return;
+        }
+
+        ShowOperationStatus("Choose a scan target path before preparing Plan.", isError: true);
+    }
+
+    private void PreparePreflightFromPlanItem_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_currentPlan is null)
+            {
+                throw new InvalidOperationException("Load or run a cleanup plan before preparing preflight.");
+            }
+
+            if (PlanItemsList.SelectedItem is not PlanOverviewItemViewModel selectedItem)
+            {
+                throw new InvalidOperationException("Select a cleanup plan item before preparing preflight.");
+            }
+
+            var metadata = PlanPreflightPreparation.CreateRestoreMetadataForPlanItem(
+                _currentPlan,
+                selectedItem.Path,
+                selectedItem.RestoreMetadataPath,
+                DateTimeOffset.Now);
+
+            string? metadataInputPath = ChooseOutputFilePath(
+                "Save preflight restore metadata input",
+                "restore-metadata",
+                currentPath: null);
+            if (string.IsNullOrWhiteSpace(metadataInputPath))
+            {
+                return;
+            }
+
+            string? parentDirectory = Path.GetDirectoryName(metadataInputPath);
+            if (!string.IsNullOrWhiteSpace(parentDirectory))
+            {
+                Directory.CreateDirectory(parentDirectory);
+            }
+
+            File.WriteAllText(metadataInputPath, RestoreMetadataJsonSerializer.Serialize(metadata));
+
+            if (!string.IsNullOrWhiteSpace(_currentPlanPath))
+            {
+                PreflightPlanPathBox.Text = _currentPlanPath;
+            }
+
+            PreflightMetadataPathBox.Text = metadataInputPath;
+            EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
+            ReadOnlyOpsTab.IsSelected = true;
+            ShowOperationStatus("Preflight inputs are ready. Run Preflight before any file-moving command.", isError: false);
+        }
+        catch (Exception exception)
+        {
+            MessageBox.Show(
+                this,
+                exception.Message,
+                "Preflight could not be prepared",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
         }
     }
 
@@ -159,11 +313,13 @@ public partial class MainWindow : Window
             if (IsJsonFormat(ScanFormatBox))
             {
                 LoadScanReport(ResolveOperationPath(ScanOutputPathBox.Text));
-                ShowOperationStatus("Scan completed and JSON report loaded.", isError: false);
+                PreparePlanFromScan();
+                ShowOperationStatus("Scan completed and JSON report loaded. Plan inputs are ready.", isError: false);
                 return;
             }
 
-            ShowOperationStatus("Scan completed. Markdown output was written but not loaded.", isError: false);
+            PreparePlanFromScan();
+            ShowOperationStatus("Scan completed. Markdown output was written but not loaded. Plan inputs are ready.", isError: false);
         }
         catch (Exception exception)
         {
@@ -191,6 +347,8 @@ public partial class MainWindow : Window
             if (IsJsonFormat(PlanFormatBox))
             {
                 LoadPlan(ResolveOperationPath(PlanOutputPathBox.Text));
+                PreflightPlanPathBox.Text = PlanOutputPathBox.Text;
+                EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
                 ShowOperationStatus("Plan completed and JSON cleanup plan loaded.", isError: false);
                 return;
             }
@@ -243,6 +401,145 @@ public partial class MainWindow : Window
             CheckFileExists = true,
             Multiselect = false
         };
+    }
+
+    private bool TryChooseFolder(string title, TextBox target)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = title,
+            Multiselect = false
+        };
+
+        if (Directory.Exists(target.Text))
+        {
+            dialog.InitialDirectory = target.Text;
+        }
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return false;
+        }
+
+        target.Text = dialog.FolderName;
+        return true;
+    }
+
+    private bool TryChooseFile(string title, string filter, TextBox target)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = title,
+            Filter = filter,
+            CheckFileExists = true,
+            Multiselect = false
+        };
+
+        string? initialDirectory = GetInitialDirectory(target.Text);
+        if (!string.IsNullOrWhiteSpace(initialDirectory))
+        {
+            dialog.InitialDirectory = initialDirectory;
+        }
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return false;
+        }
+
+        target.Text = dialog.FileName;
+        return true;
+    }
+
+    private bool TryChooseOutputFile(string title, string operationName, TextBox target)
+    {
+        string? path = ChooseOutputFilePath(title, operationName, target.Text);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        target.Text = path;
+        return true;
+    }
+
+    private string? ChooseOutputFilePath(string title, string operationName, string? currentPath)
+    {
+        string suggestedPath = string.IsNullOrWhiteSpace(currentPath)
+            ? SuggestOutputPath(operationName)
+            : ResolveOperationPath(currentPath);
+
+        var dialog = new SaveFileDialog
+        {
+            Title = title,
+            Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+            AddExtension = true,
+            DefaultExt = ".json",
+            OverwritePrompt = true,
+            FileName = Path.GetFileName(suggestedPath),
+            InitialDirectory = Path.GetDirectoryName(suggestedPath)
+        };
+
+        return dialog.ShowDialog(this) == true
+            ? dialog.FileName
+            : null;
+    }
+
+    private void EnsureSuggestedOutputPath(TextBox outputBox, string operationName)
+    {
+        if (!string.IsNullOrWhiteSpace(outputBox.Text))
+        {
+            return;
+        }
+
+        outputBox.Text = SuggestOutputPath(operationName);
+    }
+
+    private string SuggestOutputPath(string operationName)
+    {
+        string directory = GetDefaultOutputDirectory();
+        return ReadOnlyOperationOutputPathSuggester.SuggestJsonPath(directory, operationName, DateTimeOffset.Now);
+    }
+
+    private string GetDefaultOutputDirectory()
+    {
+        string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        return string.IsNullOrWhiteSpace(desktop)
+            ? _operationRunnerOptions.WorkingDirectory
+            : desktop;
+    }
+
+    private static string? GetInitialDirectory(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        if (Directory.Exists(path))
+        {
+            return path;
+        }
+
+        string? parent = Path.GetDirectoryName(path);
+        return Directory.Exists(parent) ? parent : null;
+    }
+
+    private bool PreparePlanFromScan()
+    {
+        if (string.IsNullOrWhiteSpace(ScanPathBox.Text))
+        {
+            return false;
+        }
+
+        PlanPathBox.Text = ScanPathBox.Text;
+        PlanRecursiveBox.IsChecked = ScanRecursiveBox.IsChecked;
+        PlanDirectorySizesBox.IsChecked = ScanDirectorySizesBox.IsChecked;
+        PlanMaxItemsBox.Text = ScanMaxItemsBox.Text;
+        PlanCleanerMlPathBox.Text = ScanCleanerMlPathBox.Text;
+        PlanFormatBox.SelectedIndex = ScanFormatBox.SelectedIndex;
+        PlanPrivacyBox.SelectedIndex = ScanPrivacyBox.SelectedIndex;
+        EnsureSuggestedOutputPath(PlanOutputPathBox, "plan");
+        return true;
     }
 
     private void ShowLoadError(string title, Exception exception)
@@ -348,6 +645,8 @@ public partial class MainWindow : Window
     private void LoadPlan(string path)
     {
         var plan = CleanupPlanJsonSerializer.Deserialize(File.ReadAllText(path));
+        _currentPlan = plan;
+        _currentPlanPath = path;
         PlanTab.DataContext = PlanOverviewViewModel.FromPlan(plan);
         PlanTab.IsSelected = true;
     }

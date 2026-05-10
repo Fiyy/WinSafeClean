@@ -604,7 +604,8 @@
                                     <TextBlock Text="Quarantine Path" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding QuarantinePath}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Restore Metadata" FontWeight="SemiBold" Foreground="#20242A" />
-                                    <TextBlock Text="{Binding RestoreMetadataPath}" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="#4A515B" />
+                                    <TextBlock Text="{Binding RestoreMetadataPath}" Margin="0,8,0,14" TextWrapping="Wrap" Foreground="#4A515B" />
+                                    <Button Content="Prepare Preflight" Height="32" Click="PreparePreflightFromPlanItem_Click" />
                                 </StackPanel>
                             </ScrollViewer>
                             <TextBlock Text="{Binding DataContext.SelectionEmptyStateMessage, ElementName=PlanTab}">
@@ -624,7 +625,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Read-Only Ops">
+            <TabItem x:Name="ReadOnlyOpsTab" Header="Read-Only Ops">
                 <Grid Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="360" />
@@ -635,9 +636,33 @@
                     <Border Grid.Column="0" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="14">
+                            <Border Background="#F8FAFC" BorderBrush="#D6DAE0" BorderThickness="1" Padding="10" Margin="0,0,0,14">
+                                <TextBlock Text="Scan creates evidence. Plan reviews cleanup candidates. Direct delete is unavailable in this safety build."
+                                           TextWrapping="Wrap"
+                                           Foreground="#4A515B" />
+                            </Border>
+
                             <TextBlock Text="Scan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
-                            <TextBox x:Name="ScanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for scan" Margin="0,8,0,8" />
-                            <TextBox x:Name="ScanOutputPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional output file path" Margin="0,0,0,8" />
+                            <TextBlock Text="Target path" Margin="0,8,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="64" />
+                                    <ColumnDefinition Width="52" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="ScanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for scan" />
+                                <Button Grid.Column="1" Content="Folder" Height="30" Margin="6,0,0,0" Click="BrowseScanFolder_Click" />
+                                <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowseScanFile_Click" />
+                            </Grid>
+                            <TextBlock Text="Report file" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="58" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="ScanOutputPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Output report path" />
+                                <Button Grid.Column="1" Content="Save" Height="30" Margin="6,0,0,0" Click="BrowseScanOutput_Click" />
+                            </Grid>
                             <DockPanel Margin="0,0,0,8">
                                 <TextBlock DockPanel.Dock="Left" Text="Format" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
                                 <ComboBox x:Name="ScanFormatBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
@@ -654,18 +679,48 @@
                             </DockPanel>
                             <CheckBox x:Name="ScanRecursiveBox" Content="Recursive" Margin="0,0,0,8" />
                             <CheckBox x:Name="ScanDirectorySizesBox" Content="Directory sizes" Margin="0,0,0,8" />
+                            <TextBlock Text="Item limit" Margin="0,0,0,4" Foreground="#4A515B" />
                             <TextBox x:Name="ScanMaxItemsBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional positive item limit" Margin="0,0,0,8" />
-                            <TextBox x:Name="ScanCleanerMlPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional CleanerML file or directory" Margin="0,0,0,8" />
-                            <UniformGrid Columns="2" Margin="0,0,0,0">
-                                <Button Content="Build Scan" Height="32" Margin="0,0,4,0" Click="BuildScan_Click" />
-                                <Button Content="Run Scan" Height="32" Margin="4,0,0,0" Click="RunScan_Click" />
+                            <TextBlock Text="CleanerML evidence" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="64" />
+                                    <ColumnDefinition Width="52" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="ScanCleanerMlPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional CleanerML file or directory" />
+                                <Button Grid.Column="1" Content="Folder" Height="30" Margin="6,0,0,0" Click="BrowseScanCleanerMlFolder_Click" />
+                                <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowseScanCleanerMlFile_Click" />
+                            </Grid>
+                            <UniformGrid Columns="3" Margin="0,0,0,0">
+                                <Button Content="Build" Height="32" Margin="0,0,4,0" Click="BuildScan_Click" />
+                                <Button Content="Run Scan" Height="32" Margin="4,0,4,0" Click="RunScan_Click" />
+                                <Button Content="Next: Plan" Height="32" Margin="4,0,0,0" Click="UseScanForPlan_Click" />
                             </UniformGrid>
 
                             <Separator Margin="0,18,0,18" />
 
                             <TextBlock Text="Plan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
-                            <TextBox x:Name="PlanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for plan" Margin="0,8,0,8" />
-                            <TextBox x:Name="PlanOutputPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional output file path" Margin="0,0,0,8" />
+                            <TextBlock Text="Target path" Margin="0,8,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="64" />
+                                    <ColumnDefinition Width="52" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="PlanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for plan" />
+                                <Button Grid.Column="1" Content="Folder" Height="30" Margin="6,0,0,0" Click="BrowsePlanFolder_Click" />
+                                <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowsePlanFile_Click" />
+                            </Grid>
+                            <TextBlock Text="Plan file" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="58" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="PlanOutputPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Output cleanup plan path" />
+                                <Button Grid.Column="1" Content="Save" Height="30" Margin="6,0,0,0" Click="BrowsePlanOutput_Click" />
+                            </Grid>
                             <DockPanel Margin="0,0,0,8">
                                 <TextBlock DockPanel.Dock="Left" Text="Format" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
                                 <ComboBox x:Name="PlanFormatBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
@@ -682,19 +737,54 @@
                             </DockPanel>
                             <CheckBox x:Name="PlanRecursiveBox" Content="Recursive" Margin="0,0,0,8" />
                             <CheckBox x:Name="PlanDirectorySizesBox" Content="Directory sizes" Margin="0,0,0,8" />
+                            <TextBlock Text="Item limit" Margin="0,0,0,4" Foreground="#4A515B" />
                             <TextBox x:Name="PlanMaxItemsBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional positive item limit" Margin="0,0,0,8" />
-                            <TextBox x:Name="PlanCleanerMlPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional CleanerML file or directory" Margin="0,0,0,8" />
+                            <TextBlock Text="CleanerML evidence" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="64" />
+                                    <ColumnDefinition Width="52" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="PlanCleanerMlPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional CleanerML file or directory" />
+                                <Button Grid.Column="1" Content="Folder" Height="30" Margin="6,0,0,0" Click="BrowsePlanCleanerMlFolder_Click" />
+                                <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowsePlanCleanerMlFile_Click" />
+                            </Grid>
                             <UniformGrid Columns="2" Margin="0,0,0,0">
-                                <Button Content="Build Plan" Height="32" Margin="0,0,4,0" Click="BuildPlan_Click" />
+                                <Button Content="Build" Height="32" Margin="0,0,4,0" Click="BuildPlan_Click" />
                                 <Button Content="Run Plan" Height="32" Margin="4,0,0,0" Click="RunPlan_Click" />
                             </UniformGrid>
 
                             <Separator Margin="0,18,0,18" />
 
                             <TextBlock Text="Preflight" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
-                            <TextBox x:Name="PreflightPlanPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Cleanup plan JSON path" Margin="0,8,0,8" />
-                            <TextBox x:Name="PreflightMetadataPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Restore metadata JSON path" Margin="0,0,0,8" />
-                            <TextBox x:Name="PreflightOutputPathBox" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional output file path" Margin="0,0,0,8" />
+                            <TextBlock Text="Cleanup plan JSON" Margin="0,8,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="58" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="PreflightPlanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Cleanup plan JSON path" />
+                                <Button Grid.Column="1" Content="Open" Height="30" Margin="6,0,0,0" Click="BrowsePreflightPlan_Click" />
+                            </Grid>
+                            <TextBlock Text="Restore metadata JSON" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="58" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="PreflightMetadataPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Restore metadata JSON path" />
+                                <Button Grid.Column="1" Content="Open" Height="30" Margin="6,0,0,0" Click="BrowsePreflightMetadata_Click" />
+                            </Grid>
+                            <TextBlock Text="Checklist file" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="58" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="PreflightOutputPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Output preflight checklist path" />
+                                <Button Grid.Column="1" Content="Save" Height="30" Margin="6,0,0,0" Click="BrowsePreflightOutput_Click" />
+                            </Grid>
                             <DockPanel Margin="0,0,0,8">
                                 <TextBlock DockPanel.Dock="Left" Text="Format" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
                                 <ComboBox x:Name="PreflightFormatBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
@@ -704,7 +794,7 @@
                             </DockPanel>
                             <CheckBox x:Name="PreflightManualConfirmationBox" Content="Manual confirmation" Margin="0,0,0,8" />
                             <UniformGrid Columns="2" Margin="0,0,0,0">
-                                <Button Content="Build Preflight" Height="32" Margin="0,0,4,0" Click="BuildPreflight_Click" />
+                                <Button Content="Build" Height="32" Margin="0,0,4,0" Click="BuildPreflight_Click" />
                                 <Button Content="Run Preflight" Height="32" Margin="4,0,0,0" Click="RunPreflight_Click" />
                             </UniformGrid>
                         </StackPanel>
