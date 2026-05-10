@@ -314,16 +314,21 @@
 - 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 检查 v0.2.1 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果或本地报告
+- 提交 v0.2.1 候选变更：`708ea08`
+- 推送 `main` 分支和 `v0.2.1` 标签到 GitHub
+- 创建 GitHub `v0.2.1` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
+- 验证 GitHub `v0.2.1` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.1/`
+- 公开发布 GitHub `v0.2.1` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.1
 
 ## 正在进行
 
-- 准备提交、打标并创建 GitHub `v0.2.1` release
+- v0.2.1 已公开发布，开始规划下一轮体验优化
 
 ## 下一步
 
-1. 提交 `v0.2.1` 变更并推送 `main`。
-2. 创建并推送 `v0.2.1` 标签。
-3. 创建 GitHub `v0.2.1` release 并上传 CLI/UI ZIP 包和 `SHA256SUMS.txt`。
+1. 设计 WPF 主流程向导，减少用户在多个页签之间手动跳转。
+2. 设计 UI 级 guarded quarantine / restore 方案，先补 ADR 和测试，再决定是否开放执行入口。
+3. 补充 scan / plan 结果筛选、排序和搜索，提升大量候选项下的复核效率。
 
 ## 待决策
 
