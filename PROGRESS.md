@@ -319,16 +319,26 @@
 - 创建 GitHub `v0.2.1` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
 - 验证 GitHub `v0.2.1` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.1/`
 - 公开发布 GitHub `v0.2.1` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.1
+- 新增 ADR 0042，记录 WPF Read-Only Ops 主流程面板和只读主操作边界
+- 新增 `ReadOnlyWorkflowPresenter` 纯模型，覆盖 Scan / Plan / Preflight 状态与主操作选择
+- WPF UI Read-Only Ops 右侧新增 Workflow 面板，展示 Scan、Plan、Preflight 状态和单个主操作按钮
+- Workflow 主操作只运行 `scan`、`plan`、`preflight` 或跳转到已加载复核页，不触发 `quarantine`、`restore`、`delete` 或 `clean`
+- README 同步记录 Read-Only Ops Workflow 面板
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：327 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 已启动包含 Workflow 面板的本地发布版 WPF UI，进程号 28372
 
 ## 正在进行
 
-- v0.2.1 已公开发布，开始规划下一轮体验优化
+- WPF Read-Only Ops 主流程面板已完成，等待本地体验复核
 
 ## 下一步
 
-1. 设计 WPF 主流程向导，减少用户在多个页签之间手动跳转。
-2. 设计 UI 级 guarded quarantine / restore 方案，先补 ADR 和测试，再决定是否开放执行入口。
-3. 补充 scan / plan 结果筛选、排序和搜索，提升大量候选项下的复核效率。
+1. 设计 UI 级 guarded quarantine / restore 方案，先补 ADR 和测试，再决定是否开放执行入口。
+2. 补充 scan / plan 结果筛选、排序和搜索，提升大量候选项下的复核效率。
+3. 增加最近报告/计划历史，减少用户反复选择 JSON 文件。
 
 ## 待决策
 

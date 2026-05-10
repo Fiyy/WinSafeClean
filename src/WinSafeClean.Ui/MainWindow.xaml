@@ -650,7 +650,7 @@
                                     <ColumnDefinition Width="64" />
                                     <ColumnDefinition Width="52" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="ScanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for scan" />
+                                <TextBox x:Name="ScanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for scan" TextChanged="WorkflowInput_TextChanged" />
                                 <Button Grid.Column="1" Content="Folder" Height="30" Margin="6,0,0,0" Click="BrowseScanFolder_Click" />
                                 <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowseScanFile_Click" />
                             </Grid>
@@ -708,7 +708,7 @@
                                     <ColumnDefinition Width="64" />
                                     <ColumnDefinition Width="52" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="PlanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for plan" />
+                                <TextBox x:Name="PlanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Folder or file path for plan" TextChanged="WorkflowInput_TextChanged" />
                                 <Button Grid.Column="1" Content="Folder" Height="30" Margin="6,0,0,0" Click="BrowsePlanFolder_Click" />
                                 <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowsePlanFile_Click" />
                             </Grid>
@@ -764,7 +764,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="58" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="PreflightPlanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Cleanup plan JSON path" />
+                                <TextBox x:Name="PreflightPlanPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Cleanup plan JSON path" TextChanged="WorkflowInput_TextChanged" />
                                 <Button Grid.Column="1" Content="Open" Height="30" Margin="6,0,0,0" Click="BrowsePreflightPlan_Click" />
                             </Grid>
                             <TextBlock Text="Restore metadata JSON" Margin="0,0,0,4" Foreground="#4A515B" />
@@ -773,7 +773,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="58" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="PreflightMetadataPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Restore metadata JSON path" />
+                                <TextBox x:Name="PreflightMetadataPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Restore metadata JSON path" TextChanged="WorkflowInput_TextChanged" />
                                 <Button Grid.Column="1" Content="Open" Height="30" Margin="6,0,0,0" Click="BrowsePreflightMetadata_Click" />
                             </Grid>
                             <TextBlock Text="Checklist file" Margin="0,0,0,4" Foreground="#4A515B" />
@@ -803,6 +803,50 @@
 
                     <Border Grid.Column="2" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
                         <DockPanel>
+                            <Border DockPanel.Dock="Top" Background="#F8FAFC" BorderBrush="#D6DAE0" BorderThickness="0,0,0,1" Padding="14">
+                                <StackPanel>
+                                    <TextBlock Text="Workflow"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="#20242A" />
+                                    <UniformGrid Columns="3" Margin="0,12,0,10">
+                                        <Border BorderBrush="#D6DAE0" BorderThickness="1" Padding="10" Margin="0,0,6,0" Background="White">
+                                            <StackPanel>
+                                                <TextBlock Text="Scan" FontWeight="SemiBold" Foreground="#20242A" />
+                                                <TextBlock x:Name="WorkflowScanStatusText" Margin="0,6,0,0" Foreground="#4A515B" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border BorderBrush="#D6DAE0" BorderThickness="1" Padding="10" Margin="3,0,3,0" Background="White">
+                                            <StackPanel>
+                                                <TextBlock Text="Plan" FontWeight="SemiBold" Foreground="#20242A" />
+                                                <TextBlock x:Name="WorkflowPlanStatusText" Margin="0,6,0,0" Foreground="#4A515B" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border BorderBrush="#D6DAE0" BorderThickness="1" Padding="10" Margin="6,0,0,0" Background="White">
+                                            <StackPanel>
+                                                <TextBlock Text="Preflight" FontWeight="SemiBold" Foreground="#20242A" />
+                                                <TextBlock x:Name="WorkflowPreflightStatusText" Margin="0,6,0,0" Foreground="#4A515B" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="132" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="WorkflowStatusText"
+                                                   Grid.Column="0"
+                                                   Margin="0,0,12,0"
+                                                   VerticalAlignment="Center"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="#4A515B" />
+                                        <Button x:Name="WorkflowPrimaryActionButton"
+                                                Grid.Column="1"
+                                                Height="32"
+                                                Click="WorkflowPrimaryAction_Click" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
                             <TextBlock DockPanel.Dock="Top"
                                        Text="Command"
                                        Margin="14,12,14,8"

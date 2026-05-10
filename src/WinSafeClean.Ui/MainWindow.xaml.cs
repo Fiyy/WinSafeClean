@@ -17,6 +17,9 @@ public partial class MainWindow : Window
     private readonly ReadOnlyOperationRunner _operationRunner;
     private CleanupPlan? _currentPlan;
     private string? _currentPlanPath;
+    private bool _scanCompleted;
+    private bool _planCompleted;
+    private bool _preflightCompleted;
 
     public MainWindow()
         : this(CreateDefaultRunnerOptions(), processRunner: null)
@@ -34,6 +37,7 @@ public partial class MainWindow : Window
         ScanTab.DataContext = ScanReportOverviewViewModel.Empty;
         PreflightTab.DataContext = PreflightChecklistOverviewViewModel.Empty;
         PlanTab.DataContext = PlanOverviewViewModel.Empty;
+        UpdateWorkflowState();
     }
 
     private void OpenScanReport_Click(object sender, RoutedEventArgs e)
@@ -49,7 +53,9 @@ public partial class MainWindow : Window
         {
             var report = ScanReportJsonSerializer.Deserialize(File.ReadAllText(dialog.FileName));
             ScanTab.DataContext = ScanReportOverviewViewModel.FromReport(report);
+            _scanCompleted = !string.IsNullOrWhiteSpace(ScanPathBox.Text);
             ScanTab.IsSelected = true;
+            UpdateWorkflowState();
         }
         catch (Exception exception)
         {
@@ -70,7 +76,9 @@ public partial class MainWindow : Window
         {
             var checklist = QuarantinePreflightChecklistJsonSerializer.Deserialize(File.ReadAllText(dialog.FileName));
             PreflightTab.DataContext = PreflightChecklistOverviewViewModel.FromChecklist(checklist);
+            _preflightCompleted = true;
             PreflightTab.IsSelected = true;
+            UpdateWorkflowState();
         }
         catch (Exception exception)
         {
@@ -238,6 +246,7 @@ public partial class MainWindow : Window
             PreflightMetadataPathBox.Text = metadataInputPath;
             EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
             ReadOnlyOpsTab.IsSelected = true;
+            UpdateWorkflowState();
             ShowOperationStatus("Preflight inputs are ready. Run Preflight before any file-moving command.", isError: false);
         }
         catch (Exception exception)
@@ -262,6 +271,59 @@ public partial class MainWindow : Window
         {
             OperationCommandText.Text = string.Empty;
             ShowOperationStatus(exception.Message, isError: true);
+        }
+    }
+
+    private void WorkflowInput_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender == ScanPathBox)
+        {
+            _scanCompleted = false;
+            _planCompleted = false;
+            _preflightCompleted = false;
+        }
+        else if (sender == PlanPathBox)
+        {
+            _planCompleted = false;
+            _preflightCompleted = false;
+        }
+        else if (sender == PreflightPlanPathBox || sender == PreflightMetadataPathBox)
+        {
+            _preflightCompleted = false;
+        }
+
+        UpdateWorkflowState();
+    }
+
+    private void WorkflowPrimaryAction_Click(object sender, RoutedEventArgs e)
+    {
+        var view = ReadOnlyWorkflowPresenter.Create(CreateWorkflowSnapshot());
+
+        switch (view.PrimaryAction)
+        {
+            case ReadOnlyWorkflowAction.RunScan:
+                EnsureSuggestedOutputPath(ScanOutputPathBox, "scan");
+                RunScan_Click(sender, e);
+                break;
+            case ReadOnlyWorkflowAction.RunPlan:
+                if (string.IsNullOrWhiteSpace(PlanPathBox.Text))
+                {
+                    PreparePlanFromScan();
+                }
+
+                EnsureSuggestedOutputPath(PlanOutputPathBox, "plan");
+                RunPlan_Click(sender, e);
+                break;
+            case ReadOnlyWorkflowAction.ReviewPlan:
+                PlanTab.IsSelected = true;
+                break;
+            case ReadOnlyWorkflowAction.RunPreflight:
+                EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
+                RunPreflight_Click(sender, e);
+                break;
+            case ReadOnlyWorkflowAction.ReviewPreflight:
+                PreflightTab.IsSelected = true;
+                break;
         }
     }
 
@@ -314,11 +376,15 @@ public partial class MainWindow : Window
             {
                 LoadScanReport(ResolveOperationPath(ScanOutputPathBox.Text));
                 PreparePlanFromScan();
+                _scanCompleted = true;
+                UpdateWorkflowState();
                 ShowOperationStatus("Scan completed and JSON report loaded. Plan inputs are ready.", isError: false);
                 return;
             }
 
             PreparePlanFromScan();
+            _scanCompleted = true;
+            UpdateWorkflowState();
             ShowOperationStatus("Scan completed. Markdown output was written but not loaded. Plan inputs are ready.", isError: false);
         }
         catch (Exception exception)
@@ -349,6 +415,7 @@ public partial class MainWindow : Window
                 LoadPlan(ResolveOperationPath(PlanOutputPathBox.Text));
                 PreflightPlanPathBox.Text = PlanOutputPathBox.Text;
                 EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
+                UpdateWorkflowState();
                 ShowOperationStatus("Plan completed and JSON cleanup plan loaded.", isError: false);
                 return;
             }
@@ -381,6 +448,8 @@ public partial class MainWindow : Window
             if (IsJsonFormat(PreflightFormatBox))
             {
                 LoadPreflightChecklist(ResolveOperationPath(PreflightOutputPathBox.Text));
+                _preflightCompleted = true;
+                UpdateWorkflowState();
                 ShowOperationStatus("Preflight completed and JSON checklist loaded.", isError: false);
                 return;
             }
@@ -400,6 +469,45 @@ public partial class MainWindow : Window
             Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
             CheckFileExists = true,
             Multiselect = false
+        };
+    }
+
+    private void UpdateWorkflowState()
+    {
+        if (WorkflowPrimaryActionButton is null)
+        {
+            return;
+        }
+
+        var view = ReadOnlyWorkflowPresenter.Create(CreateWorkflowSnapshot());
+        SetWorkflowStepStatus(WorkflowScanStatusText, view.ScanStatus);
+        SetWorkflowStepStatus(WorkflowPlanStatusText, view.PlanStatus);
+        SetWorkflowStepStatus(WorkflowPreflightStatusText, view.PreflightStatus);
+        WorkflowStatusText.Text = view.StatusText;
+        WorkflowPrimaryActionButton.Content = view.PrimaryActionText;
+        WorkflowPrimaryActionButton.IsEnabled = view.PrimaryActionEnabled;
+    }
+
+    private ReadOnlyWorkflowSnapshot CreateWorkflowSnapshot()
+    {
+        return new ReadOnlyWorkflowSnapshot(
+            HasScanTarget: !string.IsNullOrWhiteSpace(ScanPathBox.Text),
+            ScanCompleted: _scanCompleted,
+            PlanCompleted: _planCompleted,
+            PreflightInputsReady: !string.IsNullOrWhiteSpace(PreflightPlanPathBox.Text)
+                && !string.IsNullOrWhiteSpace(PreflightMetadataPathBox.Text),
+            PreflightCompleted: _preflightCompleted);
+    }
+
+    private static void SetWorkflowStepStatus(TextBlock target, string status)
+    {
+        target.Text = status;
+        target.Foreground = status switch
+        {
+            "Done" => new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57)),
+            "Ready" => new SolidColorBrush(Color.FromRgb(0x1D, 0x4E, 0x89)),
+            "Needs target" or "Needs candidate" => new SolidColorBrush(Color.FromRgb(0xA1, 0x62, 0x07)),
+            _ => new SolidColorBrush(Color.FromRgb(0x5B, 0x64, 0x70))
         };
     }
 
@@ -647,6 +755,8 @@ public partial class MainWindow : Window
         var plan = CleanupPlanJsonSerializer.Deserialize(File.ReadAllText(path));
         _currentPlan = plan;
         _currentPlanPath = path;
+        _planCompleted = true;
+        _preflightCompleted = false;
         PlanTab.DataContext = PlanOverviewViewModel.FromPlan(plan);
         PlanTab.IsSelected = true;
     }
@@ -654,6 +764,7 @@ public partial class MainWindow : Window
     private void LoadPreflightChecklist(string path)
     {
         var checklist = QuarantinePreflightChecklistJsonSerializer.Deserialize(File.ReadAllText(path));
+        _preflightCompleted = true;
         PreflightTab.DataContext = PreflightChecklistOverviewViewModel.FromChecklist(checklist);
         PreflightTab.IsSelected = true;
     }
