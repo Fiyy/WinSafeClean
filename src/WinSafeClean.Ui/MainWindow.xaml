@@ -248,9 +248,62 @@
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
-                                <Grid Grid.Row="0" Margin="12,0,12,4">
+                                <Grid Grid.Row="0" Margin="12,0,12,8">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="108" />
+                                        <ColumnDefinition Width="104" />
+                                        <ColumnDefinition Width="118" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="Search" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <TextBox x:Name="ScanListSearchBox" Height="30" Style="{StaticResource InputTextBoxStyle}" TextChanged="ScanListFilter_Changed" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                        <TextBlock Text="Risk" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="ScanRiskFilterBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="ScanListFilter_Changed">
+                                            <ComboBoxItem Content="All" />
+                                            <ComboBoxItem Content="SafeCandidate" />
+                                            <ComboBoxItem Content="LowRisk" />
+                                            <ComboBoxItem Content="MediumRisk" />
+                                            <ComboBoxItem Content="HighRisk" />
+                                            <ComboBoxItem Content="Blocked" />
+                                            <ComboBoxItem Content="Unknown" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                        <TextBlock Text="Type" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="ScanKindFilterBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="ScanListFilter_Changed">
+                                            <ComboBoxItem Content="All" />
+                                            <ComboBoxItem Content="File" />
+                                            <ComboBoxItem Content="Directory" />
+                                            <ComboBoxItem Content="Unknown" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3">
+                                        <TextBlock Text="Sort" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="ScanSortBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="ScanListFilter_Changed">
+                                            <ComboBoxItem Content="Size desc" />
+                                            <ComboBoxItem Content="Path A-Z" />
+                                            <ComboBoxItem Content="Risk A-Z" />
+                                            <ComboBoxItem Content="Type A-Z" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Grid.Row="1" Margin="12,0,12,4">
                                     <Grid.Style>
                                         <Style TargetType="Grid">
                                             <Setter Property="Visibility" Value="Visible" />
@@ -275,7 +328,7 @@
                                     <TextBlock Grid.Column="4" Text="Action" Style="{StaticResource ColumnHeaderTextStyle}" />
                                 </Grid>
                             <ListBox x:Name="ScanItemsList"
-                                     Grid.Row="1"
+                                     Grid.Row="2"
                                      ItemsSource="{Binding Items}"
                                      BorderThickness="0"
                                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
@@ -308,7 +361,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock Grid.Row="1" Text="{Binding EmptyStateMessage}">
+                            <TextBlock Grid.Row="2" Text="{Binding EmptyStateMessage}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -316,6 +369,22 @@
                                             <DataTrigger Binding="{Binding HasItems}" Value="True">
                                                 <Setter Property="Visibility" Value="Collapsed" />
                                             </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Grid.Row="2" Text="No scan items match filters.">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding HasItems}" Value="True" />
+                                                    <Condition Binding="{Binding ElementName=ScanItemsList, Path=HasItems}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </MultiDataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </TextBlock.Style>
@@ -406,9 +475,61 @@
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
-                                <Grid Grid.Row="0" Margin="12,0,12,4">
+                                <Grid Grid.Row="0" Margin="12,0,12,8">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="128" />
+                                        <ColumnDefinition Width="148" />
+                                        <ColumnDefinition Width="118" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="Search" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <TextBox x:Name="PlanListSearchBox" Height="30" Style="{StaticResource InputTextBoxStyle}" TextChanged="PlanListFilter_Changed" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                        <TextBlock Text="Risk" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="PlanRiskFilterBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
+                                            <ComboBoxItem Content="All" />
+                                            <ComboBoxItem Content="SafeCandidate" />
+                                            <ComboBoxItem Content="LowRisk" />
+                                            <ComboBoxItem Content="MediumRisk" />
+                                            <ComboBoxItem Content="HighRisk" />
+                                            <ComboBoxItem Content="Blocked" />
+                                            <ComboBoxItem Content="Unknown" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                        <TextBlock Text="Action" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="PlanActionFilterBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
+                                            <ComboBoxItem Content="All" />
+                                            <ComboBoxItem Content="Keep" />
+                                            <ComboBoxItem Content="ReportOnly" />
+                                            <ComboBoxItem Content="ReviewForQuarantine" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3">
+                                        <TextBlock Text="Sort" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="PlanSortBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
+                                            <ComboBoxItem Content="Path A-Z" />
+                                            <ComboBoxItem Content="Action A-Z" />
+                                            <ComboBoxItem Content="Risk A-Z" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Grid.Row="1" Margin="12,0,12,4">
                                     <Grid.Style>
                                         <Style TargetType="Grid">
                                             <Setter Property="Visibility" Value="Visible" />
@@ -541,7 +662,7 @@
                                     <TextBlock Grid.Column="1" Text="Action" Style="{StaticResource ColumnHeaderTextStyle}" />
                                     <TextBlock Grid.Column="2" Text="Risk" Style="{StaticResource ColumnHeaderTextStyle}" />
                                 </Grid>
-                            <ListBox x:Name="PlanItemsList" Grid.Row="1" ItemsSource="{Binding Items}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <ListBox x:Name="PlanItemsList" Grid.Row="2" ItemsSource="{Binding Items}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <ListBox.Style>
                                     <Style TargetType="ListBox">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -567,7 +688,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock Grid.Row="1" Text="{Binding EmptyStateMessage}">
+                            <TextBlock Grid.Row="2" Text="{Binding EmptyStateMessage}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -575,6 +696,22 @@
                                             <DataTrigger Binding="{Binding HasItems}" Value="True">
                                                 <Setter Property="Visibility" Value="Collapsed" />
                                             </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Grid.Row="2" Text="No plan items match filters.">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding HasItems}" Value="True" />
+                                                    <Condition Binding="{Binding ElementName=PlanItemsList, Path=HasItems}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </MultiDataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </TextBlock.Style>

@@ -1,6 +1,8 @@
 using System.IO;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using Microsoft.Win32;
 using WinSafeClean.Core.Planning;
@@ -51,10 +53,8 @@ public partial class MainWindow : Window
 
         try
         {
-            var report = ScanReportJsonSerializer.Deserialize(File.ReadAllText(dialog.FileName));
-            ScanTab.DataContext = ScanReportOverviewViewModel.FromReport(report);
+            LoadScanReport(dialog.FileName);
             _scanCompleted = !string.IsNullOrWhiteSpace(ScanPathBox.Text);
-            ScanTab.IsSelected = true;
             UpdateWorkflowState();
         }
         catch (Exception exception)
@@ -325,6 +325,16 @@ public partial class MainWindow : Window
                 PreflightTab.IsSelected = true;
                 break;
         }
+    }
+
+    private void ScanListFilter_Changed(object sender, RoutedEventArgs e)
+    {
+        ApplyScanListView();
+    }
+
+    private void PlanListFilter_Changed(object sender, RoutedEventArgs e)
+    {
+        ApplyPlanListView();
     }
 
     private void BuildPlan_Click(object sender, RoutedEventArgs e)
@@ -748,6 +758,7 @@ public partial class MainWindow : Window
         var report = ScanReportJsonSerializer.Deserialize(File.ReadAllText(path));
         ScanTab.DataContext = ScanReportOverviewViewModel.FromReport(report);
         ScanTab.IsSelected = true;
+        ApplyScanListView();
     }
 
     private void LoadPlan(string path)
@@ -759,6 +770,7 @@ public partial class MainWindow : Window
         _preflightCompleted = false;
         PlanTab.DataContext = PlanOverviewViewModel.FromPlan(plan);
         PlanTab.IsSelected = true;
+        ApplyPlanListView();
     }
 
     private void LoadPreflightChecklist(string path)
@@ -779,6 +791,149 @@ public partial class MainWindow : Window
     private static bool IsJsonFormat(ComboBox comboBox)
     {
         return GetSelectedComboBoxText(comboBox).Equals("json", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ApplyScanListView()
+    {
+        if (ScanItemsList is null || ScanItemsList.ItemsSource is null)
+        {
+            return;
+        }
+
+        var view = CollectionViewSource.GetDefaultView(ScanItemsList.ItemsSource);
+        if (view is null)
+        {
+            return;
+        }
+
+        var filter = CreateScanOverviewFilter();
+        using (view.DeferRefresh())
+        {
+            view.Filter = item => item is ScanReportOverviewItemViewModel viewModel
+                && OverviewListFilter.MatchesScanItem(viewModel, filter);
+            view.SortDescriptions.Clear();
+            foreach (var sortDescription in CreateScanSortDescriptions(filter.Sort))
+            {
+                view.SortDescriptions.Add(sortDescription);
+            }
+        }
+    }
+
+    private void ApplyPlanListView()
+    {
+        if (PlanItemsList is null || PlanItemsList.ItemsSource is null)
+        {
+            return;
+        }
+
+        var view = CollectionViewSource.GetDefaultView(PlanItemsList.ItemsSource);
+        if (view is null)
+        {
+            return;
+        }
+
+        var filter = CreatePlanOverviewFilter();
+        using (view.DeferRefresh())
+        {
+            view.Filter = item => item is PlanOverviewItemViewModel viewModel
+                && OverviewListFilter.MatchesPlanItem(viewModel, filter);
+            view.SortDescriptions.Clear();
+            foreach (var sortDescription in CreatePlanSortDescriptions(filter.Sort))
+            {
+                view.SortDescriptions.Add(sortDescription);
+            }
+        }
+    }
+
+    private ScanOverviewFilter CreateScanOverviewFilter()
+    {
+        return new ScanOverviewFilter(
+            SearchText: ScanListSearchBox?.Text ?? string.Empty,
+            RiskLevel: GetSelectedComboBoxTextOrAll(ScanRiskFilterBox),
+            ItemKind: GetSelectedComboBoxTextOrAll(ScanKindFilterBox),
+            Sort: GetScanSortOption());
+    }
+
+    private PlanOverviewFilter CreatePlanOverviewFilter()
+    {
+        return new PlanOverviewFilter(
+            SearchText: PlanListSearchBox?.Text ?? string.Empty,
+            RiskLevel: GetSelectedComboBoxTextOrAll(PlanRiskFilterBox),
+            Action: GetSelectedComboBoxTextOrAll(PlanActionFilterBox),
+            Sort: GetPlanSortOption());
+    }
+
+    private ScanOverviewSort GetScanSortOption()
+    {
+        return GetSelectedComboBoxTextOrAll(ScanSortBox) switch
+        {
+            "Path A-Z" => ScanOverviewSort.PathAscending,
+            "Risk A-Z" => ScanOverviewSort.RiskAscending,
+            "Type A-Z" => ScanOverviewSort.ItemKindAscending,
+            _ => ScanOverviewSort.SizeDescending
+        };
+    }
+
+    private PlanOverviewSort GetPlanSortOption()
+    {
+        return GetSelectedComboBoxTextOrAll(PlanSortBox) switch
+        {
+            "Action A-Z" => PlanOverviewSort.ActionAscending,
+            "Risk A-Z" => PlanOverviewSort.RiskAscending,
+            _ => PlanOverviewSort.PathAscending
+        };
+    }
+
+    private static IEnumerable<SortDescription> CreateScanSortDescriptions(ScanOverviewSort sort)
+    {
+        return sort switch
+        {
+            ScanOverviewSort.PathAscending =>
+            [
+                new SortDescription(nameof(ScanReportOverviewItemViewModel.Path), ListSortDirection.Ascending)
+            ],
+            ScanOverviewSort.RiskAscending =>
+            [
+                new SortDescription(nameof(ScanReportOverviewItemViewModel.RiskLevel), ListSortDirection.Ascending),
+                new SortDescription(nameof(ScanReportOverviewItemViewModel.Path), ListSortDirection.Ascending)
+            ],
+            ScanOverviewSort.ItemKindAscending =>
+            [
+                new SortDescription(nameof(ScanReportOverviewItemViewModel.ItemKind), ListSortDirection.Ascending),
+                new SortDescription(nameof(ScanReportOverviewItemViewModel.Path), ListSortDirection.Ascending)
+            ],
+            _ =>
+            [
+                new SortDescription(nameof(ScanReportOverviewItemViewModel.SizeBytes), ListSortDirection.Descending),
+                new SortDescription(nameof(ScanReportOverviewItemViewModel.Path), ListSortDirection.Ascending)
+            ]
+        };
+    }
+
+    private static IEnumerable<SortDescription> CreatePlanSortDescriptions(PlanOverviewSort sort)
+    {
+        return sort switch
+        {
+            PlanOverviewSort.ActionAscending =>
+            [
+                new SortDescription(nameof(PlanOverviewItemViewModel.Action), ListSortDirection.Ascending),
+                new SortDescription(nameof(PlanOverviewItemViewModel.Path), ListSortDirection.Ascending)
+            ],
+            PlanOverviewSort.RiskAscending =>
+            [
+                new SortDescription(nameof(PlanOverviewItemViewModel.RiskLevel), ListSortDirection.Ascending),
+                new SortDescription(nameof(PlanOverviewItemViewModel.Path), ListSortDirection.Ascending)
+            ],
+            _ =>
+            [
+                new SortDescription(nameof(PlanOverviewItemViewModel.Path), ListSortDirection.Ascending)
+            ]
+        };
+    }
+
+    private static string GetSelectedComboBoxTextOrAll(ComboBox? comboBox)
+    {
+        return comboBox is null ? "All" : GetSelectedComboBoxText(comboBox);
     }
 
     private static string QuoteIfNeeded(string value)

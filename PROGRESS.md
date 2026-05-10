@@ -329,16 +329,26 @@
 - 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 已启动包含 Workflow 面板的本地发布版 WPF UI，进程号 28372
+- 新增 ADR 0043，记录 WPF Scan Report 和 Cleanup Plan 结果列表搜索、筛选、排序的只读展示边界
+- 新增 `OverviewListFilter` 纯 ViewModel 辅助逻辑，覆盖 Scan / Plan 搜索、筛选和排序
+- WPF UI Scan Report 列表新增 Search、Risk、Type 和 Sort 控件
+- WPF UI Cleanup Plan 列表新增 Search、Risk、Action 和 Sort 控件
+- README 同步记录 Scan Report 和 Cleanup Plan 列表只读搜索、筛选、排序能力
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：333 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 已启动包含列表筛选排序的本地发布版 WPF UI，进程号 18520
 
 ## 正在进行
 
-- WPF Read-Only Ops 主流程面板已完成，等待本地体验复核
+- WPF Scan / Plan 结果列表筛选排序已完成，等待本地体验复核
 
 ## 下一步
 
 1. 设计 UI 级 guarded quarantine / restore 方案，先补 ADR 和测试，再决定是否开放执行入口。
-2. 补充 scan / plan 结果筛选、排序和搜索，提升大量候选项下的复核效率。
-3. 增加最近报告/计划历史，减少用户反复选择 JSON 文件。
+2. 增加最近报告/计划历史，减少用户反复选择 JSON 文件。
+3. 补充结果导出/复制能力，便于用户保存筛选后的复核结果。
 
 ## 待决策
 
