@@ -421,16 +421,17 @@
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
 - 检查 v0.2.3 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
+- v0.2.3 本地候选变更已提交并推送到 GitHub `main` 分支
 
 ## 正在进行
 
-- v0.2.3 本地发布候选已通过测试、发布打包、CLI smoke、WPF 启动 smoke、WPF 截图 smoke 和 ZIP 内容检查；等待提交和本地体验复核
+- v0.2.3 本地发布候选已通过测试、发布打包、CLI smoke、WPF 启动 smoke、WPF 截图 smoke 和 ZIP 内容检查；等待本地体验复核和公开发布决策
 
 ## 下一步
 
-1. 提交并推送 v0.2.3 本地候选变更。
-2. 继续优化默认扫描目标和新手入口，但不得绕过 CLI 双重确认和 preflight。
-3. 评估 installer/signing、scan history 和 quarantine / restore 状态历史。
+1. 打开包含结果处置建议的发布版 WPF UI 进行本地体验复核。
+2. 决定是否创建 `v0.2.3` 标签和 GitHub release。
+3. 继续优化默认扫描目标和新手入口，但不得绕过 CLI 双重确认和 preflight。
 
 ## 待决策
 
