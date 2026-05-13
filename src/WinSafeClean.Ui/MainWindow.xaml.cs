@@ -44,6 +44,7 @@ public partial class MainWindow : Window
         PreflightTab.DataContext = PreflightChecklistOverviewViewModel.Empty;
         PlanTab.DataContext = PlanOverviewViewModel.Empty;
         RefreshRecentDocuments();
+        UpdatePrivacyHints();
         UpdateWorkflowState();
     }
 
@@ -401,6 +402,11 @@ public partial class MainWindow : Window
     private void PlanListFilter_Changed(object sender, RoutedEventArgs e)
     {
         ApplyPlanListView();
+    }
+
+    private void PrivacySelection_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        UpdatePrivacyHints();
     }
 
     private void CopyScanVisible_Click(object sender, RoutedEventArgs e)
@@ -830,6 +836,7 @@ public partial class MainWindow : Window
         PlanFormatBox.SelectedIndex = ScanFormatBox.SelectedIndex;
         PlanPrivacyBox.SelectedIndex = ScanPrivacyBox.SelectedIndex;
         EnsureSuggestedOutputPath(PlanOutputPathBox, "plan");
+        UpdatePrivacyHints();
         return true;
     }
 
@@ -848,6 +855,26 @@ public partial class MainWindow : Window
         OperationStatusText.Text = message;
         OperationStatusText.Foreground = isError
             ? new SolidColorBrush(Color.FromRgb(0xA5, 0x1D, 0x2D))
+            : new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57));
+    }
+
+    private void UpdatePrivacyHints()
+    {
+        if (ScanPrivacyHintText is null || PlanPrivacyHintText is null)
+        {
+            return;
+        }
+
+        ApplyPrivacyHint(ScanPrivacyHintText, GetSelectedComboBoxText(ScanPrivacyBox));
+        ApplyPrivacyHint(PlanPrivacyHintText, GetSelectedComboBoxText(PlanPrivacyBox));
+    }
+
+    private static void ApplyPrivacyHint(TextBlock target, string privacyMode)
+    {
+        var advice = PrivacySharingAdvisor.Create(privacyMode);
+        target.Text = advice.Message;
+        target.Foreground = advice.NeedsCaution
+            ? new SolidColorBrush(Color.FromRgb(0xA1, 0x62, 0x07))
             : new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57));
     }
 

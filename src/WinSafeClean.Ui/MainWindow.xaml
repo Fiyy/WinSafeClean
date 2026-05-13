@@ -864,11 +864,12 @@
                             </DockPanel>
                             <DockPanel Margin="0,0,0,8">
                                 <TextBlock DockPanel.Dock="Left" Text="Privacy" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
-                                <ComboBox x:Name="ScanPrivacyBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
+                                <ComboBox x:Name="ScanPrivacyBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PrivacySelection_Changed">
                                     <ComboBoxItem Content="full" />
                                     <ComboBoxItem Content="redacted" />
                                 </ComboBox>
                             </DockPanel>
+                            <TextBlock x:Name="ScanPrivacyHintText" Margin="0,-2,0,8" TextWrapping="Wrap" Foreground="#A16207" />
                             <CheckBox x:Name="ScanRecursiveBox" Content="Recursive" Margin="0,0,0,8" />
                             <CheckBox x:Name="ScanDirectorySizesBox" Content="Directory sizes" Margin="0,0,0,8" />
                             <TextBlock Text="Item limit" Margin="0,0,0,4" Foreground="#4A515B" />
@@ -922,11 +923,12 @@
                             </DockPanel>
                             <DockPanel Margin="0,0,0,8">
                                 <TextBlock DockPanel.Dock="Left" Text="Privacy" Width="74" VerticalAlignment="Center" Foreground="#4A515B" />
-                                <ComboBox x:Name="PlanPrivacyBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0">
+                                <ComboBox x:Name="PlanPrivacyBox" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PrivacySelection_Changed">
                                     <ComboBoxItem Content="full" />
                                     <ComboBoxItem Content="redacted" />
                                 </ComboBox>
                             </DockPanel>
+                            <TextBlock x:Name="PlanPrivacyHintText" Margin="0,-2,0,8" TextWrapping="Wrap" Foreground="#A16207" />
                             <CheckBox x:Name="PlanRecursiveBox" Content="Recursive" Margin="0,0,0,8" />
                             <CheckBox x:Name="PlanDirectorySizesBox" Content="Directory sizes" Margin="0,0,0,8" />
                             <TextBlock Text="Item limit" Margin="0,0,0,4" Foreground="#4A515B" />

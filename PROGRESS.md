@@ -376,16 +376,25 @@
 - 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 已启动包含 guarded CLI handoff 的本地发布版 WPF UI，进程号 30140
+- 新增 ADR 0047，记录 WPF privacy sharing advice 只提示、不改写报告的边界
+- 新增 `PrivacySharingAdvisor`，覆盖 full / redacted 隐私模式下的分享提示测试
+- WPF UI Scan 和 Plan 隐私选择旁新增分享提示：full 会提示本机路径和 evidence 风险，redacted 会提示降低路径暴露
+- README 和 USAGE 同步记录分享前选择 redacted 的 UI 提示
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：352 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 已启动包含 privacy sharing advice 的本地发布版 WPF UI，进程号 28428
 
 ## 正在进行
 
-- WPF guarded CLI handoff 已完成，发布版已打开等待本地体验复核
+- WPF privacy sharing advice 已完成，发布版已打开等待本地体验复核
 
 ## 下一步
 
-1. 设计可选隐私模式提示，提醒用户分享报告前使用 redacted 输出。
-2. 增加更细的 UI smoke 或截图复核，覆盖顶部工具栏、Plan 筛选区和 guarded CLI handoff 布局。
-3. 评估是否需要更完整的 quarantine / restore 状态历史，但不得绕过 CLI 双重确认和 preflight。
+1. 增加更细的 UI smoke 或截图复核，覆盖顶部工具栏、Plan 筛选区、privacy advice 和 guarded CLI handoff 布局。
+2. 评估是否需要更完整的 quarantine / restore 状态历史，但不得绕过 CLI 双重确认和 preflight。
+3. 准备下一版发布说明候选，汇总 v0.2.1 之后的 UI 工作流增强。
 
 ## 待决策
 

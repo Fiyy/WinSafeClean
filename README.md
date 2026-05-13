@@ -53,7 +53,7 @@ pwsh -File .\scripts\publish.ps1 -Restore
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Ui
 ```
 
-当前 WPF UI 可打开 CLI 生成的 scan report、preflight checklist 和 cleanup plan JSON，展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项和隔离预览。Scan Report 和 Cleanup Plan 列表支持只读搜索、筛选、排序，并可将当前可见行复制到剪贴板或导出为用户选择路径下的 CSV；最近打开或生成的 JSON 文档会以“类型、路径、时间戳”形式保存到本机 `%LocalAppData%\WinSafeClean\recent-documents.json`，不保存报告内容，并可在 UI 顶部清空。Scan report 条目默认按大小优先排序，Summary 会列出 Largest items 和 Top directories。空间用途提示只解释常见路径模式，不改变风险等级或建议动作。UI 的 Read-Only Ops 页签可构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持文件/文件夹选择器、自动建议 JSON 输出路径、扫描后准备 Plan 输入、从选中的 cleanup plan 候选项生成 preflight restore metadata 输入、格式、隐私、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数；右侧 Workflow 面板会显示 Scan、Plan、Preflight 状态和当前主操作。运行时必须填写输出文件，JSON 输出成功后会自动加载回对应页签。UI 还可在双重确认后构建并复制 `quarantine` / `restore` CLI 交接命令，但不会运行这些文件移动命令。UI 不生成或运行 `delete` 或 `clean` 命令。
+当前 WPF UI 可打开 CLI 生成的 scan report、preflight checklist 和 cleanup plan JSON，展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项和隔离预览。Scan Report 和 Cleanup Plan 列表支持只读搜索、筛选、排序，并可将当前可见行复制到剪贴板或导出为用户选择路径下的 CSV；最近打开或生成的 JSON 文档会以“类型、路径、时间戳”形式保存到本机 `%LocalAppData%\WinSafeClean\recent-documents.json`，不保存报告内容，并可在 UI 顶部清空。Scan report 条目默认按大小优先排序，Summary 会列出 Largest items 和 Top directories。空间用途提示只解释常见路径模式，不改变风险等级或建议动作。UI 的 Read-Only Ops 页签可构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持文件/文件夹选择器、自动建议 JSON 输出路径、扫描后准备 Plan 输入、从选中的 cleanup plan 候选项生成 preflight restore metadata 输入、格式、隐私、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数；Scan 和 Plan 隐私选择旁会提示 `full` 输出包含本机路径和 evidence，分享前应选择 `redacted`。右侧 Workflow 面板会显示 Scan、Plan、Preflight 状态和当前主操作。运行时必须填写输出文件，JSON 输出成功后会自动加载回对应页签。UI 还可在双重确认后构建并复制 `quarantine` / `restore` CLI 交接命令，但不会运行这些文件移动命令。UI 不生成或运行 `delete` 或 `clean` 命令。
 
 ## 本地发布
 

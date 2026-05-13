@@ -22,6 +22,8 @@ WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantin
 
 UI 运行只读命令时必须填写输出路径，并复用 CLI 的输出保护规则。UI 不会移动或删除文件。Read-Only Ops 的 Guarded CLI Handoff 区域可以在双重确认后构建并复制 `quarantine` / `restore` CLI 命令文本，但 UI 不会运行这些文件移动命令，也不会构建或运行 `delete` 或 `clean` 命令。
 
+Scan 和 Plan 的隐私模式旁会显示分享提示：`full` 输出保留本机路径和 evidence，适合本机复核；对外分享前应选择 `redacted`，由 CLI 生成脱敏报告。
+
 ## 本地发布
 
 ```powershell
