@@ -402,16 +402,20 @@
 - 截图 smoke 通过，输出 `scan-report`、`cleanup-plan-loaded`、`read-only-ops-top` 和 `read-only-ops-handoff` 非空截图到 `artifacts\smoke`
 - 检查 v0.2.2 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
 - v0.2.2 UI 工作流补丁候选变更已提交并推送到 GitHub `main` 分支
+- 推送 `v0.2.2` 标签到 GitHub
+- 创建 GitHub `v0.2.2` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
+- 验证 GitHub `v0.2.2` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.2/`
+- 公开发布 GitHub `v0.2.2` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.2
 
 ## 正在进行
 
-- v0.2.2 UI 工作流补丁候选已通过本地测试、发布打包、CLI smoke、WPF 启动 smoke、WPF 截图 smoke 和 ZIP 内容检查；等待创建标签和 GitHub release
+- v0.2.2 已公开发布，发布版 WPF UI 已打开等待本地体验复核
 
 ## 下一步
 
-1. 创建 `v0.2.2` 标签并按发布清单创建 GitHub release。
-2. 打开发布版 WPF UI 继续本地体验复核。
-3. 继续评估 installer/signing、scan history 和 quarantine / restore 状态历史；不得绕过 CLI 双重确认和 preflight。
+1. 继续本地体验复核发布版 WPF UI。
+2. 评估 installer/signing、scan history 和 quarantine / restore 状态历史；不得绕过 CLI 双重确认和 preflight。
+3. 规划下一版对新手引导、默认路径选择和结果处置解释的进一步优化。
 
 ## 待决策
 
