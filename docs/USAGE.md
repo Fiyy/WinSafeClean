@@ -20,7 +20,7 @@ WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantin
 - 构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持格式、隐私、输出文件、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数。
 - JSON 输出成功后自动加载回对应页签；Markdown 输出只写入文件，不自动解析。
 
-UI 运行只读命令时必须填写输出路径，并复用 CLI 的输出保护规则。UI 不会移动或删除文件，也不会构建或运行 `quarantine`、`restore`、`delete` 或 `clean` 命令。
+UI 运行只读命令时必须填写输出路径，并复用 CLI 的输出保护规则。UI 不会移动或删除文件。Read-Only Ops 的 Guarded CLI Handoff 区域可以在双重确认后构建并复制 `quarantine` / `restore` CLI 命令文本，但 UI 不会运行这些文件移动命令，也不会构建或运行 `delete` 或 `clean` 命令。
 
 ## 本地发布
 

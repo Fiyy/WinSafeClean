@@ -251,6 +251,11 @@ public partial class MainWindow : Window
         TryChooseOutputFile("Save preflight checklist", "preflight", PreflightOutputPathBox);
     }
 
+    private void BrowseGuardedOperationLog_Click(object sender, RoutedEventArgs e)
+    {
+        TryChooseOperationLogFile("Save operation log", GuardedOperationLogPathBox);
+    }
+
     private void UseScanForPlan_Click(object sender, RoutedEventArgs e)
     {
         if (PreparePlanFromScan())
@@ -456,6 +461,53 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             OperationCommandText.Text = string.Empty;
+            ShowOperationStatus(exception.Message, isError: true);
+        }
+    }
+
+    private void BuildQuarantineCli_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            OperationCommandText.Text = FormatCommand(BuildGuardedQuarantineArguments());
+            ShowOperationStatus("Quarantine CLI command built for manual handoff. The UI did not run it.", isError: false);
+        }
+        catch (Exception exception)
+        {
+            OperationCommandText.Text = string.Empty;
+            ShowOperationStatus(exception.Message, isError: true);
+        }
+    }
+
+    private void BuildRestoreCli_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            OperationCommandText.Text = FormatCommand(BuildGuardedRestoreArguments());
+            ShowOperationStatus("Restore CLI command built for manual handoff. The UI did not run it.", isError: false);
+        }
+        catch (Exception exception)
+        {
+            OperationCommandText.Text = string.Empty;
+            ShowOperationStatus(exception.Message, isError: true);
+        }
+    }
+
+    private void CopyCommand_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(OperationCommandText.Text))
+        {
+            ShowOperationStatus("Build a command before copying it.", isError: true);
+            return;
+        }
+
+        try
+        {
+            Clipboard.SetText(OperationCommandText.Text);
+            ShowOperationStatus("Command copied to the clipboard.", isError: false);
+        }
+        catch (Exception exception)
+        {
             ShowOperationStatus(exception.Message, isError: true);
         }
     }
@@ -675,6 +727,32 @@ public partial class MainWindow : Window
         return true;
     }
 
+    private bool TryChooseOperationLogFile(string title, TextBox target)
+    {
+        string suggestedPath = string.IsNullOrWhiteSpace(target.Text)
+            ? Path.Combine(GetDefaultOutputDirectory(), "winsafeclean-operations.jsonl")
+            : ResolveOperationPath(target.Text);
+
+        var dialog = new SaveFileDialog
+        {
+            Title = title,
+            Filter = "JSONL files (*.jsonl)|*.jsonl|All files (*.*)|*.*",
+            AddExtension = true,
+            DefaultExt = ".jsonl",
+            OverwritePrompt = false,
+            FileName = Path.GetFileName(suggestedPath),
+            InitialDirectory = Path.GetDirectoryName(suggestedPath)
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return false;
+        }
+
+        target.Text = dialog.FileName;
+        return true;
+    }
+
     private string? ChooseOutputFilePath(string title, string operationName, string? currentPath)
     {
         string suggestedPath = string.IsNullOrWhiteSpace(currentPath)
@@ -889,6 +967,26 @@ public partial class MainWindow : Window
             ManualConfirmation: PreflightManualConfirmationBox.IsChecked == true,
             Format: GetSelectedComboBoxText(PreflightFormatBox),
             OutputPath: PreflightOutputPathBox.Text));
+    }
+
+    private IReadOnlyList<string> BuildGuardedQuarantineArguments()
+    {
+        return GuardedFileMoveCommandBuilder.BuildQuarantine(new GuardedQuarantineCommandOptions(
+            PlanPath: PreflightPlanPathBox.Text,
+            MetadataPath: PreflightMetadataPathBox.Text,
+            ManualConfirmation: GuardedManualConfirmationBox.IsChecked == true,
+            UnderstandsFileMoves: GuardedMoveAcknowledgementBox.IsChecked == true,
+            OperationLogPath: GuardedOperationLogPathBox.Text));
+    }
+
+    private IReadOnlyList<string> BuildGuardedRestoreArguments()
+    {
+        return GuardedFileMoveCommandBuilder.BuildRestore(new GuardedRestoreCommandOptions(
+            MetadataPath: PreflightMetadataPathBox.Text,
+            ManualConfirmation: GuardedManualConfirmationBox.IsChecked == true,
+            UnderstandsFileMoves: GuardedMoveAcknowledgementBox.IsChecked == true,
+            OperationLogPath: GuardedOperationLogPathBox.Text,
+            AllowLegacyMetadataWithoutHash: GuardedAllowLegacyMetadataBox.IsChecked == true));
     }
 
     private static string FormatCommand(IReadOnlyList<string> args)

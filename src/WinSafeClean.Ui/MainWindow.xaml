@@ -989,6 +989,31 @@
                                 <Button Content="Build" Height="32" Margin="0,0,4,0" Click="BuildPreflight_Click" />
                                 <Button Content="Run Preflight" Height="32" Margin="4,0,0,0" Click="RunPreflight_Click" />
                             </UniformGrid>
+
+                            <Separator Margin="0,18,0,18" />
+
+                            <TextBlock Text="Guarded CLI Handoff" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBlock Text="Builds copyable quarantine or restore CLI commands only. The UI does not run file-moving commands."
+                                       Margin="0,8,0,8"
+                                       TextWrapping="Wrap"
+                                       Foreground="#4A515B" />
+                            <TextBlock Text="Operation log" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="58" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="GuardedOperationLogPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Optional JSONL operation log path" />
+                                <Button Grid.Column="1" Content="Save" Height="30" Margin="6,0,0,0" Click="BrowseGuardedOperationLog_Click" />
+                            </Grid>
+                            <CheckBox x:Name="GuardedManualConfirmationBox" Content="I have reviewed the preflight checklist" Margin="0,0,0,8" />
+                            <CheckBox x:Name="GuardedMoveAcknowledgementBox" Content="I understand the CLI command moves files" Margin="0,0,0,8" />
+                            <CheckBox x:Name="GuardedAllowLegacyMetadataBox" Content="Allow legacy restore metadata without hash" Margin="0,0,0,8" />
+                            <UniformGrid Columns="3" Margin="0,0,0,0">
+                                <Button Content="Quarantine CLI" Height="32" Margin="0,0,4,0" Click="BuildQuarantineCli_Click" />
+                                <Button Content="Restore CLI" Height="32" Margin="4,0,4,0" Click="BuildRestoreCli_Click" />
+                                <Button Content="Copy Command" Height="32" Margin="4,0,0,0" Click="CopyCommand_Click" />
+                            </UniformGrid>
                         </StackPanel>
                         </ScrollViewer>
                     </Border>

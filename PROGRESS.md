@@ -366,16 +366,26 @@
 - 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 已启动包含当前可见结果复制和 CSV 导出的本地发布版 WPF UI，进程号 20440
+- 新增 ADR 0046，记录 WPF guarded CLI handoff 只构建/复制文件移动命令、不执行的边界
+- 新增 `GuardedFileMoveCommandBuilder`，要求 manual confirmation 和 file move acknowledgement 双重确认后才生成 `quarantine` / `restore` CLI 参数
+- WPF UI Read-Only Ops 新增 Guarded CLI Handoff 区域，可选择 operation log、构建 Quarantine CLI、构建 Restore CLI 和复制当前命令
+- WPF UI runner 仍只允许执行 `scan`、`plan` 和 `preflight`，不运行 `quarantine`、`restore`、`delete` 或 `clean`
+- README 和 USAGE 同步记录 UI 可构建复制 guarded CLI 交接命令但不会执行文件移动
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：347 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 已启动包含 guarded CLI handoff 的本地发布版 WPF UI，进程号 30140
 
 ## 正在进行
 
-- WPF 当前可见结果复制和 CSV 导出已完成，发布版已打开等待本地体验复核
+- WPF guarded CLI handoff 已完成，发布版已打开等待本地体验复核
 
 ## 下一步
 
-1. 设计 UI 级 guarded quarantine / restore 方案，先补 ADR 和测试，再决定是否开放执行入口。
-2. 设计可选隐私模式提示，提醒用户分享报告前使用 redacted 输出。
-3. 增加更细的 UI smoke 或截图复核，覆盖顶部工具栏、Plan 筛选区和导出按钮布局。
+1. 设计可选隐私模式提示，提醒用户分享报告前使用 redacted 输出。
+2. 增加更细的 UI smoke 或截图复核，覆盖顶部工具栏、Plan 筛选区和 guarded CLI handoff 布局。
+3. 评估是否需要更完整的 quarantine / restore 状态历史，但不得绕过 CLI 双重确认和 preflight。
 
 ## 待决策
 
