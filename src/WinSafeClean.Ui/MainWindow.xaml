@@ -259,12 +259,27 @@
 
                     <Border Grid.Column="2" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Top"
-                                       Text="Scan Items"
-                                       Margin="14,12,14,8"
-                                       FontSize="14"
-                                       FontWeight="SemiBold"
-                                       Foreground="#20242A" />
+                            <DockPanel DockPanel.Dock="Top" Margin="14,10,14,8" LastChildFill="False">
+                                <TextBlock DockPanel.Dock="Left"
+                                           Text="Scan Items"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="#20242A"
+                                           VerticalAlignment="Center" />
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Button Content="Copy Visible"
+                                            Width="100"
+                                            Height="28"
+                                            Margin="0,0,8,0"
+                                            Padding="8,0"
+                                            Click="CopyScanVisible_Click" />
+                                    <Button Content="Export CSV"
+                                            Width="92"
+                                            Height="28"
+                                            Padding="8,0"
+                                            Click="ExportScanVisible_Click" />
+                                </StackPanel>
+                            </DockPanel>
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -495,61 +510,9 @@
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
-                                <Grid Grid.Row="0" Margin="12,0,12,8">
-                                    <Grid.Style>
-                                        <Style TargetType="Grid">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding HasItems}" Value="False">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Grid.Style>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="128" />
-                                        <ColumnDefinition Width="148" />
-                                        <ColumnDefinition Width="118" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                        <TextBlock Text="Search" Style="{StaticResource ColumnHeaderTextStyle}" />
-                                        <TextBox x:Name="PlanListSearchBox" Height="30" Style="{StaticResource InputTextBoxStyle}" TextChanged="PlanListFilter_Changed" />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                                        <TextBlock Text="Risk" Style="{StaticResource ColumnHeaderTextStyle}" />
-                                        <ComboBox x:Name="PlanRiskFilterBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
-                                            <ComboBoxItem Content="All" />
-                                            <ComboBoxItem Content="SafeCandidate" />
-                                            <ComboBoxItem Content="LowRisk" />
-                                            <ComboBoxItem Content="MediumRisk" />
-                                            <ComboBoxItem Content="HighRisk" />
-                                            <ComboBoxItem Content="Blocked" />
-                                            <ComboBoxItem Content="Unknown" />
-                                        </ComboBox>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
-                                        <TextBlock Text="Action" Style="{StaticResource ColumnHeaderTextStyle}" />
-                                        <ComboBox x:Name="PlanActionFilterBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
-                                            <ComboBoxItem Content="All" />
-                                            <ComboBoxItem Content="Keep" />
-                                            <ComboBoxItem Content="ReportOnly" />
-                                            <ComboBoxItem Content="ReviewForQuarantine" />
-                                        </ComboBox>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="3">
-                                        <TextBlock Text="Sort" Style="{StaticResource ColumnHeaderTextStyle}" />
-                                        <ComboBox x:Name="PlanSortBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
-                                            <ComboBoxItem Content="Path A-Z" />
-                                            <ComboBoxItem Content="Action A-Z" />
-                                            <ComboBoxItem Content="Risk A-Z" />
-                                        </ComboBox>
-                                    </StackPanel>
-                                </Grid>
-                                <Grid Grid.Row="1" Margin="12,0,12,4">
+                                <Grid Grid.Row="0" Margin="12,0,12,4">
                                     <Grid.Style>
                                         <Style TargetType="Grid">
                                             <Setter Property="Visibility" Value="Visible" />
@@ -656,13 +619,85 @@
 
                     <Border Grid.Column="2" Background="White" BorderBrush="#D6DAE0" BorderThickness="1">
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Top" Text="Plan Items" Margin="14,12,14,8" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <DockPanel DockPanel.Dock="Top" Margin="14,10,14,8" LastChildFill="False">
+                                <TextBlock DockPanel.Dock="Left"
+                                           Text="Plan Items"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="#20242A"
+                                           VerticalAlignment="Center" />
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Button Content="Copy Visible"
+                                            Width="100"
+                                            Height="28"
+                                            Margin="0,0,8,0"
+                                            Padding="8,0"
+                                            Click="CopyPlanVisible_Click" />
+                                    <Button Content="Export CSV"
+                                            Width="92"
+                                            Height="28"
+                                            Padding="8,0"
+                                            Click="ExportPlanVisible_Click" />
+                                </StackPanel>
+                            </DockPanel>
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0" Margin="12,0,12,4">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="128" />
+                                        <ColumnDefinition Width="148" />
+                                        <ColumnDefinition Width="118" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="Search" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <TextBox x:Name="PlanListSearchBox" Height="30" Style="{StaticResource InputTextBoxStyle}" TextChanged="PlanListFilter_Changed" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                        <TextBlock Text="Risk" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="PlanRiskFilterBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
+                                            <ComboBoxItem Content="All" />
+                                            <ComboBoxItem Content="SafeCandidate" />
+                                            <ComboBoxItem Content="LowRisk" />
+                                            <ComboBoxItem Content="MediumRisk" />
+                                            <ComboBoxItem Content="HighRisk" />
+                                            <ComboBoxItem Content="Blocked" />
+                                            <ComboBoxItem Content="Unknown" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                        <TextBlock Text="Action" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="PlanActionFilterBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
+                                            <ComboBoxItem Content="All" />
+                                            <ComboBoxItem Content="Keep" />
+                                            <ComboBoxItem Content="ReportOnly" />
+                                            <ComboBoxItem Content="ReviewForQuarantine" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3">
+                                        <TextBlock Text="Sort" Style="{StaticResource ColumnHeaderTextStyle}" />
+                                        <ComboBox x:Name="PlanSortBox" Height="30" Style="{StaticResource InputComboBoxStyle}" SelectedIndex="0" SelectionChanged="PlanListFilter_Changed">
+                                            <ComboBoxItem Content="Path A-Z" />
+                                            <ComboBoxItem Content="Action A-Z" />
+                                            <ComboBoxItem Content="Risk A-Z" />
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Grid.Row="1" Margin="12,0,12,4">
                                     <Grid.Style>
                                         <Style TargetType="Grid">
                                             <Setter Property="Visibility" Value="Visible" />

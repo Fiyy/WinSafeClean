@@ -355,16 +355,27 @@
 - 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 已启动包含 Open Preflight 最近文档修正的本地发布版 WPF UI，进程号 27676
+- 新增 ADR 0045，记录 Scan/Plan 当前可见结果复制和 CSV 导出的只读边界
+- 新增 `OverviewListExport`，覆盖 Scan/Plan CSV 表头、字段和 CSV 转义测试
+- WPF UI Scan Report 和 Cleanup Plan 标题栏新增 Copy Visible 和 Export CSV 操作
+- WPF UI Copy/Export 只处理当前筛选排序后的可见行，不触发 quarantine、restore、delete 或 clean
+- 修正 Cleanup Plan 搜索、筛选、排序控件位置，避免出现在 Preflight Checklist 页签
+- README 同步记录当前可见结果复制和 CSV 导出能力
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：341 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 已启动包含当前可见结果复制和 CSV 导出的本地发布版 WPF UI，进程号 20440
 
 ## 正在进行
 
-- WPF 最近文档历史已完成，发布版已打开等待本地体验复核
+- WPF 当前可见结果复制和 CSV 导出已完成，发布版已打开等待本地体验复核
 
 ## 下一步
 
 1. 设计 UI 级 guarded quarantine / restore 方案，先补 ADR 和测试，再决定是否开放执行入口。
-2. 补充结果导出/复制能力，便于用户保存筛选后的复核结果。
-3. 设计可选隐私模式提示，提醒用户分享报告前使用 redacted 输出。
+2. 设计可选隐私模式提示，提醒用户分享报告前使用 redacted 输出。
+3. 增加更细的 UI smoke 或截图复核，覆盖顶部工具栏、Plan 筛选区和导出按钮布局。
 
 ## 待决策
 

@@ -1,5 +1,6 @@
 using System.IO;
 using System.ComponentModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -397,6 +398,40 @@ public partial class MainWindow : Window
         ApplyPlanListView();
     }
 
+    private void CopyScanVisible_Click(object sender, RoutedEventArgs e)
+    {
+        CopyVisibleRows(
+            GetVisibleItems<ScanReportOverviewItemViewModel>(ScanItemsList),
+            items => OverviewListExport.CreateScanCsv(items),
+            "scan rows");
+    }
+
+    private void ExportScanVisible_Click(object sender, RoutedEventArgs e)
+    {
+        ExportVisibleRows(
+            GetVisibleItems<ScanReportOverviewItemViewModel>(ScanItemsList),
+            items => OverviewListExport.CreateScanCsv(items),
+            "scan rows",
+            "winsafeclean-scan-visible.csv");
+    }
+
+    private void CopyPlanVisible_Click(object sender, RoutedEventArgs e)
+    {
+        CopyVisibleRows(
+            GetVisibleItems<PlanOverviewItemViewModel>(PlanItemsList),
+            items => OverviewListExport.CreatePlanCsv(items),
+            "plan rows");
+    }
+
+    private void ExportPlanVisible_Click(object sender, RoutedEventArgs e)
+    {
+        ExportVisibleRows(
+            GetVisibleItems<PlanOverviewItemViewModel>(PlanItemsList),
+            items => OverviewListExport.CreatePlanCsv(items),
+            "plan rows",
+            "winsafeclean-plan-visible.csv");
+    }
+
     private void BuildPlan_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -736,6 +771,86 @@ public partial class MainWindow : Window
         OperationStatusText.Foreground = isError
             ? new SolidColorBrush(Color.FromRgb(0xA5, 0x1D, 0x2D))
             : new SolidColorBrush(Color.FromRgb(0x04, 0x78, 0x57));
+    }
+
+    private void CopyVisibleRows<T>(IReadOnlyList<T> items, Func<IReadOnlyList<T>, string> createCsv, string itemLabel)
+    {
+        if (items.Count == 0)
+        {
+            MessageBox.Show(
+                this,
+                $"There are no visible {itemLabel} to copy.",
+                "Nothing to copy",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            Clipboard.SetText(createCsv(items));
+            MessageBox.Show(
+                this,
+                $"Copied {items.Count} visible {itemLabel} to the clipboard.",
+                "Rows copied",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Visible rows could not be copied", exception);
+        }
+    }
+
+    private void ExportVisibleRows<T>(
+        IReadOnlyList<T> items,
+        Func<IReadOnlyList<T>, string> createCsv,
+        string itemLabel,
+        string defaultFileName)
+    {
+        if (items.Count == 0)
+        {
+            MessageBox.Show(
+                this,
+                $"There are no visible {itemLabel} to export.",
+                "Nothing to export",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Title = "Export visible rows",
+            FileName = defaultFileName,
+            DefaultExt = ".csv",
+            Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*"
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        try
+        {
+            File.WriteAllText(dialog.FileName, createCsv(items), Encoding.UTF8);
+            MessageBox.Show(
+                this,
+                $"Exported {items.Count} visible {itemLabel}.",
+                "Rows exported",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Visible rows could not be exported", exception);
+        }
+    }
+
+    private static IReadOnlyList<T> GetVisibleItems<T>(ListBox listBox)
+    {
+        return listBox.Items.Cast<T>().ToList();
     }
 
     private IReadOnlyList<string> BuildScanArguments()
