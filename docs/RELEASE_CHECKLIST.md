@@ -17,6 +17,7 @@ Run:
 pwsh -NoProfile -File .\scripts\test.ps1 -Restore
 pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -WhatIf
 pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -CreateArchive
+pwsh -NoProfile -File .\scripts\smoke-wpf-ui.ps1
 ```
 
 Verify:
@@ -39,6 +40,7 @@ Verify:
 ```
 
 - Published WPF UI starts and remains running during startup smoke.
+- Published WPF UI screenshot smoke captures nonblank screenshots under `artifacts\smoke` for startup, loaded Cleanup Plan filters, Read-Only Ops privacy advice, and Guarded CLI Handoff.
 
 ## Safety Gate
 
@@ -59,7 +61,7 @@ Confirm docs mention:
 - CLI `scan`, `plan`, and `preflight` are read-only.
 - `quarantine` and `restore` are real file moves requiring double confirmation.
 - Directory quarantine and restore are not supported.
-- WPF UI reads existing JSON reports/plans/checklists and only builds read-only command text.
+- WPF UI reads existing JSON reports/plans/checklists, may run read-only `scan`, `plan`, and `preflight`, and does not execute `quarantine`, `restore`, `delete`, or `clean`.
 - Local publish script only runs tests and `dotnet publish`.
 
 ## Artifact Review
@@ -70,6 +72,7 @@ Inspect release output before publishing externally:
 - UI folder contains UI executable, runtime config, deps file, and required project DLLs.
 - No test assemblies are included.
 - No restore metadata, operation logs, scan reports, private paths, or user data are included.
+- No screenshot smoke artifacts from `artifacts\smoke` are included.
 
 ## GitHub Draft Release
 
@@ -100,6 +103,6 @@ Keep the release as a draft until a human has reviewed the safety boundary, know
 
 - No real deletion command is available.
 - Directory quarantine and directory restore are deferred.
-- WPF UI does not execute commands.
+- WPF UI does not execute `quarantine`, `restore`, `delete`, or `clean`.
 - WPF UI does not yet include installer packaging, signing, auto-update, or scan history.
 - Published output is a local folder, not an installer.

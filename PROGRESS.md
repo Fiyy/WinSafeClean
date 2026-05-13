@@ -4,7 +4,7 @@
 
 阶段：5 - 发布后 UI 工作流完善
 
-日期：2026-05-10
+日期：2026-05-14
 
 ## 已完成
 
@@ -385,16 +385,32 @@
 - 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 已启动包含 privacy sharing advice 的本地发布版 WPF UI，进程号 28428
+- 新增 ADR 0048，记录 WPF 截图 smoke 的发布前布局复核边界
+- 新增 `scripts/smoke-wpf-ui.ps1`，可启动发布版 WPF UI、捕获非空截图并覆盖 Scan Report、Cleanup Plan、Read-Only Ops 顶部和 Guarded CLI Handoff
+- WPF UI 顶部工具栏改为可换行布局，避免 Recent / Open / Clear 控件在窄宽度下被裁切
+- WPF UI Scan Report 和 Cleanup Plan 列表行改为横向拉伸并禁用横向滚动，避免路径、风险和动作列互相重叠
+- `docs/RELEASE_CHECKLIST.md` 新增 WPF 截图 smoke 验证要求，并明确截图 artifact 不进入 release ZIP
+- 版本元数据更新为 `0.2.2`
+- 新增 `docs/releases/v0.2.2.md`，记录 UI 工作流补丁候选的能力、安全边界、验证结果和已知限制
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：352 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests -CreateArchive`
+- 验证发布版 CLI `--version` 输出 `WinSafeClean 0.2.2+...`
+- 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
+- 截图 smoke 通过，输出 `scan-report`、`cleanup-plan-loaded`、`read-only-ops-top` 和 `read-only-ops-handoff` 非空截图到 `artifacts\smoke`
+- 检查 v0.2.2 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
 
 ## 正在进行
 
-- WPF privacy sharing advice 已完成，发布版已打开等待本地体验复核
+- v0.2.2 UI 工作流补丁候选已通过本地测试、发布打包、CLI smoke、WPF 启动 smoke、WPF 截图 smoke 和 ZIP 内容检查，正在做最终提交与推送
 
 ## 下一步
 
-1. 增加更细的 UI smoke 或截图复核，覆盖顶部工具栏、Plan 筛选区、privacy advice 和 guarded CLI handoff 布局。
-2. 评估是否需要更完整的 quarantine / restore 状态历史，但不得绕过 CLI 双重确认和 preflight。
-3. 准备下一版发布说明候选，汇总 v0.2.1 之后的 UI 工作流增强。
+1. 提交并推送 v0.2.2 候选变更。
+2. 创建 `v0.2.2` 标签并按发布清单创建 GitHub release。
+3. 继续评估 installer/signing、scan history 和 quarantine / restore 状态历史；不得绕过 CLI 双重确认和 preflight。
 
 ## 待决策
 

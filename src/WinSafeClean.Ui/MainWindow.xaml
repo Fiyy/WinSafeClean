@@ -91,16 +91,20 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" Margin="20,16,20,12" LastChildFill="False">
-            <TextBlock DockPanel.Dock="Left"
+        <Grid Grid.Row="0" Margin="20,16,20,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0"
                        Text="WinSafeClean"
                        FontSize="22"
                        FontWeight="SemiBold"
                        Foreground="#20242A"
                        VerticalAlignment="Center" />
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <WrapPanel Grid.Row="1" Margin="0,12,0,0" HorizontalAlignment="Left">
                 <ComboBox x:Name="RecentDocumentsBox"
-                          Width="200"
+                          Width="240"
                           Height="34"
                           Margin="0,0,8,0"
                           DisplayMemberPath="DisplayText"
@@ -136,8 +140,8 @@
                         Height="34"
                         Padding="14,0"
                         Click="OpenPlan_Click" />
-            </StackPanel>
-        </DockPanel>
+            </WrapPanel>
+        </Grid>
 
         <TabControl Grid.Row="1" Margin="20,0,20,20">
             <TabItem x:Name="ScanTab" Header="Scan Report">
@@ -366,7 +370,8 @@
                                      Grid.Row="2"
                                      ItemsSource="{Binding Items}"
                                      BorderThickness="0"
-                                     ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                     HorizontalContentAlignment="Stretch"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                                 <ListBox.Style>
                                     <Style TargetType="ListBox">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -387,10 +392,10 @@
                                                 <ColumnDefinition Width="130" />
                                                 <ColumnDefinition Width="130" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Path}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="#20242A" />
-                                            <TextBlock Grid.Column="1" Text="{Binding SizeDisplay}" VerticalAlignment="Center" Foreground="#4A515B" />
-                                            <TextBlock Grid.Column="2" Text="{Binding ItemKind}" VerticalAlignment="Center" Foreground="#4A515B" />
-                                            <TextBlock Grid.Column="3" Text="{Binding RiskLevel}" VerticalAlignment="Center" Style="{StaticResource RiskLevelTextStyle}" />
+                                            <TextBlock Grid.Column="0" Text="{Binding Path}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="#20242A" Margin="0,0,8,0" />
+                                            <TextBlock Grid.Column="1" Text="{Binding SizeDisplay}" VerticalAlignment="Center" Foreground="#4A515B" Margin="0,0,8,0" />
+                                            <TextBlock Grid.Column="2" Text="{Binding ItemKind}" VerticalAlignment="Center" Foreground="#4A515B" Margin="0,0,8,0" />
+                                            <TextBlock Grid.Column="3" Text="{Binding RiskLevel}" VerticalAlignment="Center" Style="{StaticResource RiskLevelTextStyle}" Margin="0,0,8,0" />
                                             <TextBlock Grid.Column="4" Text="{Binding SuggestedAction}" VerticalAlignment="Center" Foreground="#4A515B" />
                                         </Grid>
                                     </DataTemplate>
@@ -717,7 +722,12 @@
                                     <TextBlock Grid.Column="1" Text="Action" Style="{StaticResource ColumnHeaderTextStyle}" />
                                     <TextBlock Grid.Column="2" Text="Risk" Style="{StaticResource ColumnHeaderTextStyle}" />
                                 </Grid>
-                            <ListBox x:Name="PlanItemsList" Grid.Row="2" ItemsSource="{Binding Items}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <ListBox x:Name="PlanItemsList"
+                                     Grid.Row="2"
+                                     ItemsSource="{Binding Items}"
+                                     BorderThickness="0"
+                                     HorizontalContentAlignment="Stretch"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                                 <ListBox.Style>
                                     <Style TargetType="ListBox">
                                         <Setter Property="Visibility" Value="Visible" />
@@ -736,8 +746,8 @@
                                                 <ColumnDefinition Width="140" />
                                                 <ColumnDefinition Width="130" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Path}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="#20242A" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Action}" VerticalAlignment="Center" Foreground="#4A515B" />
+                                            <TextBlock Grid.Column="0" Text="{Binding Path}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Foreground="#20242A" Margin="0,0,8,0" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Action}" VerticalAlignment="Center" Foreground="#4A515B" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
                                             <TextBlock Grid.Column="2" Text="{Binding RiskLevel}" VerticalAlignment="Center" Style="{StaticResource RiskLevelTextStyle}" />
                                         </Grid>
                                     </DataTemplate>

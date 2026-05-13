@@ -71,6 +71,14 @@ pwsh -NoProfile -File .\scripts\publish.ps1 -SkipTests -CreateArchive
 
 `-CreateArchive` 会在 `artifacts\release` 下生成 CLI/UI ZIP 包和 `SHA256SUMS.txt`，仍不会运行发布产物。
 
+发布版 WPF UI 截图 smoke 可用于发布前布局复核：
+
+```powershell
+pwsh -NoProfile -File .\scripts\smoke-wpf-ui.ps1
+```
+
+该脚本只启动发布版 UI、截取非空截图到 `artifacts\smoke`，不会运行扫描、隔离、恢复、删除或清理命令。
+
 ## CLI
 
 CLI 默认是只读报告器；`scan`、`plan` 和 `preflight` 不执行清理、删除、隔离或修复。`quarantine` 和 `restore` 是唯二会移动文件的命令，必须同时提供 `--manual-confirmation` 和 `--i-understand-this-moves-files`。
@@ -153,6 +161,7 @@ Core 已包含只读 `CleanupPlan` 草案模型，可把扫描报告转换为 `K
 - [v0.1.0 版本说明](docs/releases/v0.1.0.md)
 - [v0.2.0 版本说明](docs/releases/v0.2.0.md)
 - [v0.2.1 版本说明](docs/releases/v0.2.1.md)
+- [v0.2.2 版本说明](docs/releases/v0.2.2.md)
 - [质量门禁](docs/QUALITY_GATES.md)
 - [任务模板](docs/TASK_TEMPLATE.md)
 - [项目进度](PROGRESS.md)
