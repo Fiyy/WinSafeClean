@@ -401,15 +401,16 @@
 - 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
 - 截图 smoke 通过，输出 `scan-report`、`cleanup-plan-loaded`、`read-only-ops-top` 和 `read-only-ops-handoff` 非空截图到 `artifacts\smoke`
 - 检查 v0.2.2 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
+- v0.2.2 UI 工作流补丁候选变更已提交并推送到 GitHub `main` 分支
 
 ## 正在进行
 
-- v0.2.2 UI 工作流补丁候选已通过本地测试、发布打包、CLI smoke、WPF 启动 smoke、WPF 截图 smoke 和 ZIP 内容检查，正在做最终提交与推送
+- v0.2.2 UI 工作流补丁候选已通过本地测试、发布打包、CLI smoke、WPF 启动 smoke、WPF 截图 smoke 和 ZIP 内容检查；等待创建标签和 GitHub release
 
 ## 下一步
 
-1. 提交并推送 v0.2.2 候选变更。
-2. 创建 `v0.2.2` 标签并按发布清单创建 GitHub release。
+1. 创建 `v0.2.2` 标签并按发布清单创建 GitHub release。
+2. 打开发布版 WPF UI 继续本地体验复核。
 3. 继续评估 installer/signing、scan history 和 quarantine / restore 状态历史；不得绕过 CLI 双重确认和 preflight。
 
 ## 待决策
