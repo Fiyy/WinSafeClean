@@ -15,7 +15,9 @@ WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantin
 - 打开 scan report JSON，查看大小、风险、类型、原因、阻断理由和 evidence。
 - scan report 会按大小优先展示条目，并在 Summary 中列出 Largest items 和 Top directories。
 - scan report 详情会显示空间用途提示，用于解释常见路径模式；这些提示不会改变风险等级或建议动作。
+- scan report 和 cleanup plan 详情会显示处置建议，说明选中条目应保留、只报告，还是进入 preflight 复核。
 - 打开 cleanup plan JSON，查看动作、风险、原因和只读隔离预览路径。
+- 只有 `ReviewForQuarantine` 且带隔离预览的 plan 条目会启用 `Prepare Preflight`。
 - 打开 preflight checklist JSON，查看可执行状态、检查状态汇总和检查消息。
 - 构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持格式、隐私、输出文件、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数。
 - JSON 输出成功后自动加载回对应页签；Markdown 输出只写入文件，不自动解析。

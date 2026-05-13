@@ -406,16 +406,31 @@
 - 创建 GitHub `v0.2.2` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
 - 验证 GitHub `v0.2.2` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.2/`
 - 公开发布 GitHub `v0.2.2` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.2
+- 新增 ADR 0049，记录 WPF 结果处置建议的展示边界
+- 新增 `ResultDispositionAdvisor`，为 Scan Report 和 Cleanup Plan 选中条目生成保留、只报告、准备 Preflight 等处置说明
+- WPF UI Scan Report 和 Cleanup Plan 详情区新增 Disposition，解释当前条目下一步应如何处理
+- WPF UI `Prepare Preflight` 只在选中 `ReviewForQuarantine` 且带隔离预览路径的 plan 条目时启用
+- README 和 USAGE 同步记录处置建议只解释下一步，不改变风险等级、不移动或删除文件
+- 版本元数据更新为 `0.2.3`
+- 新增 `docs/releases/v0.2.3.md`，记录 WPF 结果处置建议候选的能力、安全边界、验证结果和已知限制
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：358 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests -CreateArchive`
+- 验证发布版 CLI `--version` 输出 `WinSafeClean 0.2.3+...`
+- 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
+- 检查 v0.2.3 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
 
 ## 正在进行
 
-- v0.2.2 已公开发布，发布版 WPF UI 已打开等待本地体验复核
+- v0.2.3 本地发布候选已通过测试、发布打包、CLI smoke、WPF 启动 smoke、WPF 截图 smoke 和 ZIP 内容检查；等待提交和本地体验复核
 
 ## 下一步
 
-1. 继续本地体验复核发布版 WPF UI。
-2. 评估 installer/signing、scan history 和 quarantine / restore 状态历史；不得绕过 CLI 双重确认和 preflight。
-3. 规划下一版对新手引导、默认路径选择和结果处置解释的进一步优化。
+1. 提交并推送 v0.2.3 本地候选变更。
+2. 继续优化默认扫描目标和新手入口，但不得绕过 CLI 双重确认和 preflight。
+3. 评估 installer/signing、scan history 和 quarantine / restore 状态历史。
 
 ## 待决策
 

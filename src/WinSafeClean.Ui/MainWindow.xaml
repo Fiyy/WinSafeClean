@@ -455,6 +455,10 @@
                                     <TextBlock Text="{Binding LastWriteTimeDisplay}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Space Use" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding SpaceUseHint}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
+                                    <TextBlock Text="Disposition" FontWeight="SemiBold" Foreground="#20242A" />
+                                    <TextBlock Text="{Binding DispositionTitle}" Margin="0,8,0,4" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#20242A" />
+                                    <TextBlock Text="{Binding DispositionMessage}" Margin="0,0,0,6" TextWrapping="Wrap" Foreground="#4A515B" />
+                                    <TextBlock Text="{Binding DispositionNextStep}" Margin="0,0,0,18" TextWrapping="Wrap" Foreground="#047857" />
                                     <TextBlock Text="Reasons" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding Reasons}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Blockers" FontWeight="SemiBold" Foreground="#20242A" />
@@ -801,13 +805,17 @@
                                     </StackPanel.Style>
                                     <TextBlock Text="Details" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding Path}" Margin="0,12,0,14" TextWrapping="Wrap" Foreground="#20242A" />
+                                    <TextBlock Text="Disposition" FontWeight="SemiBold" Foreground="#20242A" />
+                                    <TextBlock Text="{Binding DispositionTitle}" Margin="0,8,0,4" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#20242A" />
+                                    <TextBlock Text="{Binding DispositionMessage}" Margin="0,0,0,6" TextWrapping="Wrap" Foreground="#4A515B" />
+                                    <TextBlock Text="{Binding DispositionNextStep}" Margin="0,0,0,18" TextWrapping="Wrap" Foreground="#047857" />
                                     <TextBlock Text="Reasons" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding Reasons}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Quarantine Path" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding QuarantinePath}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Restore Metadata" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding RestoreMetadataPath}" Margin="0,8,0,14" TextWrapping="Wrap" Foreground="#4A515B" />
-                                    <Button Content="Prepare Preflight" Height="32" Click="PreparePreflightFromPlanItem_Click" />
+                                    <Button Content="Prepare Preflight" Height="32" IsEnabled="{Binding CanPreparePreflight}" Click="PreparePreflightFromPlanItem_Click" />
                                 </StackPanel>
                             </ScrollViewer>
                             <TextBlock Text="{Binding DataContext.SelectionEmptyStateMessage, ElementName=PlanTab}">
