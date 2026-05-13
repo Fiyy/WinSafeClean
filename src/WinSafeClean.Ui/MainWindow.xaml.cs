@@ -137,10 +137,7 @@ public partial class MainWindow : Window
 
         try
         {
-            var checklist = QuarantinePreflightChecklistJsonSerializer.Deserialize(File.ReadAllText(dialog.FileName));
-            PreflightTab.DataContext = PreflightChecklistOverviewViewModel.FromChecklist(checklist);
-            _preflightCompleted = true;
-            PreflightTab.IsSelected = true;
+            LoadPreflightChecklist(dialog.FileName);
             UpdateWorkflowState();
         }
         catch (Exception exception)

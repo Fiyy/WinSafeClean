@@ -349,10 +349,16 @@
 - 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
 - 验证发布版 WPF UI hidden startup smoke 成功
 - 已启动包含最近文档历史的本地发布版 WPF UI，进程号 31444
+- 修正普通 Open Preflight 入口，复用共享 checklist 加载逻辑并同步更新最近文档历史
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：339 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests`
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 已启动包含 Open Preflight 最近文档修正的本地发布版 WPF UI，进程号 27676
 
 ## 正在进行
 
-- WPF 最近文档历史已完成，等待本地体验复核
+- WPF 最近文档历史已完成，发布版已打开等待本地体验复核
 
 ## 下一步
 
