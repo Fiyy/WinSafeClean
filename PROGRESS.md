@@ -422,16 +422,20 @@
 - 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
 - 检查 v0.2.3 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
 - v0.2.3 本地候选变更已提交并推送到 GitHub `main` 分支
+- 推送 `v0.2.3` 标签到 GitHub
+- 创建 GitHub `v0.2.3` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
+- 验证 GitHub `v0.2.3` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.3/`
+- 公开发布 GitHub `v0.2.3` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.3
 
 ## 正在进行
 
-- v0.2.3 本地发布候选已通过测试、发布打包、CLI smoke、WPF 启动 smoke、WPF 截图 smoke 和 ZIP 内容检查；等待本地体验复核和公开发布决策
+- v0.2.3 已公开发布，等待下一轮体验优化规划
 
 ## 下一步
 
-1. 打开包含结果处置建议的发布版 WPF UI 进行本地体验复核。
-2. 决定是否创建 `v0.2.3` 标签和 GitHub release。
-3. 继续优化默认扫描目标和新手入口，但不得绕过 CLI 双重确认和 preflight。
+1. 继续优化默认扫描目标和新手入口，但不得绕过 CLI 双重确认和 preflight。
+2. 评估 scan history、installer/signing 和 quarantine / restore 状态历史。
+3. 复核发布版 UI 的结果处置建议是否足够清楚。
 
 ## 待决策
 
