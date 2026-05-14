@@ -446,15 +446,31 @@
 - 创建 GitHub `v0.2.4` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
 - 验证 GitHub `v0.2.4` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.4/`
 - 公开发布 GitHub `v0.2.4` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.4
+- 新增 ADR 0051，记录 WPF Guided Review 阶段语言和只读安全边界
+- `ReadOnlyWorkflowPresenter` 新增当前阶段标题、阶段说明和安全边界提示，并补充单元测试断言
+- WPF `Read-Only Ops` 页签改为 `Guided Review`，右侧 Workflow 面板展示当前阶段、阶段说明和主操作
+- WPF 用户可见流程文案收敛为 Evidence Scan、Cleanup Plan、Safety Check 和 Guarded CLI Handoff
+- Safety Check 最近文档显示、空状态和错误提示改用用户向语言，底层 CLI `preflight` 命令边界不变
+- 版本元数据更新为 `0.2.5`
+- 新增 `docs/releases/v0.2.5.md`，记录 Guided Review 候选的能力、安全边界和已知限制
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：361 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests -CreateArchive`
+- 验证发布版 CLI `--version` 输出 `WinSafeClean 0.2.5+...`
+- 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
+- 截图 smoke 通过，输出 `scan-report`、`cleanup-plan-loaded`、`guided-review-top` 和 `guided-review-handoff` 非空截图到 `artifacts\smoke`
+- 检查 v0.2.5 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
 
 ## 正在进行
 
-- v0.2.4 已公开发布，等待下一轮体验优化规划
+- v0.2.5 Guided Review 体验优化候选已本地验证，等待是否发布
 
 ## 下一步
 
-1. 继续评估 scan history、installer/signing 和 quarantine / restore 状态历史。
-2. 复核 Quick Start 是否覆盖足够常见的首次扫描入口。
+1. 决定是否发布 `v0.2.5` 到 GitHub release。
+2. 发布后继续评估 scan history、installer/signing 和 quarantine / restore 状态历史。
 3. 继续优化新手入口，但不得绕过 CLI 双重确认和 preflight。
 
 ## 待决策

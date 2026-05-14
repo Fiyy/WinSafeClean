@@ -354,12 +354,12 @@ try {
         $captures += Capture-WindowScreenshot -Handle $handle -Label "cleanup-plan" -DestinationRoot $OutputRoot
     }
 
-    Select-TabItem -Root $automationRoot -Name "Read-Only Ops"
-    $captures += Capture-WindowScreenshot -Handle $handle -Label "read-only-ops-top" -DestinationRoot $OutputRoot
+    Select-TabItem -Root $automationRoot -Name "Guided Review"
+    $captures += Capture-WindowScreenshot -Handle $handle -Label "guided-review-top" -DestinationRoot $OutputRoot
 
     Scroll-ElementIntoView -Root $automationRoot -Name "Guarded CLI Handoff"
     Scroll-ReadOnlyOpsLeftPaneToBottom -Handle $handle
-    $captures += Capture-WindowScreenshot -Handle $handle -Label "read-only-ops-handoff" -DestinationRoot $OutputRoot
+    $captures += Capture-WindowScreenshot -Handle $handle -Label "guided-review-handoff" -DestinationRoot $OutputRoot
 
     $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
     $metadataPath = Join-Path $OutputRoot "wpf-ui-$timestamp.json"

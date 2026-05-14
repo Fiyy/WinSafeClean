@@ -114,7 +114,7 @@
 - UI empty states
 - Risk and preflight status visual cues
 - Read-only operation input validation feedback
-- Expanded Read-Only Ops command options for format, privacy, output files, recursion, item limits, and CleanerML
+- Expanded Guided Review command options for format, privacy, output files, recursion, item limits, and CleanerML
 - Constrained UI runner for read-only `scan`, `plan`, and `preflight` commands with JSON auto-load
 - Size-first scan report ordering and Largest Items summary
 - Opt-in directory size calculation for scan and plan reports

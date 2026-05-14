@@ -40,7 +40,7 @@ Verify:
 ```
 
 - Published WPF UI starts and remains running during startup smoke.
-- Published WPF UI screenshot smoke captures nonblank screenshots under `artifacts\smoke` for startup, loaded Cleanup Plan filters, Read-Only Ops privacy advice, and Guarded CLI Handoff.
+- Published WPF UI screenshot smoke captures nonblank screenshots under `artifacts\smoke` for startup, loaded Cleanup Plan filters, Guided Review privacy advice, and Guarded CLI Handoff.
 
 ## Safety Gate
 

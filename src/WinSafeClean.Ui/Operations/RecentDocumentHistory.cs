@@ -173,7 +173,7 @@ public sealed record RecentDocumentEntry(
         {
             RecentDocumentKind.ScanReport => "Scan",
             RecentDocumentKind.CleanupPlan => "Plan",
-            RecentDocumentKind.PreflightChecklist => "Preflight",
+            RecentDocumentKind.PreflightChecklist => "Safety Check",
             _ => kind.ToString()
         };
     }

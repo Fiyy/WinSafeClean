@@ -145,7 +145,7 @@ public partial class MainWindow : Window
         }
         catch (Exception exception)
         {
-            ShowLoadError("Preflight checklist could not be loaded", exception);
+            ShowLoadError("Safety checklist could not be loaded", exception);
         }
     }
 
@@ -191,7 +191,7 @@ public partial class MainWindow : Window
         _planCompleted = false;
         _preflightCompleted = false;
         UpdateWorkflowState();
-        ShowOperationStatus($"Scan target set to {target.DisplayName}. Run Scan to create evidence.", isError: false);
+        ShowOperationStatus($"Review target set to {target.DisplayName}. Run Evidence Scan to create evidence.", isError: false);
     }
 
     private void BrowseScanFile_Click(object sender, RoutedEventArgs e)
@@ -266,7 +266,7 @@ public partial class MainWindow : Window
 
     private void BrowsePreflightOutput_Click(object sender, RoutedEventArgs e)
     {
-        TryChooseOutputFile("Save preflight checklist", "preflight", PreflightOutputPathBox);
+        TryChooseOutputFile("Save safety checklist", "preflight", PreflightOutputPathBox);
     }
 
     private void BrowseGuardedOperationLog_Click(object sender, RoutedEventArgs e)
@@ -278,7 +278,7 @@ public partial class MainWindow : Window
     {
         if (PreparePlanFromScan())
         {
-            ShowOperationStatus("Plan inputs are ready. Run Plan to review cleanup candidates.", isError: false);
+            ShowOperationStatus("Cleanup Plan inputs are ready. Create Plan to review candidates.", isError: false);
             return;
         }
 
@@ -306,7 +306,7 @@ public partial class MainWindow : Window
                 DateTimeOffset.Now);
 
             string? metadataInputPath = ChooseOutputFilePath(
-                "Save preflight restore metadata input",
+                "Save safety check restore metadata input",
                 "restore-metadata",
                 currentPath: null);
             if (string.IsNullOrWhiteSpace(metadataInputPath))
@@ -331,14 +331,14 @@ public partial class MainWindow : Window
             EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
             ReadOnlyOpsTab.IsSelected = true;
             UpdateWorkflowState();
-            ShowOperationStatus("Preflight inputs are ready. Run Preflight before any file-moving command.", isError: false);
+            ShowOperationStatus("Safety Check inputs are ready. Run Safety Check before building any file-moving command.", isError: false);
         }
         catch (Exception exception)
         {
             MessageBox.Show(
                 this,
                 exception.Message,
-                "Preflight could not be prepared",
+                "Safety Check could not be prepared",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
@@ -349,7 +349,7 @@ public partial class MainWindow : Window
         try
         {
             OperationCommandText.Text = FormatCommand(BuildScanArguments());
-            ShowOperationStatus("Scan command built.", isError: false);
+            ShowOperationStatus("Evidence Scan command preview is ready.", isError: false);
         }
         catch (Exception exception)
         {
@@ -465,7 +465,7 @@ public partial class MainWindow : Window
         try
         {
             OperationCommandText.Text = FormatCommand(BuildPlanArguments());
-            ShowOperationStatus("Plan command built.", isError: false);
+            ShowOperationStatus("Cleanup Plan command preview is ready.", isError: false);
         }
         catch (Exception exception)
         {
@@ -479,7 +479,7 @@ public partial class MainWindow : Window
         try
         {
             OperationCommandText.Text = FormatCommand(BuildPreflightArguments());
-            ShowOperationStatus("Preflight command built.", isError: false);
+            ShowOperationStatus("Safety Check command preview is ready.", isError: false);
         }
         catch (Exception exception)
         {
@@ -542,7 +542,7 @@ public partial class MainWindow : Window
             RequireOutputPath(ScanOutputPathBox.Text);
             var args = BuildScanArguments();
             OperationCommandText.Text = FormatCommand(args);
-            ShowOperationStatus("Running scan command.", isError: false);
+            ShowOperationStatus("Running Evidence Scan.", isError: false);
 
             var result = await _operationRunner.RunAsync(args);
             OperationCommandText.Text = FormatRunResult(result);
@@ -558,14 +558,14 @@ public partial class MainWindow : Window
                 PreparePlanFromScan();
                 _scanCompleted = true;
                 UpdateWorkflowState();
-                ShowOperationStatus("Scan completed and JSON report loaded. Plan inputs are ready.", isError: false);
+                ShowOperationStatus("Evidence Scan completed and JSON report loaded. Cleanup Plan inputs are ready.", isError: false);
                 return;
             }
 
             PreparePlanFromScan();
             _scanCompleted = true;
             UpdateWorkflowState();
-            ShowOperationStatus("Scan completed. Markdown output was written but not loaded. Plan inputs are ready.", isError: false);
+            ShowOperationStatus("Evidence Scan completed. Markdown output was written but not loaded. Cleanup Plan inputs are ready.", isError: false);
         }
         catch (Exception exception)
         {
@@ -580,7 +580,7 @@ public partial class MainWindow : Window
             RequireOutputPath(PlanOutputPathBox.Text);
             var args = BuildPlanArguments();
             OperationCommandText.Text = FormatCommand(args);
-            ShowOperationStatus("Running plan command.", isError: false);
+            ShowOperationStatus("Creating Cleanup Plan.", isError: false);
 
             var result = await _operationRunner.RunAsync(args);
             OperationCommandText.Text = FormatRunResult(result);
@@ -596,11 +596,11 @@ public partial class MainWindow : Window
                 PreflightPlanPathBox.Text = PlanOutputPathBox.Text;
                 EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
                 UpdateWorkflowState();
-                ShowOperationStatus("Plan completed and JSON cleanup plan loaded.", isError: false);
+                ShowOperationStatus("Cleanup Plan created and loaded. Review candidates before preparing a Safety Check.", isError: false);
                 return;
             }
 
-            ShowOperationStatus("Plan completed. Markdown output was written but not loaded.", isError: false);
+            ShowOperationStatus("Cleanup Plan completed. Markdown output was written but not loaded.", isError: false);
         }
         catch (Exception exception)
         {
@@ -615,13 +615,13 @@ public partial class MainWindow : Window
             RequireOutputPath(PreflightOutputPathBox.Text);
             var args = BuildPreflightArguments();
             OperationCommandText.Text = FormatCommand(args);
-            ShowOperationStatus("Running preflight command.", isError: false);
+            ShowOperationStatus("Running Safety Check.", isError: false);
 
             var result = await _operationRunner.RunAsync(args);
             OperationCommandText.Text = FormatRunResult(result);
             if (!result.Succeeded)
             {
-                ShowOperationStatus($"Preflight failed with exit code {result.ExitCode}.", isError: true);
+                ShowOperationStatus($"Safety Check failed with exit code {result.ExitCode}.", isError: true);
                 return;
             }
 
@@ -630,11 +630,11 @@ public partial class MainWindow : Window
                 LoadPreflightChecklist(ResolveOperationPath(PreflightOutputPathBox.Text));
                 _preflightCompleted = true;
                 UpdateWorkflowState();
-                ShowOperationStatus("Preflight completed and JSON checklist loaded.", isError: false);
+                ShowOperationStatus("Safety Check completed and JSON checklist loaded.", isError: false);
                 return;
             }
 
-            ShowOperationStatus("Preflight completed. Markdown output was written but not loaded.", isError: false);
+            ShowOperationStatus("Safety Check completed. Markdown output was written but not loaded.", isError: false);
         }
         catch (Exception exception)
         {
@@ -663,9 +663,12 @@ public partial class MainWindow : Window
         SetWorkflowStepStatus(WorkflowScanStatusText, view.ScanStatus);
         SetWorkflowStepStatus(WorkflowPlanStatusText, view.PlanStatus);
         SetWorkflowStepStatus(WorkflowPreflightStatusText, view.PreflightStatus);
+        WorkflowCurrentStepTitleText.Text = view.CurrentStepTitle;
+        WorkflowCurrentStepDetailText.Text = view.CurrentStepDetail;
         WorkflowStatusText.Text = view.StatusText;
         WorkflowPrimaryActionButton.Content = view.PrimaryActionText;
         WorkflowPrimaryActionButton.IsEnabled = view.PrimaryActionEnabled;
+        WorkflowSafetyBoundaryText.Text = view.SafetyBoundary;
     }
 
     private ReadOnlyWorkflowSnapshot CreateWorkflowSnapshot()

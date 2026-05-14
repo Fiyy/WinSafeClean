@@ -26,7 +26,7 @@ public sealed class PreflightChecklistOverviewViewModel
 
     public bool HasChecks => TotalChecks > 0;
 
-    public string EmptyStateMessage => "No preflight checklist loaded.";
+    public string EmptyStateMessage => "No safety checklist loaded.";
 
     public IReadOnlyList<SummaryItemViewModel> StatusSummaries { get; }
 

@@ -129,8 +129,8 @@
                         Margin="0,0,8,0"
                         Padding="14,0"
                         Click="OpenScanReport_Click" />
-                <Button Content="Open Preflight"
-                        Width="114"
+                <Button Content="Open Safety Check"
+                        Width="138"
                         Height="34"
                         Margin="0,0,8,0"
                         Padding="14,0"
@@ -484,7 +484,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem x:Name="PreflightTab" Header="Preflight Checklist">
+            <TabItem x:Name="PreflightTab" Header="Safety Checklist">
                 <Grid Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="220" />
@@ -815,7 +815,7 @@
                                     <TextBlock Text="{Binding QuarantinePath}" Margin="0,8,0,18" TextWrapping="Wrap" Foreground="#4A515B" />
                                     <TextBlock Text="Restore Metadata" FontWeight="SemiBold" Foreground="#20242A" />
                                     <TextBlock Text="{Binding RestoreMetadataPath}" Margin="0,8,0,14" TextWrapping="Wrap" Foreground="#4A515B" />
-                                    <Button Content="Prepare Preflight" Height="32" IsEnabled="{Binding CanPreparePreflight}" Click="PreparePreflightFromPlanItem_Click" />
+                                    <Button Content="Prepare Safety Check" Height="32" IsEnabled="{Binding CanPreparePreflight}" Click="PreparePreflightFromPlanItem_Click" />
                                 </StackPanel>
                             </ScrollViewer>
                             <TextBlock Text="{Binding DataContext.SelectionEmptyStateMessage, ElementName=PlanTab}">
@@ -835,7 +835,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem x:Name="ReadOnlyOpsTab" Header="Read-Only Ops">
+            <TabItem x:Name="ReadOnlyOpsTab" Header="Guided Review">
                 <Grid Margin="0,12,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="360" />
@@ -852,7 +852,7 @@
                                            Foreground="#4A515B" />
                             </Border>
 
-                            <TextBlock Text="Quick Start" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBlock Text="Start Review" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <ItemsControl x:Name="QuickScanTargetsList" Margin="0,8,0,14">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -872,7 +872,7 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <TextBlock Text="Scan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBlock Text="Evidence Scan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <TextBlock Text="Target path" Margin="0,8,0,4" Foreground="#4A515B" />
                             <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
@@ -884,7 +884,7 @@
                                 <Button Grid.Column="1" Content="Folder" Height="30" Margin="6,0,0,0" Click="BrowseScanFolder_Click" />
                                 <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowseScanFile_Click" />
                             </Grid>
-                            <TextBlock Text="Report file" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <TextBlock Text="Scan report file" Margin="0,0,0,4" Foreground="#4A515B" />
                             <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -924,14 +924,14 @@
                                 <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowseScanCleanerMlFile_Click" />
                             </Grid>
                             <UniformGrid Columns="3" Margin="0,0,0,0">
-                                <Button Content="Build" Height="32" Margin="0,0,4,0" Click="BuildScan_Click" />
+                                <Button Content="Preview" Height="32" Margin="0,0,4,0" Click="BuildScan_Click" />
                                 <Button Content="Run Scan" Height="32" Margin="4,0,4,0" Click="RunScan_Click" />
-                                <Button Content="Next: Plan" Height="32" Margin="4,0,0,0" Click="UseScanForPlan_Click" />
+                                <Button Content="Use Target" Height="32" Margin="4,0,0,0" Click="UseScanForPlan_Click" />
                             </UniformGrid>
 
                             <Separator Margin="0,18,0,18" />
 
-                            <TextBlock Text="Plan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBlock Text="Cleanup Plan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <TextBlock Text="Target path" Margin="0,8,0,4" Foreground="#4A515B" />
                             <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
@@ -943,7 +943,7 @@
                                 <Button Grid.Column="1" Content="Folder" Height="30" Margin="6,0,0,0" Click="BrowsePlanFolder_Click" />
                                 <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowsePlanFile_Click" />
                             </Grid>
-                            <TextBlock Text="Plan file" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <TextBlock Text="Cleanup plan file" Margin="0,0,0,4" Foreground="#4A515B" />
                             <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -983,13 +983,13 @@
                                 <Button Grid.Column="2" Content="File" Height="30" Margin="6,0,0,0" Click="BrowsePlanCleanerMlFile_Click" />
                             </Grid>
                             <UniformGrid Columns="2" Margin="0,0,0,0">
-                                <Button Content="Build" Height="32" Margin="0,0,4,0" Click="BuildPlan_Click" />
-                                <Button Content="Run Plan" Height="32" Margin="4,0,0,0" Click="RunPlan_Click" />
+                                <Button Content="Preview" Height="32" Margin="0,0,4,0" Click="BuildPlan_Click" />
+                                <Button Content="Create Plan" Height="32" Margin="4,0,0,0" Click="RunPlan_Click" />
                             </UniformGrid>
 
                             <Separator Margin="0,18,0,18" />
 
-                            <TextBlock Text="Preflight" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <TextBlock Text="Safety Check" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <TextBlock Text="Cleanup plan JSON" Margin="0,8,0,4" Foreground="#4A515B" />
                             <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
@@ -1008,7 +1008,7 @@
                                 <TextBox x:Name="PreflightMetadataPathBox" Grid.Column="0" Style="{StaticResource InputTextBoxStyle}" ToolTip="Restore metadata JSON path" TextChanged="WorkflowInput_TextChanged" />
                                 <Button Grid.Column="1" Content="Open" Height="30" Margin="6,0,0,0" Click="BrowsePreflightMetadata_Click" />
                             </Grid>
-                            <TextBlock Text="Checklist file" Margin="0,0,0,4" Foreground="#4A515B" />
+                            <TextBlock Text="Safety checklist file" Margin="0,0,0,4" Foreground="#4A515B" />
                             <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -1026,8 +1026,8 @@
                             </DockPanel>
                             <CheckBox x:Name="PreflightManualConfirmationBox" Content="Manual confirmation" Margin="0,0,0,8" />
                             <UniformGrid Columns="2" Margin="0,0,0,0">
-                                <Button Content="Build" Height="32" Margin="0,0,4,0" Click="BuildPreflight_Click" />
-                                <Button Content="Run Preflight" Height="32" Margin="4,0,0,0" Click="RunPreflight_Click" />
+                                <Button Content="Preview" Height="32" Margin="0,0,4,0" Click="BuildPreflight_Click" />
+                                <Button Content="Run Check" Height="32" Margin="4,0,0,0" Click="RunPreflight_Click" />
                             </UniformGrid>
 
                             <Separator Margin="0,18,0,18" />
@@ -1066,6 +1066,15 @@
                                                FontSize="14"
                                                FontWeight="SemiBold"
                                                Foreground="#20242A" />
+                                    <TextBlock x:Name="WorkflowCurrentStepTitleText"
+                                               Margin="0,8,0,4"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="#20242A" />
+                                    <TextBlock x:Name="WorkflowCurrentStepDetailText"
+                                               Margin="0,0,0,10"
+                                               TextWrapping="Wrap"
+                                               Foreground="#4A515B" />
                                     <UniformGrid Columns="3" Margin="0,12,0,10">
                                         <Border BorderBrush="#D6DAE0" BorderThickness="1" Padding="10" Margin="0,0,6,0" Background="White">
                                             <StackPanel>
@@ -1081,7 +1090,7 @@
                                         </Border>
                                         <Border BorderBrush="#D6DAE0" BorderThickness="1" Padding="10" Margin="6,0,0,0" Background="White">
                                             <StackPanel>
-                                                <TextBlock Text="Preflight" FontWeight="SemiBold" Foreground="#20242A" />
+                                                <TextBlock Text="Safety Check" FontWeight="SemiBold" Foreground="#20242A" />
                                                 <TextBlock x:Name="WorkflowPreflightStatusText" Margin="0,6,0,0" Foreground="#4A515B" />
                                             </StackPanel>
                                         </Border>
@@ -1102,6 +1111,10 @@
                                                 Height="32"
                                                 Click="WorkflowPrimaryAction_Click" />
                                     </Grid>
+                                    <TextBlock x:Name="WorkflowSafetyBoundaryText"
+                                               Margin="0,10,0,0"
+                                               TextWrapping="Wrap"
+                                               Foreground="#A16207" />
                                 </StackPanel>
                             </Border>
                             <TextBlock DockPanel.Dock="Top"

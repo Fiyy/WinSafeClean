@@ -18,8 +18,8 @@ The script captures:
 
 - startup Scan Report layout and top toolbar
 - loaded Cleanup Plan layout using a repository fixture
-- Read-Only Ops top section with privacy advice
-- Read-Only Ops guarded CLI handoff section after scrolling
+- Guided Review top section with privacy advice
+- Guided Review guarded CLI handoff section after scrolling
 
 To load the Cleanup Plan layout without file dialogs, the script temporarily writes a single recent-document entry pointing to the repository cleanup-plan fixture. It backs up and restores the user's existing recent-document history after the smoke run.
 

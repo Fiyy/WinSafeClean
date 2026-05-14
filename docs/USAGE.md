@@ -17,13 +17,14 @@ WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantin
 - scan report 详情会显示空间用途提示，用于解释常见路径模式；这些提示不会改变风险等级或建议动作。
 - scan report 和 cleanup plan 详情会显示处置建议，说明选中条目应保留、只报告，还是进入 preflight 复核。
 - 打开 cleanup plan JSON，查看动作、风险、原因和只读隔离预览路径。
-- 只有 `ReviewForQuarantine` 且带隔离预览的 plan 条目会启用 `Prepare Preflight`。
-- Read-Only Ops 的 Quick Start 可选择 Downloads、Desktop、用户 Temp 或 Local AppData 作为扫描目标；它只填充路径和建议输出文件，不运行命令。
+- 只有 `ReviewForQuarantine` 且带隔离预览的 plan 条目会启用 `Prepare Safety Check`。
+- Guided Review 的 Quick Start 可选择 Downloads、Desktop、用户 Temp 或 Local AppData 作为扫描目标；它只填充路径和建议输出文件，不运行命令。
+- Guided Review 右侧 Workflow 面板会显示当前阶段、阶段说明和主操作按钮，用于串联 Evidence Scan、Cleanup Plan 和 Safety Check。
 - 打开 preflight checklist JSON，查看可执行状态、检查状态汇总和检查消息。
 - 构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持格式、隐私、输出文件、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数。
 - JSON 输出成功后自动加载回对应页签；Markdown 输出只写入文件，不自动解析。
 
-UI 运行只读命令时必须填写输出路径，并复用 CLI 的输出保护规则。UI 不会移动或删除文件。Read-Only Ops 的 Guarded CLI Handoff 区域可以在双重确认后构建并复制 `quarantine` / `restore` CLI 命令文本，但 UI 不会运行这些文件移动命令，也不会构建或运行 `delete` 或 `clean` 命令。
+UI 运行只读命令时必须填写输出路径，并复用 CLI 的输出保护规则。UI 不会移动或删除文件。Guided Review 的 Guarded CLI Handoff 区域可以在双重确认后构建并复制 `quarantine` / `restore` CLI 命令文本，但 UI 不会运行这些文件移动命令，也不会构建或运行 `delete` 或 `clean` 命令。
 
 Scan 和 Plan 的隐私模式旁会显示分享提示：`full` 输出保留本机路径和 evidence，适合本机复核；对外分享前应选择 `redacted`，由 CLI 生成脱敏报告。
 

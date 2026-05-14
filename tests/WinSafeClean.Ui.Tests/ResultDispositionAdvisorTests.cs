@@ -67,9 +67,9 @@ public sealed class ResultDispositionAdvisorTests
 
         var advice = ResultDispositionAdvisor.ForPlanItem(item);
 
-        Assert.Equal("Prepare Preflight", advice.Title);
+        Assert.Equal("Prepare Safety Check", advice.Title);
         Assert.Contains("candidate", advice.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("Run Preflight", advice.NextStep, StringComparison.Ordinal);
+        Assert.Contains("Run Safety Check", advice.NextStep, StringComparison.Ordinal);
         Assert.True(advice.CanPreparePreflight);
     }
 

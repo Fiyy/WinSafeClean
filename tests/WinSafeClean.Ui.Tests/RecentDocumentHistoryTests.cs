@@ -102,6 +102,7 @@ public sealed class RecentDocumentHistoryTests
         Assert.Equal(RecentDocumentKind.PreflightChecklist, loaded[0].Kind);
         Assert.Equal(@"C:\Reports\preflight.json", loaded[0].Path);
         Assert.Equal(timestamp, loaded[0].LastOpenedAt);
+        Assert.StartsWith("Safety Check - ", loaded[0].DisplayText, StringComparison.Ordinal);
     }
 
     [Fact]

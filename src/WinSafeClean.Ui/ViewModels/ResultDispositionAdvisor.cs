@@ -75,9 +75,9 @@ public static class ResultDispositionAdvisor
             }
 
             return new ResultDispositionAdvice(
-                Title: "Prepare Preflight",
-                Message: "This item is a quarantine candidate. The UI can prepare preflight inputs, but it will not move the file.",
-                NextStep: "Prepare Preflight, Run Preflight, then build a guarded CLI handoff only if every check is acceptable.",
+                Title: "Prepare Safety Check",
+                Message: "This item is a quarantine candidate. The UI can prepare safety check inputs, but it will not move the file.",
+                NextStep: "Prepare Safety Check, Run Safety Check, then build a guarded CLI handoff only if every check is acceptable.",
                 CanPreparePreflight: true);
         }
 
