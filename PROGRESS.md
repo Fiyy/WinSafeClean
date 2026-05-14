@@ -4,7 +4,7 @@
 
 阶段：5 - 发布后 UI 工作流完善
 
-日期：2026-05-14
+日期：2026-05-15
 
 ## 已完成
 
@@ -462,16 +462,21 @@
 - 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
 - 截图 smoke 通过，输出 `scan-report`、`cleanup-plan-loaded`、`guided-review-top` 和 `guided-review-handoff` 非空截图到 `artifacts\smoke`
 - 检查 v0.2.5 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
+- v0.2.5 候选变更已提交并推送到 GitHub `main` 分支
+- 推送 `v0.2.5` 标签到 GitHub
+- 创建 GitHub `v0.2.5` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
+- 验证 GitHub `v0.2.5` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.5/`
+- 公开发布 GitHub `v0.2.5` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.5
 
 ## 正在进行
 
-- v0.2.5 Guided Review 体验优化候选已本地验证，等待是否发布
+- v0.2.5 已公开发布，等待下一轮体验优化规划
 
 ## 下一步
 
-1. 决定是否发布 `v0.2.5` 到 GitHub release。
-2. 发布后继续评估 scan history、installer/signing 和 quarantine / restore 状态历史。
-3. 继续优化新手入口，但不得绕过 CLI 双重确认和 preflight。
+1. 继续评估 scan history、installer/signing 和 quarantine / restore 状态历史。
+2. 继续优化新手入口，但不得绕过 CLI 双重确认和 preflight。
+3. 评估 Guided Review 是否需要增加“扫描历史”和“操作历史”入口。
 
 ## 待决策
 
