@@ -467,16 +467,24 @@
 - 创建 GitHub `v0.2.5` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
 - 验证 GitHub `v0.2.5` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.5/`
 - 公开发布 GitHub `v0.2.5` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.5
+- 新增 ADR 0052，记录 WPF 本地只读运行历史的隐私和安全边界
+- 新增 `ReadOnlyRunHistory` 模型和本地 JSON 存储，只保存操作类型、目标路径、输出路径、格式、退出码和时间戳
+- WPF 新增 `Run History` 页签，可刷新、打开成功生成的 JSON 输出、清空本地只读运行历史
+- WPF UI 运行 Evidence Scan、Cleanup Plan 和 Safety Check 后会记录本地只读运行历史，失败的只读命令也记录退出码
+- Run History 不保存报告内容、stdout、stderr、evidence 内容，也不记录或执行 `quarantine`、`restore`、`delete`、`clean`
+- 发布版 WPF 截图 smoke 扩展覆盖 `Run History` 页签
+- 版本元数据更新为 `0.2.6`
+- 新增 `docs/releases/v0.2.6.md`，记录 Run History 候选的能力、安全边界和已知限制
 
 ## 正在进行
 
-- v0.2.5 已公开发布，等待下一轮体验优化规划
+- v0.2.6 Run History 体验优化候选验证
 
 ## 下一步
 
-1. 继续评估 scan history、installer/signing 和 quarantine / restore 状态历史。
-2. 继续优化新手入口，但不得绕过 CLI 双重确认和 preflight。
-3. 评估 Guided Review 是否需要增加“扫描历史”和“操作历史”入口。
+1. 运行完整测试、发布打包、CLI smoke 和 WPF 截图 smoke。
+2. 检查 v0.2.6 ZIP 内容，确认不包含测试程序集、`.tools`、本地报告或截图 artifact。
+3. 通过后决定是否发布 `v0.2.6`。
 
 ## 待决策
 

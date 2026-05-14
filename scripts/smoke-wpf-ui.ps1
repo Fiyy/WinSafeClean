@@ -361,6 +361,9 @@ try {
     Scroll-ReadOnlyOpsLeftPaneToBottom -Handle $handle
     $captures += Capture-WindowScreenshot -Handle $handle -Label "guided-review-handoff" -DestinationRoot $OutputRoot
 
+    Select-TabItem -Root $automationRoot -Name "Run History"
+    $captures += Capture-WindowScreenshot -Handle $handle -Label "run-history" -DestinationRoot $OutputRoot
+
     $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
     $metadataPath = Join-Path $OutputRoot "wpf-ui-$timestamp.json"
     [pscustomobject]@{

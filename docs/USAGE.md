@@ -20,6 +20,7 @@ WinSafeClean 的 `scan`、`plan` 和 `preflight` 仍是只读命令。`quarantin
 - 只有 `ReviewForQuarantine` 且带隔离预览的 plan 条目会启用 `Prepare Safety Check`。
 - Guided Review 的 Quick Start 可选择 Downloads、Desktop、用户 Temp 或 Local AppData 作为扫描目标；它只填充路径和建议输出文件，不运行命令。
 - Guided Review 右侧 Workflow 面板会显示当前阶段、阶段说明和主操作按钮，用于串联 Evidence Scan、Cleanup Plan 和 Safety Check。
+- Run History 会记录 UI 运行过的只读 `scan`、`plan` 和 `preflight` 元数据，可重新打开成功生成的 JSON 输出；它不保存报告内容或 stdout/stderr。
 - 打开 preflight checklist JSON，查看可执行状态、检查状态汇总和检查消息。
 - 构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持格式、隐私、输出文件、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数。
 - JSON 输出成功后自动加载回对应页签；Markdown 输出只写入文件，不自动解析。

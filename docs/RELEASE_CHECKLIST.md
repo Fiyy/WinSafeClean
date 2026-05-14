@@ -40,7 +40,7 @@ Verify:
 ```
 
 - Published WPF UI starts and remains running during startup smoke.
-- Published WPF UI screenshot smoke captures nonblank screenshots under `artifacts\smoke` for startup, loaded Cleanup Plan filters, Guided Review privacy advice, and Guarded CLI Handoff.
+- Published WPF UI screenshot smoke captures nonblank screenshots under `artifacts\smoke` for startup, loaded Cleanup Plan filters, Guided Review privacy advice, Guarded CLI Handoff, and Run History.
 
 ## Safety Gate
 
@@ -104,5 +104,5 @@ Keep the release as a draft until a human has reviewed the safety boundary, know
 - No real deletion command is available.
 - Directory quarantine and directory restore are deferred.
 - WPF UI does not execute `quarantine`, `restore`, `delete`, or `clean`.
-- WPF UI does not yet include installer packaging, signing, auto-update, or scan history.
+- WPF UI does not yet include installer packaging, signing, auto-update, scan comparison, or quarantine/restore operation history.
 - Published output is a local folder, not an installer.

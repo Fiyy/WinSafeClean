@@ -34,7 +34,7 @@ GitHub: https://github.com/Fiyy/WinSafeClean
 
 - `WinSafeClean.Core`：只读扫描、风险、报告和 evidence 基础模型
 - `WinSafeClean.Cli`：默认只读 CLI，包含带强确认的文件隔离和恢复命令
-- `WinSafeClean.Ui`：WPF UI 脚手架，可读取 scan report、preflight checklist 和 cleanup plan JSON，并展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项、处置建议、隔离预览、空状态和状态提示；Guided Review 可通过 Quick Start、文件/文件夹选择器构建并运行 `scan`、`plan` 和 `preflight` 只读命令，把 JSON 输出自动加载回界面，并可从选中的 cleanup plan 候选项准备 preflight metadata 输入
+- `WinSafeClean.Ui`：WPF UI 脚手架，可读取 scan report、preflight checklist 和 cleanup plan JSON，并展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项、处置建议、隔离预览、空状态和状态提示；Guided Review 可通过 Quick Start、文件/文件夹选择器构建并运行 `scan`、`plan` 和 `preflight` 只读命令，把 JSON 输出自动加载回界面，并可从选中的 cleanup plan 候选项准备 preflight metadata 输入；Run History 会记录本机只读运行元数据，便于重新打开成功生成的 JSON 输出
 - `WinSafeClean.Windows`：Windows evidence provider，已支持服务 `ImagePath`、计划任务 Exec action、注册表启动项、PATH 环境变量、快捷方式、文件关联、卸载注册表、Microsoft Store 包归属、文件 Authenticode 签名和运行进程映像路径关系证据
 - `WinSafeClean.CleanerRules`：CleanerML 安全子集解析器、用户规则文件加载器和 `KnownCleanupRule` evidence provider，只读取规则候选，不执行清理动作
 - `WinSafeClean.Core.Quarantine`：恢复元数据、内容 hash、操作日志、执行前校验、最小隔离执行器和最小恢复执行器
@@ -53,7 +53,7 @@ pwsh -File .\scripts\publish.ps1 -Restore
 .\.tools\dotnet\dotnet.exe run --project .\src\WinSafeClean.Ui
 ```
 
-当前 WPF UI 可打开 CLI 生成的 scan report、preflight checklist 和 cleanup plan JSON，展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项、处置建议和隔离预览。Scan Report 和 Cleanup Plan 列表支持只读搜索、筛选、排序，并可将当前可见行复制到剪贴板或导出为用户选择路径下的 CSV；最近打开或生成的 JSON 文档会以“类型、路径、时间戳”形式保存到本机 `%LocalAppData%\WinSafeClean\recent-documents.json`，不保存报告内容，并可在 UI 顶部清空。Scan report 条目默认按大小优先排序，Summary 会列出 Largest items 和 Top directories。空间用途提示和处置建议只解释常见路径模式、计划动作和下一步，不改变风险等级或建议动作。UI 的 Guided Review 页签可构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持 Quick Start 常用扫描目标、文件/文件夹选择器、自动建议 JSON 输出路径、扫描后准备 Plan 输入、从选中的 cleanup plan 候选项生成 preflight restore metadata 输入、格式、隐私、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数；Quick Start 只填充扫描路径和输出路径，不运行任何命令；只有 `ReviewForQuarantine` 且带隔离预览的 plan 条目会启用 `Prepare Safety Check`。Scan 和 Plan 隐私选择旁会提示 `full` 输出包含本机路径和 evidence，分享前应选择 `redacted`。右侧 Workflow 面板会显示 Scan、Plan、Preflight 状态、当前阶段、阶段说明和当前主操作。运行时必须填写输出文件，JSON 输出成功后会自动加载回对应页签。UI 还可在双重确认后构建并复制 `quarantine` / `restore` CLI 交接命令，但不会运行这些文件移动命令。UI 不生成或运行 `delete` 或 `clean` 命令。
+当前 WPF UI 可打开 CLI 生成的 scan report、preflight checklist 和 cleanup plan JSON，展示大小、最大条目、Top 目录、空间用途提示、风险、动作、证据、原因、检查项、处置建议和隔离预览。Scan Report 和 Cleanup Plan 列表支持只读搜索、筛选、排序，并可将当前可见行复制到剪贴板或导出为用户选择路径下的 CSV；最近打开或生成的 JSON 文档会以“类型、路径、时间戳”形式保存到本机 `%LocalAppData%\WinSafeClean\recent-documents.json`，不保存报告内容，并可在 UI 顶部清空。Run History 会以本地 JSON 保存 UI 运行过的 `scan`、`plan` 和 `preflight` 元数据，包括操作类型、目标路径、输出路径、格式、退出码和时间戳，不保存报告内容或 stdout/stderr，并可清空；成功生成的 JSON 输出可从 Run History 重新打开。Scan report 条目默认按大小优先排序，Summary 会列出 Largest items 和 Top directories。空间用途提示和处置建议只解释常见路径模式、计划动作和下一步，不改变风险等级或建议动作。UI 的 Guided Review 页签可构建并运行 `scan`、`plan` 和 `preflight` 只读命令，支持 Quick Start 常用扫描目标、文件/文件夹选择器、自动建议 JSON 输出路径、扫描后准备 Plan 输入、从选中的 cleanup plan 候选项生成 preflight restore metadata 输入、格式、隐私、递归、目录大小统计、数量限制、CleanerML 和 preflight 人工确认参数；Quick Start 只填充扫描路径和输出路径，不运行任何命令；只有 `ReviewForQuarantine` 且带隔离预览的 plan 条目会启用 `Prepare Safety Check`。Scan 和 Plan 隐私选择旁会提示 `full` 输出包含本机路径和 evidence，分享前应选择 `redacted`。右侧 Workflow 面板会显示 Scan、Plan、Preflight 状态、当前阶段、阶段说明和当前主操作。运行时必须填写输出文件，JSON 输出成功后会自动加载回对应页签。UI 还可在双重确认后构建并复制 `quarantine` / `restore` CLI 交接命令，但不会运行这些文件移动命令。UI 不生成或运行 `delete` 或 `clean` 命令。
 
 ## 本地发布
 
@@ -165,6 +165,7 @@ Core 已包含只读 `CleanupPlan` 草案模型，可把扫描报告转换为 `K
 - [v0.2.3 版本说明](docs/releases/v0.2.3.md)
 - [v0.2.4 版本说明](docs/releases/v0.2.4.md)
 - [v0.2.5 版本说明](docs/releases/v0.2.5.md)
+- [v0.2.6 版本说明](docs/releases/v0.2.6.md)
 - [质量门禁](docs/QUALITY_GATES.md)
 - [任务模板](docs/TASK_TEMPLATE.md)
 - [项目进度](PROGRESS.md)

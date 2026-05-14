@@ -20,7 +20,7 @@ public sealed class CommandLineAppTests
 
         Assert.Equal(0, exitCode);
         Assert.Equal(string.Empty, stderr.ToString());
-        Assert.StartsWith("WinSafeClean 0.2.5", stdout.ToString(), StringComparison.Ordinal);
+        Assert.StartsWith("WinSafeClean 0.2.6", stdout.ToString(), StringComparison.Ordinal);
         Assert.EndsWith(Environment.NewLine, stdout.ToString(), StringComparison.Ordinal);
     }
 

@@ -116,6 +116,7 @@
 - Read-only operation input validation feedback
 - Expanded Guided Review command options for format, privacy, output files, recursion, item limits, and CleanerML
 - Constrained UI runner for read-only `scan`, `plan`, and `preflight` commands with JSON auto-load
+- Local WPF Run History for read-only `scan`, `plan`, and `preflight` metadata
 - Size-first scan report ordering and Largest Items summary
 - Opt-in directory size calculation for scan and plan reports
 - WPF Top Directories summary and display-only space use hints

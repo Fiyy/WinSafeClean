@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private readonly ReadOnlyOperationRunnerOptions _operationRunnerOptions;
     private readonly ReadOnlyOperationRunner _operationRunner;
     private readonly RecentDocumentHistoryStore _recentDocumentHistoryStore;
+    private readonly ReadOnlyRunHistoryStore _runHistoryStore;
     private CleanupPlan? _currentPlan;
     private string? _currentPlanPath;
     private bool _scanCompleted;
@@ -26,18 +27,20 @@ public partial class MainWindow : Window
     private bool _preflightCompleted;
 
     public MainWindow()
-        : this(CreateDefaultRunnerOptions(), processRunner: null, recentDocumentHistoryStore: null)
+        : this(CreateDefaultRunnerOptions(), processRunner: null, recentDocumentHistoryStore: null, runHistoryStore: null)
     {
     }
 
     internal MainWindow(
         ReadOnlyOperationRunnerOptions operationRunnerOptions,
         IReadOnlyOperationProcessRunner? processRunner,
-        RecentDocumentHistoryStore? recentDocumentHistoryStore = null)
+        RecentDocumentHistoryStore? recentDocumentHistoryStore = null,
+        ReadOnlyRunHistoryStore? runHistoryStore = null)
     {
         _operationRunnerOptions = operationRunnerOptions;
         _operationRunner = new ReadOnlyOperationRunner(operationRunnerOptions, processRunner);
         _recentDocumentHistoryStore = recentDocumentHistoryStore ?? RecentDocumentHistoryStore.CreateDefault();
+        _runHistoryStore = runHistoryStore ?? ReadOnlyRunHistoryStore.CreateDefault();
 
         InitializeComponent();
         ScanTab.DataContext = ScanReportOverviewViewModel.Empty;
@@ -45,6 +48,7 @@ public partial class MainWindow : Window
         PlanTab.DataContext = PlanOverviewViewModel.Empty;
         QuickScanTargetsList.ItemsSource = QuickScanTargetProvider.CreateDefault();
         RefreshRecentDocuments();
+        RefreshRunHistory();
         UpdatePrivacyHints();
         UpdateWorkflowState();
     }
@@ -126,6 +130,80 @@ public partial class MainWindow : Window
         catch (Exception exception)
         {
             ShowLoadError("Recent files could not be cleared", exception);
+        }
+    }
+
+    private void RunHistoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        OpenRunHistoryOutputButton.IsEnabled = RunHistoryList.SelectedItem is ReadOnlyRunHistoryEntry entry
+            && entry.CanOpenInUi;
+    }
+
+    private void RefreshRunHistory_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshRunHistory();
+    }
+
+    private void OpenRunHistoryOutput_Click(object sender, RoutedEventArgs e)
+    {
+        if (RunHistoryList.SelectedItem is not ReadOnlyRunHistoryEntry entry)
+        {
+            return;
+        }
+
+        if (!entry.CanOpenInUi)
+        {
+            MessageBox.Show(
+                this,
+                "Only successful JSON outputs can be opened back into the UI.",
+                "Run output cannot be opened",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            if (!File.Exists(entry.OutputPath))
+            {
+                ShowLoadError("Run output could not be loaded", new FileNotFoundException("Run output file no longer exists.", entry.OutputPath));
+                return;
+            }
+
+            switch (entry.Kind)
+            {
+                case ReadOnlyRunHistoryKind.Scan:
+                    LoadScanReport(entry.OutputPath);
+                    _scanCompleted = !string.IsNullOrWhiteSpace(ScanPathBox.Text);
+                    break;
+                case ReadOnlyRunHistoryKind.Plan:
+                    LoadPlan(entry.OutputPath);
+                    PreflightPlanPathBox.Text = entry.OutputPath;
+                    EnsureSuggestedOutputPath(PreflightOutputPathBox, "preflight");
+                    break;
+                case ReadOnlyRunHistoryKind.SafetyCheck:
+                    LoadPreflightChecklist(entry.OutputPath);
+                    break;
+            }
+
+            UpdateWorkflowState();
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Run output could not be loaded", exception);
+        }
+    }
+
+    private void ClearRunHistory_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _runHistoryStore.Clear();
+            RefreshRunHistory();
+        }
+        catch (Exception exception)
+        {
+            ShowLoadError("Run history could not be cleared", exception);
         }
     }
 
@@ -544,8 +622,16 @@ public partial class MainWindow : Window
             OperationCommandText.Text = FormatCommand(args);
             ShowOperationStatus("Running Evidence Scan.", isError: false);
 
+            var startedAt = DateTimeOffset.Now;
             var result = await _operationRunner.RunAsync(args);
             OperationCommandText.Text = FormatRunResult(result);
+            RememberRunHistory(
+                ReadOnlyRunHistoryKind.Scan,
+                ScanPathBox.Text,
+                ScanOutputPathBox.Text,
+                GetSelectedComboBoxText(ScanFormatBox),
+                startedAt,
+                result);
             if (!result.Succeeded)
             {
                 ShowOperationStatus($"Scan failed with exit code {result.ExitCode}.", isError: true);
@@ -582,8 +668,16 @@ public partial class MainWindow : Window
             OperationCommandText.Text = FormatCommand(args);
             ShowOperationStatus("Creating Cleanup Plan.", isError: false);
 
+            var startedAt = DateTimeOffset.Now;
             var result = await _operationRunner.RunAsync(args);
             OperationCommandText.Text = FormatRunResult(result);
+            RememberRunHistory(
+                ReadOnlyRunHistoryKind.Plan,
+                PlanPathBox.Text,
+                PlanOutputPathBox.Text,
+                GetSelectedComboBoxText(PlanFormatBox),
+                startedAt,
+                result);
             if (!result.Succeeded)
             {
                 ShowOperationStatus($"Plan failed with exit code {result.ExitCode}.", isError: true);
@@ -617,8 +711,16 @@ public partial class MainWindow : Window
             OperationCommandText.Text = FormatCommand(args);
             ShowOperationStatus("Running Safety Check.", isError: false);
 
+            var startedAt = DateTimeOffset.Now;
             var result = await _operationRunner.RunAsync(args);
             OperationCommandText.Text = FormatRunResult(result);
+            RememberRunHistory(
+                ReadOnlyRunHistoryKind.SafetyCheck,
+                PreflightPlanPathBox.Text,
+                PreflightOutputPathBox.Text,
+                GetSelectedComboBoxText(PreflightFormatBox),
+                startedAt,
+                result);
             if (!result.Succeeded)
             {
                 ShowOperationStatus($"Safety Check failed with exit code {result.ExitCode}.", isError: true);
@@ -1279,6 +1381,32 @@ public partial class MainWindow : Window
         }
     }
 
+    private void RememberRunHistory(
+        ReadOnlyRunHistoryKind kind,
+        string targetPath,
+        string outputPath,
+        string format,
+        DateTimeOffset startedAt,
+        ReadOnlyOperationRunResult result)
+    {
+        try
+        {
+            _runHistoryStore.Add(new ReadOnlyRunHistoryEntry(
+                Kind: kind,
+                TargetPath: ResolveOperationPath(targetPath),
+                OutputPath: ResolveOperationPath(outputPath),
+                Format: format,
+                ExitCode: result.ExitCode,
+                StartedAt: startedAt,
+                CompletedAt: DateTimeOffset.Now));
+            RefreshRunHistory();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException or ArgumentException)
+        {
+            // Run history is local convenience metadata; command results remain visible even if it cannot be stored.
+        }
+    }
+
     private void RefreshRecentDocuments()
     {
         if (RecentDocumentsBox is null)
@@ -1300,6 +1428,33 @@ public partial class MainWindow : Window
         RecentDocumentsBox.SelectedIndex = entries.Count > 0 ? 0 : -1;
         OpenRecentButton.IsEnabled = entries.Count > 0;
         ClearRecentButton.IsEnabled = entries.Count > 0;
+    }
+
+    private void RefreshRunHistory()
+    {
+        if (RunHistoryList is null)
+        {
+            return;
+        }
+
+        IReadOnlyList<ReadOnlyRunHistoryEntry> entries;
+        try
+        {
+            entries = _runHistoryStore.Load();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            entries = [];
+        }
+
+        RunHistoryList.ItemsSource = entries;
+        RunHistoryList.SelectedIndex = entries.Count > 0 ? 0 : -1;
+        OpenRunHistoryOutputButton.IsEnabled = RunHistoryList.SelectedItem is ReadOnlyRunHistoryEntry entry
+            && entry.CanOpenInUi;
+        ClearRunHistoryButton.IsEnabled = entries.Count > 0;
+        RunHistoryStatusText.Text = entries.Count == 0
+            ? "No local runs recorded yet."
+            : $"{entries.Count} local read-only run(s).";
     }
 
     private static ReadOnlyOperationRunnerOptions CreateDefaultRunnerOptions()
