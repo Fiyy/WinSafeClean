@@ -435,16 +435,27 @@
 - README 和 USAGE 同步记录 Quick Start 只填充路径，不执行命令
 - 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
 - 测试通过：361 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests -CreateArchive`
+- 验证发布版 CLI `--version` 输出 `WinSafeClean 0.2.4+...`
+- 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
+- 检查 v0.2.4 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
+- v0.2.4 候选变更已提交并推送到 GitHub `main` 分支
+- 推送 `v0.2.4` 标签到 GitHub
+- 创建 GitHub `v0.2.4` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
+- 验证 GitHub `v0.2.4` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.4/`
+- 公开发布 GitHub `v0.2.4` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.4
 
 ## 正在进行
 
-- v0.2.4 Quick Start 扫描目标已完成，准备本地发布和 smoke
+- v0.2.4 已公开发布，等待下一轮体验优化规划
 
 ## 下一步
 
-1. 本地发布 v0.2.4 并验证 CLI/WPF smoke。
-2. 决定是否创建 `v0.2.4` 标签和 GitHub release。
-3. 继续评估 scan history、installer/signing 和 quarantine / restore 状态历史。
+1. 继续评估 scan history、installer/signing 和 quarantine / restore 状态历史。
+2. 复核 Quick Start 是否覆盖足够常见的首次扫描入口。
+3. 继续优化新手入口，但不得绕过 CLI 双重确认和 preflight。
 
 ## 待决策
 
