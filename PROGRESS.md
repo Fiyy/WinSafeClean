@@ -475,16 +475,30 @@
 - 发布版 WPF 截图 smoke 扩展覆盖 `Run History` 页签
 - 版本元数据更新为 `0.2.6`
 - 新增 `docs/releases/v0.2.6.md`，记录 Run History 候选的能力、安全边界和已知限制
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：367 passed
+- 验证命令：`pwsh -NoProfile -File scripts\publish.ps1 -SkipTests -CreateArchive`
+- 验证发布版 CLI `--version` 输出 `WinSafeClean 0.2.6+9ceaaf2...`
+- 验证发布版 CLI 执行只读 `scan --path . --max-items 1 --no-recursive --format json` 成功
+- 验证发布版 WPF UI hidden startup smoke 成功
+- 验证命令：`pwsh -NoProfile -File scripts\smoke-wpf-ui.ps1`
+- 截图 smoke 通过，输出 `scan-report`、`cleanup-plan-loaded`、`guided-review-top`、`guided-review-handoff` 和 `run-history` 非空截图到 `artifacts\smoke`
+- 检查 v0.2.6 CLI/UI ZIP 内容，确认未包含测试程序集、`.tools`、测试结果、本地报告或截图 smoke artifact
+- v0.2.6 候选变更已提交并推送到 GitHub `main` 分支
+- 推送 `v0.2.6` 标签到 GitHub
+- 创建 GitHub `v0.2.6` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
+- 验证 GitHub `v0.2.6` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.6/`
+- 公开发布 GitHub `v0.2.6` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.6
 
 ## 正在进行
 
-- v0.2.6 Run History 体验优化候选验证
+- v0.2.6 已公开发布，等待下一轮体验优化规划
 
 ## 下一步
 
-1. 运行完整测试、发布打包、CLI smoke 和 WPF 截图 smoke。
-2. 检查 v0.2.6 ZIP 内容，确认不包含测试程序集、`.tools`、本地报告或截图 artifact。
-3. 通过后决定是否发布 `v0.2.6`。
+1. 继续评估 installer/signing 和 quarantine / restore 状态历史。
+2. 评估 Run History 是否需要增加扫描结果对比。
+3. 继续优化新手入口，但不得绕过 CLI 双重确认和 preflight。
 
 ## 待决策
 
