@@ -852,6 +852,26 @@
                                            Foreground="#4A515B" />
                             </Border>
 
+                            <TextBlock Text="Quick Start" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
+                            <ItemsControl x:Name="QuickScanTargetsList" Margin="0,8,0,14">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="2" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding DisplayName}"
+                                                Tag="{Binding}"
+                                                Height="34"
+                                                Margin="0,0,6,6"
+                                                HorizontalContentAlignment="Center"
+                                                ToolTip="{Binding Description}"
+                                                Click="QuickScanTarget_Click" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
                             <TextBlock Text="Scan" FontSize="14" FontWeight="SemiBold" Foreground="#20242A" />
                             <TextBlock Text="Target path" Margin="0,8,0,4" Foreground="#4A515B" />
                             <Grid Margin="0,0,0,8">

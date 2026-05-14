@@ -43,6 +43,7 @@ public partial class MainWindow : Window
         ScanTab.DataContext = ScanReportOverviewViewModel.Empty;
         PreflightTab.DataContext = PreflightChecklistOverviewViewModel.Empty;
         PlanTab.DataContext = PlanOverviewViewModel.Empty;
+        QuickScanTargetsList.ItemsSource = QuickScanTargetProvider.CreateDefault();
         RefreshRecentDocuments();
         UpdatePrivacyHints();
         UpdateWorkflowState();
@@ -175,6 +176,22 @@ public partial class MainWindow : Window
         {
             EnsureSuggestedOutputPath(ScanOutputPathBox, "scan");
         }
+    }
+
+    private void QuickScanTarget_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: QuickScanTarget target })
+        {
+            return;
+        }
+
+        ScanPathBox.Text = target.Path;
+        EnsureSuggestedOutputPath(ScanOutputPathBox, "scan");
+        _scanCompleted = false;
+        _planCompleted = false;
+        _preflightCompleted = false;
+        UpdateWorkflowState();
+        ShowOperationStatus($"Scan target set to {target.DisplayName}. Run Scan to create evidence.", isError: false);
     }
 
     private void BrowseScanFile_Click(object sender, RoutedEventArgs e)

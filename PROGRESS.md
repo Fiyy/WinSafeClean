@@ -426,16 +426,25 @@
 - 创建 GitHub `v0.2.3` release，上传 CLI ZIP、UI ZIP 和 `SHA256SUMS.txt`
 - 验证 GitHub `v0.2.3` release `isDraft=false`、`isPrerelease=false`，三项附件 URL 已切换到 `/download/v0.2.3/`
 - 公开发布 GitHub `v0.2.3` release：https://github.com/Fiyy/WinSafeClean/releases/tag/v0.2.3
+- 新增 ADR 0050，记录 WPF Quick Start 扫描目标的只读便利边界
+- 新增 `QuickScanTargetProvider`，为 Downloads、Desktop、用户 Temp 和 Local AppData 生成常用扫描目标，并跳过空路径、重复路径和受保护 Windows 路径
+- WPF UI Read-Only Ops 新增 Quick Start 按钮，可直接填充 Scan target 和建议 report 输出路径
+- Quick Start 不运行 scan、plan、preflight、quarantine、restore、delete 或 clean
+- 版本元数据更新为 `0.2.4`
+- 新增 `docs/releases/v0.2.4.md`，记录 Quick Start 扫描目标候选的能力、安全边界、验证结果和已知限制
+- README 和 USAGE 同步记录 Quick Start 只填充路径，不执行命令
+- 验证命令：`.tools\dotnet\dotnet.exe test WinSafeClean.sln --no-restore`
+- 测试通过：361 passed
 
 ## 正在进行
 
-- v0.2.3 已公开发布，等待下一轮体验优化规划
+- v0.2.4 Quick Start 扫描目标已完成，准备本地发布和 smoke
 
 ## 下一步
 
-1. 继续优化默认扫描目标和新手入口，但不得绕过 CLI 双重确认和 preflight。
-2. 评估 scan history、installer/signing 和 quarantine / restore 状态历史。
-3. 复核发布版 UI 的结果处置建议是否足够清楚。
+1. 本地发布 v0.2.4 并验证 CLI/WPF smoke。
+2. 决定是否创建 `v0.2.4` 标签和 GitHub release。
+3. 继续评估 scan history、installer/signing 和 quarantine / restore 状态历史。
 
 ## 待决策
 
